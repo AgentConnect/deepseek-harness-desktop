@@ -97,6 +97,7 @@ export function releaseMac(options: MacReleaseOptions = defaultReleaseOptions())
   options.prepareRuntime()
   options.run('yarn', [
     'exec', 'electron-builder', '--mac', 'dmg', '--universal',
+    '--publish', 'never',
     '--config.forceCodeSigning=true', '--config.mac.notarize=true',
     '--config.npmRebuild=false',
     `--config.directories.output=${options.outputDir}`,

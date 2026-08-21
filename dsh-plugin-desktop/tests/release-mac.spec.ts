@@ -70,6 +70,7 @@ describe('macOS release command boundary', () => {
       command: 'yarn',
       args: [
         'exec', 'electron-builder', '--mac', 'dmg', '--universal',
+        '--publish', 'never',
         '--config.forceCodeSigning=true', '--config.mac.notarize=true',
         '--config.npmRebuild=false',
         '--config.directories.output=/repo/dsh-plugin-desktop/dist/mac-release',
