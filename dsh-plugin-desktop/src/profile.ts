@@ -28,6 +28,7 @@ import FileSettingsProvider, {
 import { parseDocument } from 'yaml'
 import { unpackedAsarPath } from './packaged-runtime-path.ts'
 import { findOverlayPackage, resolveOverlayPackage } from './package-overlay.ts'
+import { DESKTOP_DEFAULT_WEB_PORT } from './desktop-port.ts'
 import type { DesktopShellMode } from './runtime.ts'
 import {
   activeDesktopProfileLayers,
@@ -70,7 +71,9 @@ const UPSTREAM_AGENT_PRESETS_PACKAGE = '@deepseek-ai/dsh-agent-presets'
 const DESKTOP_WINDOWS_AGENT_PRESETS_ROW_ID = 'desktop-windows-agent-presets'
 const DESKTOP_WINDOWS_AGENT_PRESETS_PACKAGE = 'dsh-plugin-desktop/windows-agent-presets'
 const DEFAULT_DESKTOP_SHELL_MODE: DesktopShellMode = 'compatibility'
-const DEFAULT_DESKTOP_PORT = 0
+const DEFAULT_DESKTOP_PORT = DESKTOP_DEFAULT_WEB_PORT
+const DESKTOP_WEB_SERVER_ROW_ID = 'desktop-webserver'
+const DESKTOP_WEB_SERVER_PACKAGE = 'dsh-plugin-desktop/webserver'
 const SETTINGS_FILE_PACKAGE = '@deepseek-ai/dsh-settings-file'
 const DESKTOP_SETTINGS_NAMESPACE = 'dsh-desktop'
 const UI_LAYOUT_PACKAGE = '@deepseek-ai/dsh-client-ui-layout'
@@ -203,10 +206,18 @@ export interface PreparedDesktopProfile {
   mode: DesktopShellMode
   /** Persisted loopback Web port applied to every startup consumer. */
   port: number
+  /** Resolved file-backed settings document used by this generation. */
+  settingsDocument: string
   /** Requested provider and the fail-closed provider effective for this generation. */
   market: DesktopMarketSnapshot
   /** Internal boot diagnostic when the requested provider was disabled. */
   marketFailure?: string
+}
+
+/** Optional observations emitted before profile preparation can fail. */
+export interface DesktopProfilePreparationHooks {
+  /** Receive the trusted settings path before its contents are parsed. */
+  onSettingsDocumentResolved?: (path: string) => void
 }
 
 /** User patch entry skipped to keep a profile bootable. */
@@ -568,6 +579,7 @@ export function prepareDesktopProfile(
   pluginStatePath?: string,
   marketSelection: DesktopMarketSnapshot = DEFAULT_DESKTOP_MARKET_SNAPSHOT,
   recoveryStatePath?: string,
+  hooks: DesktopProfilePreparationHooks = {},
 ): PreparedDesktopProfile {
   const profileDir = profileName === DESKTOP_PROFILE_NAME
     ? ensureDesktopProfile(home)
@@ -690,6 +702,8 @@ export function prepareDesktopProfile(
     dshHome: home,
     ...rowConfig(settings),
   } as SettingsFileConfig)
+  const settingsDocument = resolveSettingsFileSpec(settingsConfig).filename
+  hooks.onSettingsDocumentResolved?.(settingsDocument)
   const { mode, port } = readDesktopStartupSettings(settingsConfig)
   patches.push({
     id: 'settings',
@@ -738,7 +752,8 @@ export function prepareDesktopProfile(
       patches.push({ id: AGENT_PRESETS_ROW_ID, config })
     }
   }
-  if (!rows.has('webserver')) {
+  const webserver = rows.get('webserver')
+  if (webserver === undefined) {
     throw new Error(`${BIN_NAME}: desktop profile has no webserver row`)
   }
   if (platform === 'win32') {
@@ -786,12 +801,47 @@ export function prepareDesktopProfile(
       )
     }
   }
+  // Loader patches cannot change an existing row's package identity. Disable the
+  // profile row by its current identity and insert the Desktop-owned provider.
   // Loopback-only binding is a launcher security invariant, not user config.
-  patches.push({
-    id: 'webserver',
-    disabled: false,
-    config: { host: '127.0.0.1', port },
-  })
+  const webserverConfig = { host: '127.0.0.1', port }
+  if (webserver.name === DESKTOP_WEB_SERVER_PACKAGE) {
+    patches.push({
+      id: 'webserver',
+      name: DESKTOP_WEB_SERVER_PACKAGE,
+      disabled: false,
+      config: webserverConfig,
+    })
+  } else {
+    if (typeof webserver.name !== 'string') {
+      throw new Error(`${BIN_NAME}: desktop profile webserver row has no package identity`)
+    }
+    const replacement = rows.get(DESKTOP_WEB_SERVER_ROW_ID)
+    if (replacement !== undefined && replacement.name !== DESKTOP_WEB_SERVER_PACKAGE) {
+      throw new Error(`${BIN_NAME}: reserved ${DESKTOP_WEB_SERVER_ROW_ID} row has a conflicting package identity`)
+    }
+    patches.push({
+      id: 'webserver',
+      name: webserver.name,
+      disabled: true,
+    })
+    if (replacement === undefined) {
+      patches.push({
+        insert: [{
+          id: DESKTOP_WEB_SERVER_ROW_ID,
+          name: DESKTOP_WEB_SERVER_PACKAGE,
+          config: webserverConfig,
+        }],
+      })
+    } else {
+      patches.push({
+        id: DESKTOP_WEB_SERVER_ROW_ID,
+        name: DESKTOP_WEB_SERVER_PACKAGE,
+        disabled: false,
+        config: webserverConfig,
+      })
+    }
+  }
   if ((telemetryDisabled ?? '') !== '' && rows.has('session-telemetry-otel')) {
     patches.push({ id: 'session-telemetry-otel', disabled: true })
   }
@@ -817,6 +867,7 @@ export function prepareDesktopProfile(
     skippedOptionalEntries,
     mode,
     port,
+    settingsDocument,
     market: desktopMarketSnapshotWithEffective(marketSelection, effectiveMarket),
     ...(marketFailure === undefined ? {} : { marketFailure }),
   }
