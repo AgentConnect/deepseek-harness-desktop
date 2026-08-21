@@ -157,6 +157,23 @@ jobs:
           pattern: dsh-desktop-prerelease-*
           path: release-assets
           merge-multiple: true
+      - name: Normalize release asset filenames
+        working-directory: release-assets
+        shell: bash
+        env:
+          RELEASE_VERSION: ${{ needs.validate.outputs.version }}
+        run: |
+          set -euo pipefail
+          source_path="DSH Desktop-${RELEASE_VERSION}-universal.dmg"
+          target_path="DSH.Desktop-${RELEASE_VERSION}-universal.dmg"
+          test -f "$source_path"
+          test ! -e "$target_path"
+          mv -- "$source_path" "$target_path"
+
+          if find . -maxdepth 1 -type f -name '* *' -print -quit | grep -q .; then
+            echo "Release asset filenames must not contain spaces." >&2
+            exit 1
+          fi
       - name: Generate checksums
         working-directory: release-assets
         shell: bash
