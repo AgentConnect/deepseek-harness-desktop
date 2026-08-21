@@ -20,6 +20,8 @@ const BIN_NAME = 'dsh-plugin-desktop-profile-smoke'
 const HOST_SERVICE_PLUGIN_NAME = 'dsh-desktop-host-services-smoke-plugin'
 const HOST_SERVICE_PROBE_KEY = 'desktopHostServiceProbe'
 const home = mkdtempSync(join(tmpdir(), 'dsh-desktop-profile-'))
+const originalDshHome = process.env.DSH_HOME
+process.env.DSH_HOME = home
 let ctx
 let releasePackageResolver
 let pnpmRuntime
@@ -158,6 +160,11 @@ try {
   )
   await runtime.mountScheduled()
 
+  const awikiSession = await ctx.awiki.getSession()
+  if (awikiSession.ok !== true || awikiSession.value.status !== 'unregistered') {
+    throw new Error(`assembled desktop profile produced an unexpected AWiki session: ${JSON.stringify(awikiSession)}`)
+  }
+
   if (ctx.get('desktopPnpm') === undefined) {
     throw new Error('assembled desktop profile is missing the desktop pnpm Host capability')
   }
@@ -260,4 +267,6 @@ try {
   releasePackageResolver?.()
   pnpmRuntime?.dispose()
   rmSync(home, { recursive: true, force: true })
+  if (originalDshHome === undefined) delete process.env.DSH_HOME
+  else process.env.DSH_HOME = originalDshHome
 }

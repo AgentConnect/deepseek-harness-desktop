@@ -24,6 +24,7 @@ import {
   resolveProfileDir,
   writeProfileManifest,
 } from '@deepseek-ai/dsh-app-boot'
+import { desktopDefaultBundles } from './desktop-default-bundles.ts'
 
 const BIN_NAME = 'dsh-plugin-desktop'
 const DEFAULT_PROFILE_NAME = 'desktop'
@@ -160,7 +161,7 @@ function virtualProfile(name: typeof DEFAULT_PROFILE_NAME | typeof WEB_PROFILE_N
     name,
     dir: resolveProfileDir(name, home),
     exists: false,
-    bundles: [...bundles],
+    bundles: name === DEFAULT_PROFILE_NAME ? desktopDefaultBundles(bundles) : [...bundles],
     webCapable: true,
   }
 }

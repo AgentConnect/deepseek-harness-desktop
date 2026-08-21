@@ -109,7 +109,17 @@ describe('desktop profile discovery', () => {
     const before = readFileSync(join(webDir, 'package.json'), 'utf8')
 
     expect(listDesktopProfiles(home)).toEqual([
-      expect.objectContaining({ name: 'desktop', exists: false, webCapable: true }),
+      expect.objectContaining({
+        name: 'desktop',
+        exists: false,
+        webCapable: true,
+        bundles: [
+          '@deepseek-ai/dsh-base',
+          '@deepseek-ai/dsh-web-app',
+          '@awiki/dsh-plugin',
+          '@awiki/dsh-model-proxy',
+        ],
+      }),
       expect.objectContaining({ name: 'web', exists: false, webCapable: true }),
       expect.objectContaining({ name: 'broken', exists: true, webCapable: false, problem: expect.any(String) }),
       expect.objectContaining({

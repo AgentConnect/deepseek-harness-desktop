@@ -204,6 +204,8 @@ describe('packaged desktop runtime verification', () => {
   })
 
   it.each([
+    'AWIKI-COMMERCIAL-LICENSE.md',
+    'awiki-commercial-license.json',
     'lib/client.js',
     'lib/desktop-runtime-environment.js',
     'lib/profile-service.js',
@@ -221,6 +223,8 @@ describe('packaged desktop runtime verification', () => {
 
   it.each([
     'package.json',
+    'AWIKI-COMMERCIAL-LICENSE.md',
+    'awiki-commercial-license.json',
     'build/app-icon-mac.png',
     'build/tray-iconTemplate.png',
     'lib/terminal.js',

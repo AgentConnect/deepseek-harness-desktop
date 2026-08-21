@@ -31,6 +31,8 @@ export interface PackagedRuntimeContext {
 /** Exact archive entries required by the desktop launcher on every supported platform. */
 export const REQUIRED_PACKAGED_RUNTIME_ENTRIES = [
   'package.json',
+  'AWIKI-COMMERCIAL-LICENSE.md',
+  'awiki-commercial-license.json',
   'lib/main.js',
   'lib/client.js',
   'lib/profile.js',
@@ -58,6 +60,8 @@ export const REQUIRED_PACKAGED_RUNTIME_ENTRIES = [
 /** Physical entries required because profile fallback symlinks cannot target ASAR paths. */
 export const REQUIRED_UNPACKED_RUNTIME_ENTRIES = [
   'package.json',
+  'AWIKI-COMMERCIAL-LICENSE.md',
+  'awiki-commercial-license.json',
   'cordis.patch.yml',
   'build/app-icon.png',
   'build/app-icon-mac.png',

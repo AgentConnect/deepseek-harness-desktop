@@ -14,9 +14,14 @@ import { createRequire } from 'node:module'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { commercialLicenseForPackage, validateCommercialGrant } from './license-policy.mjs'
 
 const packageRoot = dirname(dirname(fileURLToPath(import.meta.url)))
 const rootManifest = JSON.parse(readFileSync(join(packageRoot, 'package.json'), 'utf8'))
+const commercialGrant = validateCommercialGrant(
+  JSON.parse(readFileSync(join(packageRoot, 'awiki-commercial-license.json'), 'utf8')),
+  readFileSync(join(packageRoot, 'AWIKI-COMMERCIAL-LICENSE.md'), 'utf8'),
+)
 
 /** Licenses accepted for redistribution inside the desktop installers. */
 const ALLOWED_LICENSES = new Set([
@@ -102,9 +107,16 @@ for (let index = 0; index < queue.length; index += 1) {
         failures.push(`${current.name}: license refers to ${JSON.stringify(license)} but no LICENSE file is shipped`)
       }
     } else if (license !== undefined && !ALLOWED_LICENSES.has(license) && !NOTICE_LICENSES.has(license)) {
-      failures.push(`${current.name}: license ${JSON.stringify(license)} is not on the redistribution allowlist`)
+      if (commercialLicenseForPackage(commercialGrant, current.name, manifest.version, license) === undefined) {
+        failures.push(`${current.name}: license ${JSON.stringify(license)} is not on the redistribution allowlist`)
+      }
     }
-    manifests.push({ name: current.name, version: manifest.version, license: license ?? 'SEE LICENSE FILE' })
+    manifests.push({
+      name: current.name,
+      version: manifest.version,
+      license: commercialLicenseForPackage(commercialGrant, current.name, manifest.version, license)
+        ?? license ?? 'SEE LICENSE FILE',
+    })
   }
 
   const requireFrom = createRequire(current.manifestPath)
@@ -143,6 +155,19 @@ if (noticesArg !== -1) {
     'DSH Desktop distributes the following third-party packages inside its installers.',
     'Each package ships with its own license text in the application files; this list records',
     'the package names, versions, and licenses for transparency.',
+    '',
+    '## AWiki commercial license grant',
+    '',
+    `The following exact package set is authorized for target-specific DSH Desktop distributions under ${commercialGrant.grantId}.`,
+    `Each installer contains only the platform packages relevant to that target. The complete grant is shipped as ${commercialGrant.licenseDocument}.`,
+    '',
+    '| Package | Authorized version | Upstream license |',
+    '| --- | --- | --- |',
+    ...Object.entries(commercialGrant.packages)
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([name, version]) => `| ${name} | ${version} | AGPL-3.0-only |`),
+    '',
+    '## Installed dependency inventory',
     '',
     '| Package | Version | License |',
     '| --- | --- | --- |',

@@ -117,6 +117,8 @@ describe('desktop profile composition', {
     ])).toEqual([
       '@deepseek-ai/dsh-base',
       '@deepseek-ai/dsh-web-app',
+      '@awiki/dsh-plugin',
+      '@awiki/dsh-model-proxy',
       'third-party-one',
       'third-party-two',
     ])
@@ -143,6 +145,8 @@ describe('desktop profile composition', {
     expect(repaired.dsh.profile.bundles).toEqual([
       '@deepseek-ai/dsh-base',
       '@deepseek-ai/dsh-web-app',
+      '@awiki/dsh-plugin',
+      '@awiki/dsh-model-proxy',
       'third-party-plugin',
     ])
     expect(repaired.dependencies).toEqual({ 'third-party-plugin': '^1.2.3' })
@@ -174,6 +178,8 @@ describe('desktop profile composition', {
     expect(repaired.dsh.profile.bundles).toEqual([
       '@deepseek-ai/dsh-base',
       '@deepseek-ai/dsh-web-app',
+      '@awiki/dsh-plugin',
+      '@awiki/dsh-model-proxy',
     ])
   })
 
@@ -194,6 +200,18 @@ describe('desktop profile composition', {
       const rows = patch.insert
       return Array.isArray(rows) ? rows as Array<Record<string, unknown>> : []
     })
+    const insertedIds = inserted.map(row => row.id)
+    expect(insertedIds).toEqual(expect.arrayContaining([
+      'awiki',
+      'awiki-provider',
+      'awiki-summary-provider',
+      'awiki-model-proxy',
+    ]))
+    expect(insertedIds.indexOf('awiki')).toBeLessThan(insertedIds.indexOf('awiki-model-proxy'))
+    expect(inserted).toContainEqual(expect.objectContaining({
+      id: 'awiki-model-proxy',
+      inject: ['awiki'],
+    }))
     expect(inserted).toContainEqual(expect.objectContaining({
       name: DESKTOP_PACKAGE_NAME,
       config: { mode: 'compatibility' },
