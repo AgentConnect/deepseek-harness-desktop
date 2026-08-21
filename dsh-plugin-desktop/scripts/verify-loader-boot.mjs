@@ -24,6 +24,7 @@ const RUNNER_ENVIRONMENT_NAMES = new Set([
   'NPM_CONFIG_DISTURL',
 ])
 const home = mkdtempSync(join(tmpdir(), 'dsh-desktop-loader-'))
+const originalDshHome = process.env.DSH_HOME
 let ctx
 let mounted
 let mountedSpec
@@ -33,6 +34,7 @@ const runnerEnvironment = Object.entries(process.env)
   .filter(([key]) => RUNNER_ENVIRONMENT_NAMES.has(key.toUpperCase()))
 
 try {
+  process.env.DSH_HOME = home
   for (const [key] of runnerEnvironment) delete process.env[key]
   const launchEnvironment = createLaunchEnvironmentSnapshot([{
     source: 'process',
@@ -183,6 +185,8 @@ try {
           }
         }
         for (const [key, value] of runnerEnvironment) process.env[key] = value
+        if (originalDshHome === undefined) delete process.env.DSH_HOME
+        else process.env.DSH_HOME = originalDshHome
         rmSync(home, { recursive: true, force: true })
       }
     }

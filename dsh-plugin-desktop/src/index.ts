@@ -162,7 +162,10 @@ export function apply(ctx: Context, config: Config): void {
     },
   )
   const rendererOrigin = `http://127.0.0.1:${String(ctx.webServer.port)}`
-  ctx.on('webserver/index-inject', table => {
+  const indexInjectionEvents = ctx as typeof ctx & {
+    on(event: 'webserver/index-inject', listener: (table: ReturnType<typeof desktopBootRecoveryInjections>[number][]) => void): void
+  }
+  indexInjectionEvents.on('webserver/index-inject', table => {
     table.push(...desktopBootRecoveryInjections())
   })
   const desktopSettings = ctx.get('desktopSettingsController')

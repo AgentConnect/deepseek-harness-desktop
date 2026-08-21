@@ -1,6 +1,10 @@
 /** Desktop-only controls injected into the framework-free upstream boot page. */
 
-import type { IndexInjection } from '@deepseek-ai/dsh-host-webserver'
+export interface DesktopIndexInjection {
+  kind: 'style' | 'script'
+  text: string
+  placement?: 'body'
+}
 
 /** The only request made by the early-boot terminal button. */
 export const DESKTOP_TERMINAL_OPEN_REQUEST = Object.freeze({
@@ -59,7 +63,7 @@ export const DESKTOP_BOOT_TERMINAL_SCRIPT = `(() => {
 })();`
 
 /** Structured rows consumed by both the loopback server and static boot renderer. */
-export function desktopBootRecoveryInjections(): readonly IndexInjection[] {
+export function desktopBootRecoveryInjections(): readonly DesktopIndexInjection[] {
   return [
     { kind: 'style', text: DESKTOP_BOOT_TERMINAL_STYLE },
     { kind: 'script', placement: 'body', text: DESKTOP_BOOT_TERMINAL_SCRIPT },

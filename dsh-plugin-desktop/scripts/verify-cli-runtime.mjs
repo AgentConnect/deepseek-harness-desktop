@@ -176,7 +176,10 @@ function runFlatProfileDshEntry() {
       join(desktopPackage, 'lib', 'desktop-cli.js'),
       ['plugin', '--help'],
       undefined,
-      { DSH_DESKTOP_DEFAULT_PROFILE: 'desktop' },
+      {
+        DSH_DESKTOP_DEFAULT_PROFILE: 'desktop',
+        DSH_HOME: join(root, 'dsh-home'),
+      },
     )
   } finally {
     rmSync(root, { recursive: true, force: true })
