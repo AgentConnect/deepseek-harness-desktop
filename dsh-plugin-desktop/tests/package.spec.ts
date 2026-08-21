@@ -106,6 +106,9 @@ describe('published package surface', () => {
     expect(desktopPrereleaseWorkflow).toContain('--prerelease')
     expect(desktopPrereleaseWorkflow).toContain('Refusing to replace existing tag')
     expect(desktopPrereleaseWorkflow).toContain('Windows x64 installer and portable archive are currently unsigned')
+    expect(desktopPrereleaseWorkflow).toContain('target_path="DSH.Desktop-${RELEASE_VERSION}-universal.dmg"')
+    expect(desktopPrereleaseWorkflow).toContain("-name '* *'")
+    expect(desktopPrereleaseWorkflow).toContain('sha256sum * > SHA256SUMS.txt')
   })
 
   it('runs desktop and community market typechecks from the root command', () => {
