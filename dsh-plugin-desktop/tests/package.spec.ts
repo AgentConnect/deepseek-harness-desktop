@@ -59,6 +59,10 @@ const workspaceManifest = JSON.parse(readFileSync(new URL('package.json', worksp
   scripts?: Record<string, unknown>
 }
 const ciWorkflow = readFileSync(new URL('.github/workflows/ci.yml', workspaceRoot), 'utf8')
+const desktopInstallersWorkflow = readFileSync(
+  new URL('.github/workflows/desktop-installers.yml', workspaceRoot),
+  'utf8',
+)
 const macosReleaseWorkflow = readFileSync(
   new URL('.github/workflows/macos-signed-release.yml', workspaceRoot),
   'utf8',
@@ -670,6 +674,27 @@ describe('published package surface', () => {
     expect(macosJob).toContain('run: yarn workspace dsh-plugin-desktop dist:mac-smoke')
     expect(macosJob).toContain('DSH_PACKAGE_CHECK_ALREADY_RAN: \'1\'')
     expect(macosJob).not.toContain('- run: yarn dist:mac-smoke')
+  })
+
+  it('reuses platform package gates in the installer artifact workflow', () => {
+    const macosJob = desktopInstallersWorkflow.slice(
+      desktopInstallersWorkflow.indexOf('  macos-universal:'),
+      desktopInstallersWorkflow.indexOf('  windows-x64:'),
+    )
+    const windowsJob = desktopInstallersWorkflow.slice(
+      desktopInstallersWorkflow.indexOf('  windows-x64:'),
+    )
+
+    expect(macosJob).not.toContain('- run: yarn check')
+    expect(macosJob).toContain('- run: yarn workspace dsh-plugin-desktop check:mac-package')
+    expect(macosJob).toContain('run: yarn workspace dsh-plugin-desktop dist:mac-smoke')
+    expect(macosJob).toContain('DSH_PACKAGE_CHECK_ALREADY_RAN: \'1\'')
+    expect(macosJob).not.toContain('run: yarn dist:mac-smoke')
+    expect(windowsJob).not.toContain('- run: yarn check')
+    expect(windowsJob).toContain('- run: yarn workspace dsh-plugin-desktop check:win-package')
+    expect(windowsJob).toContain('run: yarn workspace dsh-plugin-desktop dist:win')
+    expect(windowsJob).toContain('run: yarn workspace dsh-plugin-desktop dist:win-portable')
+    expect(windowsJob).toContain('DSH_PACKAGE_CHECK_ALREADY_RAN: \'1\'')
   })
 
   it('keeps macOS release credentials behind a manual protected environment', () => {
