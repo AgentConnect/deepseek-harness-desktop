@@ -1,0 +1,119 @@
+name: Desktop installers
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [master]
+    paths:
+      - '.github/workflows/desktop-installers.yml'
+      - '.yarn/**'
+      - '.yarnrc.yml'
+      - 'deepseek-harness'
+      - 'dsh-community-fabric/**'
+      - 'dsh-community-market/**'
+      - 'dsh-plugin-desktop/**'
+      - 'patches/**'
+      - 'scripts/**'
+      - 'package.json'
+      - 'yarn.lock'
+  push:
+    branches: [master]
+    paths:
+      - '.github/workflows/desktop-installers.yml'
+      - '.yarn/**'
+      - '.yarnrc.yml'
+      - 'deepseek-harness'
+      - 'dsh-community-fabric/**'
+      - 'dsh-community-market/**'
+      - 'dsh-plugin-desktop/**'
+      - 'patches/**'
+      - 'scripts/**'
+      - 'package.json'
+      - 'yarn.lock'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: desktop-installers-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DSH_TELEMETRY_DISABLED: '1'
+
+jobs:
+  macos-universal:
+    name: macOS universal DMG
+    runs-on: macos-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+          submodules: recursive
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22.23.2
+      - run: corepack enable
+      - name: Resolve Yarn cache folder
+        id: yarn-cache
+        run: echo "dir=$(yarn config get cacheFolder)" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@v6
+        with:
+          path: ${{ steps.yarn-cache.outputs.dir }}
+          key: yarn-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('yarn.lock', '.yarnrc.yml') }}
+      - run: yarn install --immutable
+      - name: Build and verify unsigned universal DMG
+        run: yarn dist:mac-smoke
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dsh-desktop-macos-universal-unsigned
+          path: dsh-plugin-desktop/dist/mac-smoke/*.dmg
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 14
+
+  windows-x64:
+    name: Windows x64 installer and portable archive
+    runs-on: windows-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+          submodules: recursive
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22.23.2
+      - run: corepack enable
+      - name: Resolve Yarn cache folder
+        id: yarn-cache
+        run: echo "dir=$(yarn config get cacheFolder)" >> "$env:GITHUB_OUTPUT"
+      - uses: actions/cache@v6
+        with:
+          path: ${{ steps.yarn-cache.outputs.dir }}
+          key: yarn-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('yarn.lock', '.yarnrc.yml') }}
+      - run: yarn install --immutable
+      - run: yarn check
+      - name: Build and verify unsigned NSIS installer
+        env:
+          DSH_PACKAGE_CHECK_ALREADY_RAN: '1'
+        run: yarn workspace dsh-plugin-desktop dist:win
+      - name: Build and verify unsigned portable archive
+        env:
+          DSH_PACKAGE_CHECK_ALREADY_RAN: '1'
+        run: yarn workspace dsh-plugin-desktop dist:win-portable
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dsh-desktop-windows-x64-installer-unsigned
+          path: dsh-plugin-desktop/dist/DSH-Desktop-*-x64-Setup.exe
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dsh-desktop-windows-x64-portable-unsigned
+          path: dsh-plugin-desktop/dist/DSH-Desktop-*-x64-Portable.zip
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 14
