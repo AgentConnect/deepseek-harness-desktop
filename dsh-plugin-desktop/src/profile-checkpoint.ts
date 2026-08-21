@@ -74,6 +74,8 @@ export interface ProfileCheckpointOptions {
   readonly maxFileBytes?: Partial<Record<DesktopProfileCheckpointFilename, number>>
   /** Clock injection for deterministic tests. */
   readonly now?: () => number
+  /** Filesystem permission model; production defaults to the current platform. */
+  readonly platform?: NodeJS.Platform
 }
 
 export interface ProfileCheckpointFileRecord {
@@ -188,20 +190,31 @@ function realDirectory(label: string, path: string): string {
   return absolute
 }
 
-function ensureDirectory(path: string): void {
+function hasExpectedMode(mode: number, expected: number, platform: NodeJS.Platform): boolean {
+  return platform === 'win32' || (mode & 0o777) === expected
+}
+
+function ensureDirectory(path: string, platform: NodeJS.Platform): void {
   mkdirSync(path, { recursive: true, mode: DIRECTORY_MODE })
   const item = lstatSync(path)
   if (!item.isDirectory() || item.isSymbolicLink()) fail(`checkpoint directory is not a real directory: ${path}`)
-  // chmod is intentional: an existing directory may have inherited a wider mode.
-  if ((item.mode & 0o777) !== DIRECTORY_MODE) {
+  // Windows reports synthetic POSIX mode bits; ACLs on the caller-owned
+  // profile and user-data roots are the authority there. On POSIX, chmod is
+  // intentional because an existing directory may have inherited a wider mode.
+  if (!hasExpectedMode(item.mode, DIRECTORY_MODE, platform)) {
     // The caller owns this private directory; narrowing it is safe and avoids
     // exposing a checkpoint through a permissive umask/previous installation.
     chmodSync(path, DIRECTORY_MODE)
   }
 }
 
-function writeDurable(path: string, bytes: Uint8Array, mode = FILE_MODE): void {
-  ensureDirectory(dirname(path))
+function writeDurable(
+  path: string,
+  bytes: Uint8Array,
+  platform: NodeJS.Platform,
+  mode = FILE_MODE,
+): void {
+  ensureDirectory(dirname(path), platform)
   const temporary = `${path}.${process.pid}.${randomUUID()}.tmp`
   let fd: number | undefined
   try {
@@ -224,9 +237,9 @@ function writeDurable(path: string, bytes: Uint8Array, mode = FILE_MODE): void {
   }
 }
 
-function readJson(path: string): unknown {
+function readJson(path: string, platform: NodeJS.Platform): unknown {
   const item = lstatSync(path)
-  if (!item.isFile() || item.isSymbolicLink() || (item.mode & 0o777) !== FILE_MODE) {
+  if (!item.isFile() || item.isSymbolicLink() || !hasExpectedMode(item.mode, FILE_MODE, platform)) {
     fail(`checkpoint file has unsafe type or mode: ${path}`)
   }
   return JSON.parse(readFileSync(path, 'utf8')) as unknown
@@ -266,6 +279,7 @@ export class DesktopProfileCheckpoint {
 
   private readonly limits: Record<DesktopProfileCheckpointFilename, number>
   private readonly now: () => number
+  private readonly platform: NodeJS.Platform
 
   constructor(options: ProfileCheckpointOptions) {
     const userData = options.userDataDir ?? options.userData
@@ -277,20 +291,21 @@ export class DesktopProfileCheckpoint {
     this.profileName = assertProfileName(options.profileName ?? 'desktop')
     this.provider = assertIdentifier('provider', options.provider ?? 'unknown')
     this.now = options.now ?? Date.now
+    this.platform = options.platform ?? process.platform
     this.limits = { ...FILE_LIMITS, ...(options.maxFileBytes ?? {}) }
     for (const name of DESKTOP_PROFILE_CHECKPOINT_FILES) {
       if (!Number.isSafeInteger(this.limits[name]) || this.limits[name] < 0) fail(`invalid size limit for ${name}`)
     }
     const profileKey = hash(this.profileIdentity)
     const root = join(this.userDataDir, SNAPSHOT_ROOT)
-    ensureDirectory(root)
+    ensureDirectory(root, this.platform)
     this.snapshotDirectory = join(root, profileKey, LATEST_DIRECTORY)
   }
 
   /** Capture the current healthy declarative profile state. */
   captureHealthy(): CaptureHealthyResult {
     this.recoverOrphanedLatest()
-    ensureDirectory(dirname(this.snapshotDirectory))
+    ensureDirectory(dirname(this.snapshotDirectory), this.platform)
     const current = this.readCurrentImages(true)
     const existing = this.readSnapshot(false)
     if (existing !== undefined && existing.manifest.profileIdentity === this.profileIdentity
@@ -307,7 +322,7 @@ export class DesktopProfileCheckpoint {
 
     const snapshotId = randomUUID()
     const staging = join(dirname(this.snapshotDirectory), `.staging-${process.pid}-${snapshotId}`)
-    ensureDirectory(staging)
+    ensureDirectory(staging, this.platform)
     try {
       const records: ProfileCheckpointFileRecord[] = []
       for (let index = 0; index < DESKTOP_PROFILE_CHECKPOINT_FILES.length; index += 1) {
@@ -317,9 +332,9 @@ export class DesktopProfileCheckpoint {
         if (image.present) {
           const source = filePath(this.profileDir, name)
           const destination = filePath(staging, name)
-          ensureDirectory(dirname(destination))
+          ensureDirectory(dirname(destination), this.platform)
           const bytes = readFileSync(source)
-          writeDurable(destination, bytes)
+          writeDurable(destination, bytes, this.platform)
         }
       }
       const manifest: ProfileCheckpointManifest = {
@@ -331,7 +346,11 @@ export class DesktopProfileCheckpoint {
         provider: this.provider,
         files: records,
       }
-      writeDurable(join(staging, MANIFEST_FILENAME), Buffer.from(`${JSON.stringify(manifest)}\n`, 'utf8'))
+      writeDurable(
+        join(staging, MANIFEST_FILENAME),
+        Buffer.from(`${JSON.stringify(manifest)}\n`, 'utf8'),
+        this.platform,
+      )
       if (existsSync(this.snapshotDirectory)) {
         const old = `${this.snapshotDirectory}.old-${randomUUID()}`
         renameSync(this.snapshotDirectory, old)
@@ -388,11 +407,15 @@ export class DesktopProfileCheckpoint {
     // Mark before touching the profile. If the process crashes during restore,
     // a retrying startup cannot loop forever; an explicit user request can use
     // a fresh generation token.
-    writeDurable(join(snapshot.directory, MARKER_FILENAME), Buffer.from(`${JSON.stringify({
-      version: VERSION,
-      failureGeneration: generation,
-      attemptedAt: new Date(this.now()).toISOString(),
-    } satisfies RestoreMarker)}\n`, 'utf8'))
+    writeDurable(
+      join(snapshot.directory, MARKER_FILENAME),
+      Buffer.from(`${JSON.stringify({
+        version: VERSION,
+        failureGeneration: generation,
+        attemptedAt: new Date(this.now()).toISOString(),
+      } satisfies RestoreMarker)}\n`, 'utf8'),
+      this.platform,
+    )
     for (let index = 0; index < DESKTOP_PROFILE_CHECKPOINT_FILES.length; index += 1) {
       const name = DESKTOP_PROFILE_CHECKPOINT_FILES[index]!
       const record = snapshot.manifest.files[index]!
@@ -404,7 +427,7 @@ export class DesktopProfileCheckpoint {
         // The complete-backup validation already checked this, but verify at
         // the point of use as well in case the filesystem changed in between.
         if (hash(bytes) !== record.sha256 || bytes.byteLength !== record.size) fail(`checkpoint changed during restore: ${name}`)
-        writeDurable(target, bytes, record.mode)
+        writeDurable(target, bytes, this.platform, record.mode)
       } else {
         try {
           const item = lstatSync(target)
@@ -453,7 +476,8 @@ export class DesktopProfileCheckpoint {
       const candidate = join(parent, name)
       try {
         const item = lstatSync(candidate)
-        if (!item.isDirectory() || item.isSymbolicLink() || (item.mode & 0o777) !== DIRECTORY_MODE) continue
+        if (!item.isDirectory() || item.isSymbolicLink()
+          || !hasExpectedMode(item.mode, DIRECTORY_MODE, this.platform)) continue
         renameSync(candidate, this.snapshotDirectory)
         return
       } catch (cause) {
@@ -465,7 +489,7 @@ export class DesktopProfileCheckpoint {
   private readMarker(directory: string): RestoreMarker | undefined {
     const path = join(directory, MARKER_FILENAME)
     try {
-      const value = readJson(path)
+      const value = readJson(path, this.platform)
       if (value === null || typeof value !== 'object' || Array.isArray(value)) fail('restore marker is invalid')
       const marker = value as Record<string, unknown>
       if (marker.version !== VERSION || typeof marker.failureGeneration !== 'string'
@@ -480,10 +504,11 @@ export class DesktopProfileCheckpoint {
   private readSnapshot(requireComplete: boolean): { readonly directory: string; readonly manifest: ProfileCheckpointManifest } | undefined {
     try {
       const directoryItem = lstatSync(this.snapshotDirectory)
-      if (!directoryItem.isDirectory() || directoryItem.isSymbolicLink() || (directoryItem.mode & 0o777) !== DIRECTORY_MODE) {
+      if (!directoryItem.isDirectory() || directoryItem.isSymbolicLink()
+        || !hasExpectedMode(directoryItem.mode, DIRECTORY_MODE, this.platform)) {
         fail('latest checkpoint directory has unsafe type or mode')
       }
-      const value = readJson(join(this.snapshotDirectory, MANIFEST_FILENAME))
+      const value = readJson(join(this.snapshotDirectory, MANIFEST_FILENAME), this.platform)
       if (value === null || typeof value !== 'object' || Array.isArray(value)) fail('checkpoint manifest is invalid')
       const object = value as Record<string, unknown>
       const files = object.files
@@ -503,7 +528,8 @@ export class DesktopProfileCheckpoint {
         const backup = filePath(this.snapshotDirectory, expected)
         if (item.present) {
           const backupItem = lstatSync(backup)
-          if (!backupItem.isFile() || backupItem.isSymbolicLink() || (backupItem.mode & 0o777) !== FILE_MODE) fail(`checkpoint backup is unsafe: ${expected}`)
+          if (!backupItem.isFile() || backupItem.isSymbolicLink()
+            || !hasExpectedMode(backupItem.mode, FILE_MODE, this.platform)) fail(`checkpoint backup is unsafe: ${expected}`)
           const bytes = readFileSync(backup)
           if (bytes.byteLength !== item.size || hash(bytes) !== item.sha256) fail(`checkpoint backup is incomplete: ${expected}`)
         } else if (existsSync(backup)) {

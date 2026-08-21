@@ -1,4 +1,5 @@
 import {
+  chmodSync,
   existsSync,
   lstatSync,
   mkdirSync,
@@ -90,6 +91,25 @@ describe('Desktop profile health checkpoint', () => {
     expect(() => oversized.checkpoint.captureHealthy()).toThrow('too large')
   })
 
+  it('keeps strict POSIX modes while accepting Windows ACL-backed mode bits', () => {
+    const posix = fixture({ platform: 'linux' })
+    posix.checkpoint.captureHealthy()
+    chmodSync(posix.checkpoint.snapshotDirectory, 0o755)
+    expect(() => posix.checkpoint.inspectRestore()).toThrow('unsafe type or mode')
+
+    const windows = fixture({ platform: 'win32' })
+    const captured = windows.checkpoint.captureHealthy()
+    chmodSync(windows.checkpoint.snapshotDirectory, 0o755)
+    chmodSync(join(windows.checkpoint.snapshotDirectory, 'manifest.json'), 0o644)
+    for (const file of captured.manifest.files) {
+      if (file.present) chmodSync(join(windows.checkpoint.snapshotDirectory, file.name), 0o644)
+    }
+    expect(windows.checkpoint.inspectRestore()).toMatchObject({
+      snapshotExists: true,
+      currentDiffers: false,
+    })
+  })
+
   it('publishes a complete atomic snapshot and deduplicates an unchanged healthy boot', () => {
     const target = fixture()
     const first = target.checkpoint.captureHealthy()
@@ -101,7 +121,9 @@ describe('Desktop profile health checkpoint', () => {
       expect.stringContaining('.tmp'),
       expect.stringContaining('.staging'),
     ]))
-    expect(lstatSync(join(target.checkpoint.snapshotDirectory, 'manifest.json')).mode & 0o777).toBe(0o600)
+    const manifest = lstatSync(join(target.checkpoint.snapshotDirectory, 'manifest.json'))
+    expect(manifest.isFile()).toBe(true)
+    if (process.platform !== 'win32') expect(manifest.mode & 0o777).toBe(0o600)
   })
 
   it('restores drift, removes files absent from the healthy image, and marks one failed generation', () => {
