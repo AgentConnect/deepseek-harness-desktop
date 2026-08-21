@@ -59,6 +59,10 @@ const workspaceManifest = JSON.parse(readFileSync(new URL('package.json', worksp
   scripts?: Record<string, unknown>
 }
 const ciWorkflow = readFileSync(new URL('.github/workflows/ci.yml', workspaceRoot), 'utf8')
+const desktopInstallersWorkflow = readFileSync(
+  new URL('.github/workflows/desktop-installers.yml', workspaceRoot),
+  'utf8',
+)
 const macosReleaseWorkflow = readFileSync(
   new URL('.github/workflows/macos-signed-release.yml', workspaceRoot),
   'utf8',
@@ -607,6 +611,7 @@ describe('published package surface', () => {
     expect(manifest.scripts?.['dist:mac-smoke']).toBe('node scripts/package-mac.ts')
     expect(manifest.scripts?.['dist:win']).toBe('node scripts/package-win.ts')
     expect(manifest.scripts?.['dist:win-portable']).toBe('node scripts/package-win-portable.ts')
+    expect(manifest.scripts?.['check:win-package']).toContain('yarn workspace dsh-community-market build')
     expect(manifest.scripts?.['check:win-package']).toContain('yarn run build')
     expect(manifest.scripts?.['check:win-package']).toContain('yarn run typecheck')
     expect(manifest.scripts?.['check:win-package']).toContain('tests/package-win.spec.ts')
@@ -615,7 +620,13 @@ describe('published package surface', () => {
     expect(manifest.scripts?.['check:win-package']).toContain('tests/update-download.spec.ts')
     expect(manifest.scripts?.['check:win-package']).toContain('tests/windows-volume-diagnostics.spec.ts')
     expect(manifest.scripts?.['check:win-package']).toContain('yarn run verify:closure')
-    expect(manifest.scripts?.['check:mac-package']).toBe('yarn run -T check')
+    expect(manifest.scripts?.['check:mac-package']).toContain('yarn workspace dsh-community-market build')
+    expect(manifest.scripts?.['check:mac-package']).toContain('yarn run build')
+    expect(manifest.scripts?.['check:mac-package']).toContain('yarn run typecheck')
+    expect(manifest.scripts?.['check:mac-package']).toContain('tests/package-mac.spec.ts')
+    expect(manifest.scripts?.['check:mac-package']).toContain('tests/verify-mac-smoke.spec.ts')
+    expect(manifest.scripts?.['check:mac-package']).toContain('tests/mac-universal.spec.ts')
+    expect(manifest.scripts?.['check:mac-package']).toContain('yarn run verify:closure')
     expect(manifest.scripts?.['verify:cli']).toBe('node scripts/verify-cli-runtime.mjs')
     expect(manifest.scripts?.check).toContain('yarn run verify:cli')
     expect(workspaceManifest.scripts?.['dist:mac'])
@@ -643,7 +654,7 @@ describe('published package surface', () => {
     expect(manifest.devDependencies?.['@electron/asar']).toBe('3.4.1')
   })
 
-  it('runs the full gate once before reusing native packaging outputs on Windows', () => {
+  it('runs platform package gates before reusing native packaging outputs', () => {
     const windowsJob = ciWorkflow.slice(
       ciWorkflow.indexOf('  desktop-windows:'),
       ciWorkflow.indexOf('  desktop-macos:'),
@@ -653,15 +664,37 @@ describe('published package surface', () => {
       ciWorkflow.indexOf('  upstream-command-windows:'),
     )
 
-    expect(windowsJob).toContain('- run: yarn check')
+    expect(windowsJob).not.toContain('- run: yarn check')
+    expect(windowsJob).toContain('- run: yarn workspace dsh-plugin-desktop check:win-package')
     expect(windowsJob).toContain('run: yarn workspace dsh-plugin-desktop dist:win')
     expect(windowsJob).toContain('run: yarn workspace dsh-plugin-desktop dist:win-portable')
     expect(windowsJob).toContain('DSH_PACKAGE_CHECK_ALREADY_RAN: \'1\'')
-    expect(macosJob).not.toContain('- run: yarn workspace dsh-community-market check')
-    expect(macosJob).toContain('- run: yarn check')
+    expect(macosJob).not.toContain('- run: yarn check')
+    expect(macosJob).toContain('- run: yarn workspace dsh-plugin-desktop check:mac-package')
     expect(macosJob).toContain('run: yarn workspace dsh-plugin-desktop dist:mac-smoke')
     expect(macosJob).toContain('DSH_PACKAGE_CHECK_ALREADY_RAN: \'1\'')
     expect(macosJob).not.toContain('- run: yarn dist:mac-smoke')
+  })
+
+  it('reuses platform package gates in the installer artifact workflow', () => {
+    const macosJob = desktopInstallersWorkflow.slice(
+      desktopInstallersWorkflow.indexOf('  macos-universal:'),
+      desktopInstallersWorkflow.indexOf('  windows-x64:'),
+    )
+    const windowsJob = desktopInstallersWorkflow.slice(
+      desktopInstallersWorkflow.indexOf('  windows-x64:'),
+    )
+
+    expect(macosJob).not.toContain('- run: yarn check')
+    expect(macosJob).toContain('- run: yarn workspace dsh-plugin-desktop check:mac-package')
+    expect(macosJob).toContain('run: yarn workspace dsh-plugin-desktop dist:mac-smoke')
+    expect(macosJob).toContain('DSH_PACKAGE_CHECK_ALREADY_RAN: \'1\'')
+    expect(macosJob).not.toContain('run: yarn dist:mac-smoke')
+    expect(windowsJob).not.toContain('- run: yarn check')
+    expect(windowsJob).toContain('- run: yarn workspace dsh-plugin-desktop check:win-package')
+    expect(windowsJob).toContain('run: yarn workspace dsh-plugin-desktop dist:win')
+    expect(windowsJob).toContain('run: yarn workspace dsh-plugin-desktop dist:win-portable')
+    expect(windowsJob).toContain('DSH_PACKAGE_CHECK_ALREADY_RAN: \'1\'')
   })
 
   it('keeps macOS release credentials behind a manual protected environment', () => {

@@ -63,8 +63,11 @@ jobs:
           path: ${{ steps.yarn-cache.outputs.dir }}
           key: yarn-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('yarn.lock', '.yarnrc.yml') }}
       - run: yarn install --immutable
+      - run: yarn workspace dsh-plugin-desktop check:mac-package
       - name: Build and verify unsigned universal DMG
-        run: yarn dist:mac-smoke
+        env:
+          DSH_PACKAGE_CHECK_ALREADY_RAN: '1'
+        run: yarn workspace dsh-plugin-desktop dist:mac-smoke
       - uses: actions/upload-artifact@v4
         with:
           name: dsh-desktop-macos-universal-unsigned
@@ -94,7 +97,7 @@ jobs:
           path: ${{ steps.yarn-cache.outputs.dir }}
           key: yarn-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('yarn.lock', '.yarnrc.yml') }}
       - run: yarn install --immutable
-      - run: yarn check
+      - run: yarn workspace dsh-plugin-desktop check:win-package
       - name: Build and verify unsigned NSIS installer
         env:
           DSH_PACKAGE_CHECK_ALREADY_RAN: '1'
