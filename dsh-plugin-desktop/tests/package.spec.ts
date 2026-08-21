@@ -59,6 +59,10 @@ const workspaceManifest = JSON.parse(readFileSync(new URL('package.json', worksp
   scripts?: Record<string, unknown>
 }
 const ciWorkflow = readFileSync(new URL('.github/workflows/ci.yml', workspaceRoot), 'utf8')
+const macosReleaseWorkflow = readFileSync(
+  new URL('.github/workflows/macos-signed-release.yml', workspaceRoot),
+  'utf8',
+)
 
 describe('published package surface', () => {
   it('runs desktop and community market typechecks from the root command', () => {
@@ -658,6 +662,29 @@ describe('published package surface', () => {
     expect(macosJob).toContain('run: yarn workspace dsh-plugin-desktop dist:mac-smoke')
     expect(macosJob).toContain('DSH_PACKAGE_CHECK_ALREADY_RAN: \'1\'')
     expect(macosJob).not.toContain('- run: yarn dist:mac-smoke')
+  })
+
+  it('keeps macOS release credentials behind a manual protected environment', () => {
+    expect(macosReleaseWorkflow).toContain('  workflow_dispatch:')
+    expect(macosReleaseWorkflow).not.toContain('pull_request:')
+    expect(macosReleaseWorkflow).not.toContain('pull_request_target:')
+    expect(macosReleaseWorkflow).not.toContain('push:')
+    expect(macosReleaseWorkflow).toContain('    environment: macos-release')
+    expect(macosReleaseWorkflow).toContain(
+      'APPLE_API_KEY_P8_BASE64: ${{ secrets.APPLE_API_KEY_P8_BASE64 }}',
+    )
+    expect(macosReleaseWorkflow).toContain(
+      'MAC_CERT_P12_BASE64: ${{ secrets.MAC_CERT_P12_BASE64 }}',
+    )
+    expect(macosReleaseWorkflow).toContain('CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}')
+    expect(macosReleaseWorkflow).toContain(
+      'MACOS_SIGN_IDENTITY: ${{ secrets.MACOS_SIGN_IDENTITY }}',
+    )
+    expect(macosReleaseWorkflow).toContain('APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}')
+    expect(macosReleaseWorkflow).toContain('APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}')
+    expect(macosReleaseWorkflow).toContain('run: yarn workspace dsh-plugin-desktop dist:mac')
+    expect(macosReleaseWorkflow).not.toContain('run: yarn dist:mac')
+    expect(macosReleaseWorkflow).toContain('path: dsh-plugin-desktop/dist/mac-release/*.dmg')
   })
 
   it('skips product packaging only for documentation-only changes', () => {
