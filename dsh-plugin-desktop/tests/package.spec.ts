@@ -68,8 +68,55 @@ const macosReleaseWorkflow = readFileSync(
   new URL('.github/workflows/macos-signed-release.yml', workspaceRoot),
   'utf8',
 )
+const desktopPrereleaseWorkflow = readFileSync(
+  new URL('.github/workflows/desktop-prerelease.yml', workspaceRoot),
+  'utf8',
+)
+const cliRuntimeVerifier = readFileSync(new URL('scripts/verify-cli-runtime.mjs', packageRoot), 'utf8')
+const loaderBootVerifier = readFileSync(new URL('scripts/verify-loader-boot.mjs', packageRoot), 'utf8')
+const profileBootVerifier = readFileSync(new URL('scripts/verify-profile-boot.mjs', packageRoot), 'utf8')
 
 describe('published package surface', () => {
+  it('ships the AWiki DSH rc2-compatible packages in a pre-release Desktop build', () => {
+    expect(workspaceManifest.version).toBe('2.1.0-rc.2')
+    expect(manifest.version).toBe('2.1.0-rc.2')
+    expect(manifest.dependencies).toMatchObject({
+      '@awiki/dsh-plugin': '0.3.1-rc.1',
+      '@awiki/dsh-model-proxy': '0.1.1-rc.1',
+      '@deepseek-ai/dsh-llm-deepseek': '0.1.1-rc.2',
+    })
+    expect(manifest.files).toEqual(expect.arrayContaining([
+      'AWIKI-COMMERCIAL-LICENSE.md',
+      'awiki-commercial-license.json',
+    ]))
+    expect(manifest.build?.asarUnpack).toEqual(expect.arrayContaining([
+      'AWIKI-COMMERCIAL-LICENSE.md',
+      'awiki-commercial-license.json',
+    ]))
+    expect(manifest.build?.files).toEqual(expect.arrayContaining([
+      'AWIKI-COMMERCIAL-LICENSE.md',
+      'awiki-commercial-license.json',
+    ]))
+    expect(manifest.build?.mac?.x64ArchFiles).toContain('@awiki/im-core-node-darwin-*/**')
+  })
+
+  it('isolates boot smoke checks from a running user AWiki state', () => {
+    expect(cliRuntimeVerifier).toContain("DSH_HOME: join(root, 'dsh-home')")
+    expect(loaderBootVerifier).toContain('process.env.DSH_HOME = home')
+    expect(profileBootVerifier).toContain('process.env.DSH_HOME = home')
+  })
+
+  it('publishes only an explicit GitHub pre-release after signed macOS and Windows builds', () => {
+    expect(desktopPrereleaseWorkflow).toContain('if [[ "$workspace_version" != *-* ]]')
+    expect(desktopPrereleaseWorkflow).toContain('needs: [validate, macos-universal-signed, windows-x64]')
+    expect(desktopPrereleaseWorkflow).toContain('--prerelease')
+    expect(desktopPrereleaseWorkflow).toContain('Refusing to replace existing tag')
+    expect(desktopPrereleaseWorkflow).toContain('Windows x64 installer and portable archive are currently unsigned')
+    expect(desktopPrereleaseWorkflow).toContain('target_path="DSH.Desktop-${RELEASE_VERSION}-universal.dmg"')
+    expect(desktopPrereleaseWorkflow).toContain("-name '* *'")
+    expect(desktopPrereleaseWorkflow).toContain('sha256sum * > SHA256SUMS.txt')
+  })
+
   it('runs desktop and community market typechecks from the root command', () => {
     expect(workspaceManifest.scripts?.typecheck)
       .toBe('yarn workspace dsh-plugin-desktop typecheck && yarn workspace dsh-community-market typecheck')
@@ -177,6 +224,21 @@ describe('published package surface', () => {
     ), 'utf8')
     expect(patch).toContain(marker)
     expect(installedBoot).toContain(marker)
+  })
+
+  it('applies the DeepSeek streaming tool-call patch to exact runtime dependencies', () => {
+    const patchPath = './patches/dsh-llm-deepseek@0.1.1-rc.2.patch'
+    expect(workspaceManifest.resolutions).toMatchObject({
+      '@deepseek-ai/dsh-llm-deepseek@npm:0.1.1-rc.2': expect.stringContaining(patchPath),
+      '@deepseek-ai/dsh-llm-deepseek@npm:^0.1.1-rc.2': expect.stringContaining(patchPath),
+    })
+    const patch = readFileSync(new URL(patchPath, workspaceRoot), 'utf8')
+    const installedRuntime = readFileSync(new URL(
+      'node_modules/@deepseek-ai/dsh-llm-deepseek/lib/index.js',
+      packageRoot,
+    ), 'utf8')
+    expect(patch).toContain('if (call.id) block.callId = call.id;')
+    expect(installedRuntime).toContain('if (call.id) block.callId = call.id;')
   })
 
   it('patches the browse panel with the Windows native-picker icon bridge', () => {
@@ -556,6 +618,8 @@ describe('published package surface', () => {
     expect(manifest.build?.appId).toBe('ai.deepseek.dsh.desktop')
     expect(manifest.build?.asarUnpack).toEqual([
       'package.json',
+      'AWIKI-COMMERCIAL-LICENSE.md',
+      'awiki-commercial-license.json',
       'cordis.patch.yml',
       'build/**',
       'lib/**',
@@ -575,6 +639,8 @@ describe('published package surface', () => {
       'build/app-icon-mac.png',
       'build/tray-icon.svg',
       'build/tray-icon*.png',
+      'AWIKI-COMMERCIAL-LICENSE.md',
+      'awiki-commercial-license.json',
       'cordis.patch.yml',
       'lib/**',
       'package.json',

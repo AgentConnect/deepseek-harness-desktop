@@ -2,9 +2,26 @@
 DSH Desktop distributes the following third-party packages inside its installers.
 Each package ships with its own license text in the application files; this list records
 the package names, versions, and licenses for transparency.
+## AWiki commercial license grant
+The following exact package set is authorized for target-specific DSH Desktop distributions under AWIKI-DSH-DESKTOP-2026-08-22.
+Each installer contains only the platform packages relevant to that target. The complete grant is shipped as AWIKI-COMMERCIAL-LICENSE.md.
+| Package | Authorized version | Upstream license |
+| --- | --- | --- |
+| @awiki/im-core-node | 0.1.6 | AGPL-3.0-only |
+| @awiki/im-core-node-darwin-arm64 | 0.1.6 | AGPL-3.0-only |
+| @awiki/im-core-node-darwin-x64 | 0.1.6 | AGPL-3.0-only |
+| @awiki/im-core-node-linux-arm64-gnu | 0.1.6 | AGPL-3.0-only |
+| @awiki/im-core-node-linux-x64-gnu | 0.1.6 | AGPL-3.0-only |
+| @awiki/im-core-node-win32-x64-msvc | 0.1.6 | AGPL-3.0-only |
+## Installed dependency inventory
 | Package | Version | License |
 | --- | --- | --- |
 | @anthropic-ai/sdk | 0.91.1 | MIT |
+| @awiki/dsh-model-proxy | 0.1.1-rc.1 | MIT |
+| @awiki/dsh-plugin | 0.3.1-rc.1 | MIT |
+| @awiki/im-core-node | 0.1.6 | AWiki Commercial License (AWIKI-DSH-DESKTOP-2026-08-22; upstream AGPL-3.0-only) |
+| @awiki/im-core-node-darwin-arm64 | 0.1.6 | AWiki Commercial License (AWIKI-DSH-DESKTOP-2026-08-22; upstream AGPL-3.0-only) |
+| @awiki/im-core-node-darwin-x64 | 0.1.6 | AWiki Commercial License (AWIKI-DSH-DESKTOP-2026-08-22; upstream AGPL-3.0-only) |
 | @aws-crypto/sha256-browser | 5.2.0 | Apache-2.0 |
 | @aws-crypto/sha256-js | 5.2.0 | Apache-2.0 |
 | @aws-crypto/supports-web-crypto | 5.2.0 | Apache-2.0 |

@@ -199,4 +199,4 @@ jobs:
             --title "DSH Desktop $RELEASE_VERSION" \
             --prerelease \
             --generate-notes \
-            --notes "This pre-release integrates @awiki/dsh-plugin@0.3.0 and @awiki/dsh-model-proxy@0.1.0 into the default Desktop profile. The macOS universal DMG is Developer ID signed, notarized, stapled, and verified for Apple Silicon and Intel. The Windows x64 installer and portable archive are currently unsigned pre-release artifacts."
+            --notes "This pre-release integrates @awiki/dsh-plugin@0.3.1-rc.1 and @awiki/dsh-model-proxy@0.1.1-rc.1, both aligned with DeepSeek Harness 0.1.1-rc.2, into the default Desktop profile. The macOS universal DMG is Developer ID signed, notarized, stapled, and verified for Apple Silicon and Intel. The Windows x64 installer and portable archive are currently unsigned pre-release artifacts."
