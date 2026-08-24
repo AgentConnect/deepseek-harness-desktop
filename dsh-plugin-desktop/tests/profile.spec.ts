@@ -183,6 +183,134 @@ describe('desktop profile composition', {
     ])
   })
 
+  it('marks legacy isolated Profile dependencies for one-time migration', () => {
+    const home = temporaryHome()
+    const dir = ensureDesktopProfile(home)
+    const modulesDir = join(dir, 'node_modules')
+    mkdirSync(modulesDir, { recursive: true })
+    writeFileSync(join(dir, 'pnpm-workspace.yaml'), `packages:
+  - .
+
+nodeLinker: isolated
+autoInstallPeers: true
+customSetting: preserved
+`)
+    writeFileSync(join(modulesDir, '.modules.yaml'), `layoutVersion: 5
+nodeLinker: isolated
+packageManager: pnpm@9.12.0
+`)
+    writeFileSync(join(dir, 'pnpm-lock.yaml'), `lockfileVersion: '9.0'
+settings:
+  autoInstallPeers: true
+`)
+
+    const prepared = prepareDesktopProfile(undefined, home, 'darwin')
+
+    expect(prepared.requiresDependencyMigration).toBe(true)
+    expect(readFileSync(join(dir, 'pnpm-workspace.yaml'), 'utf8')).toContain('nodeLinker: hoisted')
+    expect(readFileSync(join(dir, 'pnpm-workspace.yaml'), 'utf8')).toContain('autoInstallPeers: false')
+    expect(readFileSync(join(dir, 'pnpm-workspace.yaml'), 'utf8')).toContain('customSetting: preserved')
+  })
+
+  it('leaves an already-hoisted Profile dependency tree untouched', () => {
+    const home = temporaryHome()
+    const dir = ensureDesktopProfile(home)
+    const modulesDir = join(dir, 'node_modules')
+    mkdirSync(modulesDir, { recursive: true })
+    writeFileSync(join(modulesDir, '.modules.yaml'), `layoutVersion: 5
+nodeLinker: hoisted
+packageManager: pnpm@11.7.0
+virtualStoreDirMaxLength: 120
+`)
+
+    const prepared = prepareDesktopProfile(undefined, home, 'darwin')
+
+    expect(prepared.requiresDependencyMigration).toBe(false)
+  })
+
+  it('migrates a hoisted Profile dependency tree created by pnpm 9', () => {
+    const home = temporaryHome()
+    const dir = ensureDesktopProfile(home)
+    const modulesDir = join(dir, 'node_modules')
+    mkdirSync(modulesDir, { recursive: true })
+    writeFileSync(join(modulesDir, '.modules.yaml'), `layoutVersion: 5
+nodeLinker: hoisted
+packageManager: pnpm@9.12.0
+virtualStoreDirMaxLength: 120
+`)
+
+    const prepared = prepareDesktopProfile(undefined, home, 'darwin')
+
+    expect(prepared.requiresDependencyMigration).toBe(true)
+  })
+
+  it('keeps AWiki on one compatible source while an obsolete Profile layout is migrated', () => {
+    const home = temporaryHome()
+    const dir = ensureDesktopProfile(home)
+    installBundle(home, '@awiki/dsh-plugin', '- insert: []\n', '0.2.5')
+    const proxyDir = installBundle(home, '@awiki/dsh-model-proxy', '- insert: []\n', '0.2.0')
+    const proxyManifestPath = join(proxyDir, 'package.json')
+    const proxyManifest = JSON.parse(readFileSync(proxyManifestPath, 'utf8')) as Record<string, unknown>
+    writeFileSync(proxyManifestPath, JSON.stringify({
+      ...proxyManifest,
+      peerDependencies: { '@awiki/dsh-plugin': '^0.4.0' },
+    }) + '\n')
+    writeFileSync(join(dir, 'pnpm-workspace.yaml'), [
+      'packages:',
+      '  - .',
+      'nodeLinker: isolated',
+      'autoInstallPeers: true',
+      '',
+    ].join('\n'))
+
+    const prepared = prepareDesktopProfile(undefined, home, 'darwin')
+
+    expect(prepared.requiresDependencyMigration).toBe(true)
+    expect(prepared.awikiCompatibilityFallback).toMatchObject({
+      source: 'install',
+      rejectedPluginVersion: '0.3.1-rc.1',
+      rejectedModelProxyVersion: '0.2.0',
+    })
+    expect(Object.fromEntries(prepared.packageSourceOverrides)).toEqual({
+      '@awiki/dsh-plugin': 'install',
+      '@awiki/dsh-model-proxy': 'install',
+    })
+    expect(prepared.profile.layers.filter(layer => layer.packageName.startsWith('@awiki/'))
+      .every(layer => !layer.packageDir.startsWith(dir))).toBe(true)
+  })
+
+  it('migrates Windows Profile metadata created with the non-Windows virtual store limit', () => {
+    const home = temporaryHome()
+    const dir = ensureDesktopProfile(home)
+    const modulesDir = join(dir, 'node_modules')
+    mkdirSync(modulesDir, { recursive: true })
+    writeFileSync(join(modulesDir, '.modules.yaml'), `layoutVersion: 5
+nodeLinker: hoisted
+packageManager: pnpm@11.7.0
+virtualStoreDirMaxLength: 120
+`)
+
+    const prepared = prepareDesktopProfile(undefined, home, 'win32')
+
+    expect(prepared.requiresDependencyMigration).toBe(true)
+  })
+
+  it('leaves current Windows Profile dependency metadata untouched', () => {
+    const home = temporaryHome()
+    const dir = ensureDesktopProfile(home)
+    const modulesDir = join(dir, 'node_modules')
+    mkdirSync(modulesDir, { recursive: true })
+    writeFileSync(join(modulesDir, '.modules.yaml'), `layoutVersion: 5
+nodeLinker: hoisted
+packageManager: pnpm@11.7.0
+virtualStoreDirMaxLength: 60
+`)
+
+    const prepared = prepareDesktopProfile(undefined, home, 'win32')
+
+    expect(prepared.requiresDependencyMigration).toBe(false)
+  })
+
   it('rejects malformed persistent bundle metadata', () => {
     const home = temporaryHome()
     const dir = ensureDesktopProfile(home)
