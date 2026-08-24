@@ -165,6 +165,25 @@ describe('Desktop startup recovery document', () => {
     expect(html).toContain('安装前配置已恢复。请重新启动 Desktop。')
     expect(html).toContain('class="button primary" href="dsh-recovery://restart"')
   })
+
+  it('explains an AWiki version conflict without asking the user to delete the Profile', () => {
+    const html = renderDesktopStartupRecoveryHtml(viewModel({
+      terminalAvailable: true,
+      awikiCompatibilityIssue: {
+        pluginVersion: '0.2.5<script>',
+        modelProxyVersion: '0.1.2',
+        requiredPluginRange: '^0.3.1',
+      },
+    }))
+
+    expect(html).toContain('AWiki 插件版本不兼容')
+    expect(html).toContain('你的 Profile 不需要删除')
+    expect(html).toContain('同时升级两个 AWiki 插件')
+    expect(html).toContain('暂时禁用 Model Proxy')
+    expect(html).toContain('dsh-recovery://open-terminal')
+    expect(html).not.toContain('0.2.5<script>')
+    expect(html).toContain('0.2.5&lt;script&gt;')
+  })
 })
 
 describe('Desktop startup recovery diagnostics export', () => {

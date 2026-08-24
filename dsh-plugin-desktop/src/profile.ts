@@ -27,7 +27,17 @@ import FileSettingsProvider, {
 } from '@deepseek-ai/dsh-settings-file'
 import { parseDocument } from 'yaml'
 import { unpackedAsarPath } from './packaged-runtime-path.ts'
-import { findOverlayPackage, resolveOverlayPackage } from './package-overlay.ts'
+import {
+  findOverlayPackage,
+  resolveOverlayPackage,
+  type PackageOverlaySource,
+} from './package-overlay.ts'
+import {
+  AWIKI_MODEL_PROXY_PACKAGE,
+  AWIKI_PLUGIN_PACKAGE,
+  selectDesktopAwikiCompatibility,
+  type DesktopAwikiCompatibilityFallback,
+} from './awiki-package-compatibility.ts'
 import { DESKTOP_DEFAULT_WEB_PORT } from './desktop-port.ts'
 import type { DesktopShellMode } from './runtime.ts'
 import {
@@ -212,6 +222,10 @@ export interface PreparedDesktopProfile {
   market: DesktopMarketSnapshot
   /** Internal boot diagnostic when the requested provider was disabled. */
   marketFailure?: string
+  /** Generation-fixed overlay choices shared by Host and browser modules. */
+  packageSourceOverrides: ReadonlyMap<string, PackageOverlaySource>
+  /** Safe record when Desktop avoided an incompatible AWiki pair. */
+  awikiCompatibilityFallback?: DesktopAwikiCompatibilityFallback
 }
 
 /** Optional observations emitted before profile preparation can fail. */
@@ -279,6 +293,8 @@ export function ensureDesktopProfile(home: string = resolveDshHome()): string {
 interface RecoveryFilteredProfile {
   readonly profile: Profile
   readonly dshMarketFailure?: string
+  readonly packageSourceOverrides: ReadonlyMap<string, PackageOverlaySource>
+  readonly awikiCompatibilityFallback?: DesktopAwikiCompatibilityFallback
 }
 
 /** Render one provider failure without leaking an arbitrary thrown object into public state. */
@@ -324,6 +340,13 @@ function loadRecoveryFilteredProfile(
   let dshMarketFailure: string | undefined
   const installPackageUrl = pathToFileURL(INSTALL_ANCHOR).href
   const profilePackageUrl = pathToFileURL(join(profileDir, 'package.json')).href
+  const activeBundleNames = selectedBundles.filter(packageName =>
+    !desktopPluginBundleMutable(packageName) || !disabledBundles.has(packageName))
+  const awikiActive = activeBundleNames.includes(AWIKI_PLUGIN_PACKAGE)
+    && activeBundleNames.includes(AWIKI_MODEL_PROXY_PACKAGE)
+  const awikiCompatibility = awikiActive
+    ? selectDesktopAwikiCompatibility({ installPackageUrl, profilePackageUrl })
+    : { preferredSources: new Map<string, PackageOverlaySource>() }
   for (const packageName of selectedBundles) {
     const isDshMarket = packageName === DESKTOP_MARKET_IDENTITIES.dshMarket.packageName
     if (!isDshMarket && desktopPluginBundleMutable(packageName) && disabledBundles.has(packageName)) continue
@@ -331,6 +354,7 @@ function loadRecoveryFilteredProfile(
       const packageDir = resolveOverlayPackage(packageName, {
         installPackageUrl,
         profilePackageUrl,
+        preferredSources: awikiCompatibility.preferredSources,
       }).selected.packageDir
       const bundleManifest: unknown = JSON.parse(readFileSync(join(packageDir, 'package.json'), 'utf8'))
       if (isDshMarket && (bundleManifest === null || typeof bundleManifest !== 'object'
@@ -365,6 +389,10 @@ function loadRecoveryFilteredProfile(
       patchPath,
       patches: existsSync(patchPath) ? loadOverlayPatches(BIN_NAME, patchPath) : [],
     },
+    packageSourceOverrides: awikiCompatibility.preferredSources,
+    ...(awikiCompatibility.fallback === undefined
+      ? {}
+      : { awikiCompatibilityFallback: awikiCompatibility.fallback }),
     ...(dshMarketFailure === undefined ? {} : { dshMarketFailure }),
   }
 }
@@ -870,6 +898,10 @@ export function prepareDesktopProfile(
     settingsDocument,
     market: desktopMarketSnapshotWithEffective(marketSelection, effectiveMarket),
     ...(marketFailure === undefined ? {} : { marketFailure }),
+    packageSourceOverrides: loadedProfile.packageSourceOverrides,
+    ...(loadedProfile.awikiCompatibilityFallback === undefined
+      ? {}
+      : { awikiCompatibilityFallback: loadedProfile.awikiCompatibilityFallback }),
   }
 }
 

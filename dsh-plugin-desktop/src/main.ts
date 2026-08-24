@@ -101,6 +101,11 @@ import {
 } from './windows-volume-diagnostics.ts'
 import type { RendererBootReport } from './renderer-boot-contract.ts'
 import { desktopLocaleFromLanguageTag } from './tray-locale.ts'
+import {
+  DesktopAwikiCompatibilityError,
+  type DesktopAwikiCompatibilityFallback,
+  type DesktopAwikiCompatibilityIssue,
+} from './awiki-package-compatibility.ts'
 
 const BIN_NAME = 'dsh-plugin-desktop'
 const PRODUCT_NAME = 'DSH Desktop'
@@ -135,6 +140,46 @@ function notifyProfileRecovery(runtime: ElectronDesktopRuntime, logger: DesktopL
     runtime.updates.notify({ title: 'Unable to Open Profile', body })
   } catch (cause) {
     logger.error(`${BIN_NAME}: failed to show profile recovery notification: ${cause instanceof Error ? cause.message : String(cause)}`)
+  }
+}
+
+/** Explain the safe automatic AWiki fallback after the UI is healthy. */
+async function showAwikiCompatibilityFallbackNotice(
+  fallback: DesktopAwikiCompatibilityFallback,
+  locale: 'en' | 'zh',
+  logger: DesktopLogger,
+): Promise<void> {
+  const builtIn = fallback.source === 'install'
+  const copy = locale === 'zh'
+    ? {
+        title: '已自动处理 AWiki 插件版本冲突',
+        message: builtIn
+          ? '当前 Profile 中的 AWiki 插件版本不兼容，DSH Desktop 已安全使用 App 内置版本。'
+          : 'App 内置的 AWiki 插件组合不兼容，DSH Desktop 已安全使用 Profile 版本。',
+        detail: `本次运行使用 @awiki/dsh-plugin ${fallback.pluginVersion} 和 @awiki/dsh-model-proxy ${fallback.modelProxyVersion}，没有删除或覆盖 Profile。建议之后在 DSH Terminal 中同时升级这两个插件。`,
+        confirm: '知道了',
+      }
+    : {
+        title: 'AWiki plugin conflict handled safely',
+        message: builtIn
+          ? 'The AWiki versions in this Profile are incompatible. DSH Desktop is safely using the built-in pair.'
+          : 'The built-in AWiki pair is incompatible. DSH Desktop is safely using the Profile pair.',
+        detail: `This run uses @awiki/dsh-plugin ${fallback.pluginVersion} and @awiki/dsh-model-proxy ${fallback.modelProxyVersion}. The Profile was not deleted or overwritten. Upgrade both plugins together later from DSH Terminal.`,
+        confirm: 'OK',
+      }
+  try {
+    await dialog.showMessageBox({
+      type: 'warning',
+      title: copy.title,
+      message: copy.message,
+      detail: copy.detail,
+      buttons: [copy.confirm],
+      defaultId: 0,
+      cancelId: 0,
+      noLink: true,
+    })
+  } catch (cause) {
+    logger.error(`${BIN_NAME}: failed to show AWiki compatibility notice: ${cause instanceof Error ? cause.message : String(cause)}`)
   }
 }
 
@@ -391,6 +436,7 @@ async function start(): Promise<void> {
   const openStartupRecoveryWindow = async (
     failureDetail: string,
     controller: DesktopStartupRecoveryController | undefined,
+    awikiCompatibilityIssue?: DesktopAwikiCompatibilityIssue,
   ): Promise<'restart' | 'quit' | 'unavailable'> => {
     if (!app.isReady()) return 'unavailable'
     try {
@@ -402,6 +448,7 @@ async function start(): Promise<void> {
         locale: desktopLocaleFromLanguageTag(app.getLocale()),
         failureStage: startupStage,
         failureDetail: maskSecrets(failureDetail),
+        ...(awikiCompatibilityIssue === undefined ? {} : { awikiCompatibilityIssue }),
         exportDiagnostics: async signal => await exportDesktopDiagnostics(app.getPath('userData'), {
           appVersion,
           crashDumpsDir: app.getPath('crashDumps'),
@@ -772,7 +819,10 @@ async function start(): Promise<void> {
     }
     startupStage = 'host-boot'
     lifecycleRecorder.transitionStartupStage(startupStage)
-    const releasePackageResolver = installProfilePackageResolver(prepared.bareModuleBaseUrl)
+    const releasePackageResolver = installProfilePackageResolver(
+      prepared.bareModuleBaseUrl,
+      prepared.packageSourceOverrides,
+    )
     // Configure the launcher-owned terminal before Host boot so the native
     // recovery window can still open it when profile composition fails.
     runtime.configureTerminal({
@@ -1032,6 +1082,13 @@ async function start(): Promise<void> {
     lifecycleRecorder.completeStartup(startupStage, rendererReport)
     notifySkippedOptionalEntries(runtime, electronLogger, prepared.skippedOptionalEntries)
     notifyWindowsVolumeConcerns(runtime, electronLogger, windowsVolumeConcerns)
+    if (prepared.awikiCompatibilityFallback !== undefined) {
+      await showAwikiCompatibilityFallbackNotice(
+        prepared.awikiCompatibilityFallback,
+        desktopLocaleFromLanguageTag(app.getLocale()),
+        electronLogger,
+      )
+    }
     if (profileStartup.rolledBackFrom !== undefined) {
       notifyProfileRecovery(
         runtime,
@@ -1103,6 +1160,7 @@ async function start(): Promise<void> {
       const recoveryResult = await openStartupRecoveryWindow(
         detail,
         failureCommit.recoveryActionsSafe ? startupRecoveryController : undefined,
+        cause instanceof DesktopAwikiCompatibilityError ? cause.issue : undefined,
       )
       if (recoveryResult === 'restart') {
         nativeExit.requestRelaunch()
