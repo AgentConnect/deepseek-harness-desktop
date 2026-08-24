@@ -132,6 +132,24 @@ describe('Desktop package overlay', () => {
     expect(resolveOverlayPackage('plugin', installVersion.options).selected.source).toBe('install')
   })
 
+  it('honors one generation-fixed compatibility source and rejects a missing preferred side', () => {
+    const target = fixture()
+    installPackage(target.install, 'plugin', '1.0.0')
+    installPackage(target.profile, 'plugin', '2.0.0')
+
+    expect(resolveOverlayPackage('plugin', {
+      ...target.options,
+      preferredSources: new Map([['plugin', 'install']]),
+    }).selected).toMatchObject({ source: 'install', version: '1.0.0' })
+
+    const installOnly = fixture()
+    installPackage(installOnly.install, 'plugin', '1.0.0')
+    expect(() => resolveOverlayPackage('plugin', {
+      ...installOnly.options,
+      preferredSources: new Map([['plugin', 'profile']]),
+    })).toThrow('preferred profile package is unavailable')
+  })
+
   it('extracts scoped and unscoped roots without treating URLs as packages', () => {
     expect(packageNameFromSpecifier('@scope/plugin/subpath')).toBe('@scope/plugin')
     expect(packageNameFromSpecifier('plugin/subpath')).toBe('plugin')

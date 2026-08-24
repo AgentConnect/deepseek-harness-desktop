@@ -7,6 +7,7 @@ import { basename, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import type { DesktopLocale } from './runtime.ts'
 import { applicationNeedsReveal, revealApplication } from './electron-reveal.ts'
+import type { DesktopAwikiCompatibilityIssue } from './awiki-package-compatibility.ts'
 import {
   DesktopStartupRecoveryController,
   type DesktopStartupRecoveryDisablePreview,
@@ -60,6 +61,8 @@ export interface DesktopStartupRecoveryWindowOptions {
   readonly locale: DesktopLocale
   readonly failureStage: DesktopStartupFailureStage
   readonly failureDetail: string
+  /** Structured, renderer-safe AWiki conflict details. */
+  readonly awikiCompatibilityIssue?: DesktopAwikiCompatibilityIssue
   readonly exportDiagnostics: (signal: AbortSignal) => Promise<string>
   /** Open the launcher-owned terminal even when the Host did not start. */
   readonly openTerminal?: () => void | Promise<void>
@@ -173,6 +176,7 @@ export interface DesktopStartupRecoveryViewModel {
   readonly terminalAvailable?: boolean
   readonly profileCreatorAvailable?: boolean
   readonly rollbackLastKnownGoodAvailable?: boolean
+  readonly awikiCompatibilityIssue?: DesktopAwikiCompatibilityIssue
 }
 
 interface RecoveryCopy {
@@ -424,6 +428,10 @@ export function renderDesktopStartupRecoveryHtml(model: DesktopStartupRecoveryVi
   const profileHtml = model.profiles === undefined
     ? ''
     : `<section class="card"><h2>${escapeHtml(copy.currentProfile)}</h2><p>${escapeHtml(copy.lead)}</p>${profileRows.length === 0 ? '' : `<ul>${profileRows}</ul>`}<div class="actions">${model.profileCreatorAvailable ? button('Add Profile', 'open-profile-creator') : ''}</div></section>`
+  const awikiIssue = model.awikiCompatibilityIssue
+  const awikiCompatibilityHtml = awikiIssue === undefined ? '' : model.locale === 'zh'
+    ? `<section class="card notice warning"><h2>AWiki 插件版本不兼容</h2><p>当前选中的 <code>@awiki/dsh-model-proxy ${escapeHtml(awikiIssue.modelProxyVersion)}</code> 要求 <code>@awiki/dsh-plugin ${escapeHtml(awikiIssue.requiredPluginRange)}</code>，但实际选中的是 <code>${escapeHtml(awikiIssue.pluginVersion)}</code>。</p><p>你的 Profile 不需要删除。请在下方打开 DSH Terminal，同时升级两个 AWiki 插件；如果需要先进入 App，也可以在插件列表中暂时禁用 Model Proxy 后重启。</p></section>`
+    : `<section class="card notice warning"><h2>Incompatible AWiki plugin versions</h2><p>The selected <code>@awiki/dsh-model-proxy ${escapeHtml(awikiIssue.modelProxyVersion)}</code> requires <code>@awiki/dsh-plugin ${escapeHtml(awikiIssue.requiredPluginRange)}</code>, but <code>${escapeHtml(awikiIssue.pluginVersion)}</code> was selected.</p><p>You do not need to delete the Profile. Open DSH Terminal below and upgrade both AWiki plugins together, or temporarily disable Model Proxy in the plugin list and restart.</p></section>`
   const terminalAction = model.terminalAvailable ? button('Open DSH Terminal', 'open-terminal') : ''
   const rollbackAction = model.rollbackLastKnownGoodAvailable && model.profileActionToken !== undefined
     ? button('Restore last successful Profile', 'rollback-last-known-good', model.profileActionToken, true)
@@ -433,7 +441,7 @@ export function renderDesktopStartupRecoveryHtml(model: DesktopStartupRecoveryVi
     : ''
   const body = confirmation.length > 0
     ? confirmation
-    : `${pendingHtml}${bundlesHtml}${profileHtml}${configurationHtml}<section class="card"><h2>${escapeHtml(copy.diagnostics)}</h2><p>${escapeHtml(diagnosticsText)}</p>${model.diagnostics.filename === undefined ? '' : `<p><code>${escapeHtml(model.diagnostics.filename)}</code></p>`}<p class="muted">${escapeHtml(copy.privacy)}</p><div class="actions">${diagnosticAction}${terminalAction}${rollbackAction}</div></section>`
+    : `${awikiCompatibilityHtml}${pendingHtml}${bundlesHtml}${profileHtml}${configurationHtml}<section class="card"><h2>${escapeHtml(copy.diagnostics)}</h2><p>${escapeHtml(diagnosticsText)}</p>${model.diagnostics.filename === undefined ? '' : `<p><code>${escapeHtml(model.diagnostics.filename)}</code></p>`}<p class="muted">${escapeHtml(copy.privacy)}</p><div class="actions">${diagnosticAction}${terminalAction}${rollbackAction}</div></section>`
   return `<!doctype html>
 <html lang="${model.locale === 'zh' ? 'zh-CN' : 'en'}">
 <head>
@@ -777,6 +785,9 @@ export class DesktopStartupRecoveryWindow {
       locale: this.options.locale,
       failureStage: this.options.failureStage,
       failureDetail: this.options.failureDetail,
+      ...(this.options.awikiCompatibilityIssue === undefined
+        ? {}
+        : { awikiCompatibilityIssue: this.options.awikiCompatibilityIssue }),
       ...(this.snapshot === undefined ? {} : { snapshot: this.snapshot }),
       ...(this.snapshotError === undefined ? {} : { snapshotError: this.snapshotError }),
       diagnostics: this.diagnostics,

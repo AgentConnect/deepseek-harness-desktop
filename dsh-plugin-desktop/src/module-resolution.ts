@@ -7,6 +7,7 @@ import {
   findOverlayPackage,
   packageNameFromSpecifier,
   resolveOverlayPackage,
+  type PackageOverlaySource,
 } from './package-overlay.ts'
 
 const LOADER_ENTRY_URL = import.meta.resolve('@deepseek-ai/cordis-plugin-loader')
@@ -43,7 +44,10 @@ function isBareSpecifier(specifier: string): boolean {
  * @param profileBaseUrl - file URL inside the profile that owns plugin dependencies.
  * @returns an idempotent hook disposer.
  */
-export function installProfilePackageResolver(profileBaseUrl: string): () => void {
+export function installProfilePackageResolver(
+  profileBaseUrl: string,
+  preferredSources?: ReadonlyMap<string, PackageOverlaySource>,
+): () => void {
   const profileManifestPath = fileURLToPath(profileBaseUrl)
 
   // ClientModuleRegistry intentionally uses createRequire(ctx.baseUrl) to
@@ -69,6 +73,7 @@ export function installProfilePackageResolver(profileBaseUrl: string): () => voi
       const overlay = findOverlayPackage(packageName, {
         installPackageUrl: DESKTOP_PACKAGE_URL,
         profilePackageUrl: profileBaseUrl,
+        ...(preferredSources === undefined ? {} : { preferredSources }),
       })
       if (overlay !== undefined) return overlay.selected.manifestPath
     }
@@ -86,6 +91,7 @@ export function installProfilePackageResolver(profileBaseUrl: string): () => voi
         const overlay = resolveOverlayPackage(packageName, {
           installPackageUrl: DESKTOP_PACKAGE_URL,
           profilePackageUrl: profileBaseUrl,
+          ...(preferredSources === undefined ? {} : { preferredSources }),
         })
         const resolved = nextResolve(specifier, {
           ...context,

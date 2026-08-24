@@ -31,6 +31,8 @@ export interface PackageOverlayOptions {
   readonly installPackageUrl: string
   /** File URL for the active Profile package.json. */
   readonly profilePackageUrl: string
+  /** Generation-fixed source choices for compatibility groups. */
+  readonly preferredSources?: ReadonlyMap<string, PackageOverlaySource>
 }
 
 export class PackageOverlayNotFoundError extends Error {
@@ -119,7 +121,14 @@ export function findOverlayPackage(
     return { packageName, selected: install, install }
   }
   if (install === undefined && profile === undefined) return
-  const selected = install === undefined
+  const preferredSource = options.preferredSources?.get(packageName)
+  const preferred = preferredSource === 'install' ? install
+    : preferredSource === 'profile' ? profile
+      : undefined
+  if (preferredSource !== undefined && preferred === undefined) {
+    throw new Error(`${BIN_NAME}: preferred ${preferredSource} package is unavailable for ${packageName}`)
+  }
+  const selected = preferred ?? (install === undefined
     ? profile!
     : profile === undefined
       ? install
@@ -127,7 +136,7 @@ export function findOverlayPackage(
       // Desktop copy as the deterministic tie-break. A missing or non-SemVer
       // version on either side is not comparable and also keeps Desktop.
       : profile.version !== undefined && install.version !== undefined
-        && compare(profile.version, install.version) > 0 ? profile : install
+        && compare(profile.version, install.version) > 0 ? profile : install)
   return {
     packageName,
     selected,
