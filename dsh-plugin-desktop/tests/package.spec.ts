@@ -78,8 +78,8 @@ const profileBootVerifier = readFileSync(new URL('scripts/verify-profile-boot.mj
 
 describe('published package surface', () => {
   it('ships the AWiki DSH rc2-compatible packages in a pre-release Desktop build', () => {
-    expect(workspaceManifest.version).toBe('2.1.0-rc.2')
-    expect(manifest.version).toBe('2.1.0-rc.2')
+    expect(workspaceManifest.version).toBe('2.1.0-rc.3')
+    expect(manifest.version).toBe('2.1.0-rc.3')
     expect(manifest.dependencies).toMatchObject({
       '@awiki/dsh-plugin': '0.3.1-rc.1',
       '@awiki/dsh-model-proxy': '0.1.1-rc.1',
