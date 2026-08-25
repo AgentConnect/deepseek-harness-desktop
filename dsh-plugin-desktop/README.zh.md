@@ -121,6 +121,13 @@ dsh plugin update
 
 显式 `--profile <name>` 始终具有更高优先级，可用于在切换前准备其他 profile。
 
+Desktop 设置页还为内置的 `@awiki/dsh-plugin` 与 `@awiki/dsh-model-proxy` 组合提供了
+**AWiki 插件更新**区域。手动检查只会访问 npm 官方 Registry，选择 peer range 兼容的稳定
+版本，并遵守 24 小时发布观察期。点击**升级插件并重启**后，Desktop 会使用精确版本和
+一次性预览凭证，在修改 dependency 前停止 Host，并复用安装恢复快照；安装或兼容检查失败时
+会恢复原 Profile。应用内置组合继续作为离线兜底，因此普通 AWiki 插件发布不再要求重新发布
+Desktop installer。
+
 `dshmarket@1.2.3` 尚未预装，也不是 DSH Desktop 的 dependency。该版本仍从 config/argv 解析 profile，并通过私有 child-process 代码启动 `dsh plugin`；它既不读取 `desktopProfiles`，也不使用 `desktopPnpm`，package exports 也没有 runner injection seam。后续兼容版本必须动态探测 Desktop service，同时在普通 DSH 中保留现有 CLI fallback。此外，`1.2.3` 的源码仓库与 npm tarball 均未包含完整 MIT 许可文本或版权通知，因此该版本尚未通过内置再分发 gate。用户主动安装第三方 package 与 Desktop 将其嵌入 application archive 或 installer 是两个独立边界。
 
 Required injection、可选 Desktop 适配、TypeScript 示例、cancellation 与 fallback 指南详见[面向插件作者的 service 文档](docs/plugin-services.zh.md)。

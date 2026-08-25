@@ -6,6 +6,8 @@ import DesktopSettingsController, {
   type DesktopSettingsControllerBootstrap,
 } from '../src/desktop-settings-controller.ts'
 import {
+  handleDesktopAwikiUpdateApplyRequest,
+  handleDesktopAwikiUpdateCheckRequest,
   handleDesktopDiagnosticsExportRequest,
   handleDesktopMarketSelectRequest,
   handleDesktopProfileCreateRequest,
@@ -74,6 +76,14 @@ function bootstrap(
     openProfileCreator: () => {},
     prepareProfileRollback: () => ({
       response: { accepted: true, restartRequired: true, targetProfile: 'desktop' },
+    }),
+    checkAwikiUpdate: async () => ({
+      status: 'up-to-date',
+      current: { pluginVersion: '0.3.3', modelProxyVersion: '0.1.2' },
+      target: { pluginVersion: '0.3.3', modelProxyVersion: '0.1.2' },
+    }),
+    prepareAwikiUpgrade: () => ({
+      response: { accepted: true, restartRequired: true },
     }),
     ...overrides,
   }
@@ -300,6 +310,61 @@ describe('desktop settings controller', () => {
     expect(openProfileCreator).toHaveBeenCalledOnce()
     expect(prepareProfileRollback).toHaveBeenCalledOnce()
   })
+
+  it('mints a one-shot AWiki update preview and defers installation until after response', async () => {
+    const afterResponse = vi.fn()
+    const prepareAwikiUpgrade = vi.fn(() => ({
+      response: { accepted: true as const, restartRequired: true as const },
+      afterResponse,
+    }))
+    const controller = new DesktopSettingsController(bootstrap({
+      checkAwikiUpdate: async () => ({
+        status: 'available',
+        current: { pluginVersion: '0.3.2', modelProxyVersion: '0.1.2' },
+        target: { pluginVersion: '0.3.3', modelProxyVersion: '0.1.2' },
+      }),
+      prepareAwikiUpgrade,
+    }))
+
+    const preview = await controller.checkAwikiUpdate()
+    expect(preview).toMatchObject({
+      status: 'available',
+      current: { pluginVersion: '0.3.2', modelProxyVersion: '0.1.2' },
+      target: { pluginVersion: '0.3.3', modelProxyVersion: '0.1.2' },
+    })
+    if (preview.status !== 'available') throw new Error('expected update preview')
+    expect(preview.previewId).toMatch(/^[A-Za-z0-9_-]{43}$/u)
+
+    const operation = controller.applyAwikiUpdate(preview.previewId)
+    expect(operation.response).toEqual({ accepted: true, restartRequired: true })
+    expect(prepareAwikiUpgrade).toHaveBeenCalledWith(preview.current, preview.target)
+    expect(afterResponse).not.toHaveBeenCalled()
+    operation.afterResponse?.()
+    expect(afterResponse).toHaveBeenCalledOnce()
+    expect(() => controller.applyAwikiUpdate(preview.previewId)).toThrow('expired or was already used')
+  })
+
+  it('expires an AWiki update preview without preparing any mutation', async () => {
+    let now = 1_000
+    const prepareAwikiUpgrade = vi.fn(() => ({
+      response: { accepted: true as const, restartRequired: true as const },
+    }))
+    const controller = new DesktopSettingsController(bootstrap({
+      now: () => now,
+      checkAwikiUpdate: async () => ({
+        status: 'available',
+        current: { pluginVersion: '0.3.2', modelProxyVersion: '0.1.2' },
+        target: { pluginVersion: '0.3.3', modelProxyVersion: '0.1.2' },
+      }),
+      prepareAwikiUpgrade,
+    }))
+    const preview = await controller.checkAwikiUpdate()
+    if (preview.status !== 'available') throw new Error('expected update preview')
+    now += 5 * 60 * 1000
+
+    expect(() => controller.applyAwikiUpdate(preview.previewId)).toThrow('expired or was already used')
+    expect(prepareAwikiUpgrade).not.toHaveBeenCalled()
+  })
 })
 
 describe('desktop settings HTTP boundary', () => {
@@ -511,6 +576,42 @@ describe('desktop settings HTTP boundary', () => {
       expect(rejected.statusCode).toBe(req.headers.origin === ORIGIN ? 400 : 403)
     }
     expect(openTerminal).toHaveBeenCalledOnce()
+  })
+
+  it('checks AWiki updates and applies only the exact one-shot preview after response', async () => {
+    const afterResponse = vi.fn()
+    const controller = new DesktopSettingsController(bootstrap({
+      checkAwikiUpdate: async () => ({
+        status: 'available',
+        current: { pluginVersion: '0.3.2', modelProxyVersion: '0.1.2' },
+        target: { pluginVersion: '0.3.3', modelProxyVersion: '0.1.2' },
+      }),
+      prepareAwikiUpgrade: () => ({
+        response: { accepted: true, restartRequired: true },
+        afterResponse,
+      }),
+    }))
+    const checkResponse = response()
+    await handleDesktopAwikiUpdateCheckRequest(jsonRequest({}), checkResponse, ORIGIN, controller)
+    expect(checkResponse.statusCode).toBe(200)
+    const preview = JSON.parse(checkResponse.body) as { previewId: string }
+    expect(preview.previewId).toMatch(/^[A-Za-z0-9_-]{43}$/u)
+
+    const applyResponse = response()
+    await handleDesktopAwikiUpdateApplyRequest(
+      jsonRequest({ previewId: preview.previewId }), applyResponse, ORIGIN, controller,
+    )
+    expect(applyResponse.statusCode).toBe(202)
+    expect(JSON.parse(applyResponse.body)).toEqual({ accepted: true, restartRequired: true })
+    expect(afterResponse).not.toHaveBeenCalled()
+    await new Promise<void>(resolve => { setImmediate(resolve) })
+    expect(afterResponse).toHaveBeenCalledOnce()
+
+    const reused = response()
+    await handleDesktopAwikiUpdateApplyRequest(
+      jsonRequest({ previewId: preview.previewId }), reused, ORIGIN, controller,
+    )
+    expect(reused.statusCode).toBe(409)
   })
 
   it('exports diagnostics, opens the native creator, and starts rollback only after response', async () => {

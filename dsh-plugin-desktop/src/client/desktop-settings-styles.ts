@@ -34,6 +34,24 @@ const CSS = `
   border-top: 1px solid var(--dsw-alias-border-l1);
 }
 .dshDesktopSettingsList { display: grid; gap: 8px; }
+.dshDesktopSettingsAwikiCard {
+  display: grid;
+  gap: 10px;
+  padding: 13px 14px;
+  border: 1px solid var(--dsw-alias-border-l1);
+  border-radius: 10px;
+  background: var(--dsw-alias-bg-layer-1);
+}
+.dshDesktopSettingsAwikiVersions {
+  display: grid;
+  grid-template-columns: minmax(110px, auto) minmax(0, 1fr);
+  gap: 5px 14px;
+  align-items: baseline;
+  font-size: 12px;
+}
+.dshDesktopSettingsAwikiVersions > span { color: var(--dsw-alias-label-secondary); }
+.dshDesktopSettingsAwikiVersions > code { overflow-wrap: anywhere; }
+.dshDesktopSettingsActions { display: flex; flex-wrap: wrap; gap: 8px; }
 .dshDesktopSettingsChoice,
 .dshDesktopSettingsToggleRow {
   display: flex;
