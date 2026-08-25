@@ -46,6 +46,65 @@ type Translate = DesktopSettingsSectionProps['t']
 type BusyOperation = 'load' | 'create-profile' | 'select-profile' | 'delete-profile' | 'select-market' | 'check-awiki-update' | 'apply-awiki-update' | 'mode' | 'notification'
 type RestartState = 'none' | 'restarting' | 'required'
 
+const AWIKI_PACKAGES = [
+  { nameKey: 'awikiPluginName', packageName: '@awiki/dsh-plugin', versionKey: 'pluginVersion' },
+  { nameKey: 'awikiModelProxyName', packageName: '@awiki/dsh-model-proxy', versionKey: 'modelProxyVersion' },
+] as const
+
+export function DesktopAwikiUpdateResult({ update, t }: { readonly update: DesktopAwikiUpdateView; readonly t: Translate }) {
+  return (
+    <div className="dshDesktopSettingsAwikiCard">
+      {update.status === 'up-to-date' && (
+        <p className="dshDesktopSettingsSuccess" role="status">{t('awikiUpToDate')}</p>
+      )}
+      {update.status === 'cooling-down' && (
+        <p className="dshDesktopSettingsNotice" role="status">
+          {t('awikiCoolingDown')} <time dateTime={update.availableAt}>{new Date(update.availableAt).toLocaleString()}</time>
+        </p>
+      )}
+      {update.status === 'available' && (
+        <p className="dshDesktopSettingsNotice" role="status">{t('awikiUpdateAvailable')}</p>
+      )}
+      <div className="dshDesktopSettingsAwikiTableWrap">
+        <table className="dshDesktopSettingsAwikiTable">
+          <thead>
+            <tr>
+              <th scope="col">{t('awikiPackage')}</th>
+              <th scope="col">{t('awikiCurrentVersion')}</th>
+              <th scope="col">{t('awikiTargetVersion')}</th>
+              <th scope="col">{t('awikiUpdateStatus')}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {AWIKI_PACKAGES.map(({ nameKey, packageName, versionKey }) => {
+              const current = update.current[versionKey] ?? t('notInstalled')
+              const target = update.target[versionKey]
+              const changed = current !== target
+              return (
+                <tr key={packageName}>
+                  <th scope="row">
+                    <span>{t(nameKey)}</span>
+                    <code>{packageName}</code>
+                  </th>
+                  <td><code>{current}</code></td>
+                  <td>{changed ? <code>{target}</code> : <span aria-hidden="true">—</span>}</td>
+                  <td>
+                    <span className={`dshDesktopSettingsAwikiBadge${changed ? ' dshDesktopSettingsAwikiBadgeUpdate' : ''}`}>
+                      {changed
+                        ? update.status === 'cooling-down' ? t('awikiWaiting') : t('awikiReady')
+                        : t('awikiLatest')}
+                    </span>
+                  </td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
 function useScope<T>(scope: SettingsScope<T>) {
   const subscribe = useCallback((listener: () => void) => scope.subscribe(listener), [scope])
   const snapshot = useCallback(() => scope.getSnapshot(), [scope])
@@ -428,33 +487,7 @@ export function DesktopSettingsSection({
           <p className="dshDesktopSettingsGroupIntro">{t('awikiUpdateIntro')}</p>
         </div>
         {awikiCheckFailed && <p className="dshDesktopSettingsError" role="alert">{t('awikiUpdateCheckFailed')}</p>}
-        {awikiUpdate !== undefined && (
-          <div className="dshDesktopSettingsAwikiCard">
-            <div className="dshDesktopSettingsAwikiVersions">
-              <span>{t('awikiCurrentVersions')}</span>
-              <code>@awiki/dsh-plugin {awikiUpdate.current.pluginVersion ?? t('notInstalled')}</code>
-              <code>@awiki/dsh-model-proxy {awikiUpdate.current.modelProxyVersion ?? t('notInstalled')}</code>
-              {awikiUpdate.status !== 'up-to-date' && (
-                <>
-                  <span>{t('awikiTargetVersions')}</span>
-                  <code>@awiki/dsh-plugin {awikiUpdate.target.pluginVersion}</code>
-                  <code>@awiki/dsh-model-proxy {awikiUpdate.target.modelProxyVersion}</code>
-                </>
-              )}
-            </div>
-            {awikiUpdate.status === 'up-to-date' && (
-              <p className="dshDesktopSettingsSuccess" role="status">{t('awikiUpToDate')}</p>
-            )}
-            {awikiUpdate.status === 'cooling-down' && (
-              <p className="dshDesktopSettingsNotice" role="status">
-                {t('awikiCoolingDown')} <time dateTime={awikiUpdate.availableAt}>{new Date(awikiUpdate.availableAt).toLocaleString()}</time>
-              </p>
-            )}
-            {awikiUpdate.status === 'available' && (
-              <p className="dshDesktopSettingsNotice" role="status">{t('awikiUpdateAvailable')}</p>
-            )}
-          </div>
-        )}
+        {awikiUpdate !== undefined && <DesktopAwikiUpdateResult update={awikiUpdate} t={t} />}
         <div className="dshDesktopSettingsActions">
           <button
             type="button"
@@ -462,7 +495,9 @@ export function DesktopSettingsSection({
             disabled={busy !== undefined || restart !== 'none'}
             onClick={checkAwikiUpdate}
           >
-            {busy === 'check-awiki-update' ? t('checkingAwikiUpdate') : t('checkAwikiUpdate')}
+            {busy === 'check-awiki-update'
+              ? t('checkingAwikiUpdate')
+              : awikiUpdate === undefined ? t('checkAwikiUpdate') : t('recheckAwikiUpdate')}
           </button>
           {awikiUpdate?.status === 'available' && (
             <button

@@ -42,15 +42,52 @@ const CSS = `
   border-radius: 10px;
   background: var(--dsw-alias-bg-layer-1);
 }
-.dshDesktopSettingsAwikiVersions {
-  display: grid;
-  grid-template-columns: minmax(110px, auto) minmax(0, 1fr);
-  gap: 5px 14px;
-  align-items: baseline;
+.dshDesktopSettingsAwikiTableWrap { overflow-x: auto; }
+.dshDesktopSettingsAwikiTable {
+  width: 100%;
+  border-collapse: collapse;
   font-size: 12px;
+  line-height: 1.45;
 }
-.dshDesktopSettingsAwikiVersions > span { color: var(--dsw-alias-label-secondary); }
-.dshDesktopSettingsAwikiVersions > code { overflow-wrap: anywhere; }
+.dshDesktopSettingsAwikiTable th,
+.dshDesktopSettingsAwikiTable td {
+  padding: 10px 8px;
+  border-bottom: 1px solid var(--dsw-alias-border-l1);
+  text-align: left;
+  vertical-align: middle;
+}
+.dshDesktopSettingsAwikiTable thead th {
+  padding-top: 2px;
+  color: var(--dsw-alias-label-secondary);
+  font-weight: 500;
+  white-space: nowrap;
+}
+.dshDesktopSettingsAwikiTable tbody tr:last-child > * { border-bottom: 0; }
+.dshDesktopSettingsAwikiTable tbody th { min-width: 150px; font-weight: 500; }
+.dshDesktopSettingsAwikiTable tbody th > span,
+.dshDesktopSettingsAwikiTable tbody th > code { display: block; }
+.dshDesktopSettingsAwikiTable tbody th > code {
+  margin-top: 2px;
+  color: var(--dsw-alias-label-secondary);
+  font-size: 10px;
+  font-weight: 400;
+  overflow-wrap: anywhere;
+}
+.dshDesktopSettingsAwikiTable td code { white-space: nowrap; }
+.dshDesktopSettingsAwikiBadge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: var(--dsw-alias-bg-layer-2);
+  color: var(--dsw-alias-label-secondary);
+  white-space: nowrap;
+}
+.dshDesktopSettingsAwikiBadgeUpdate {
+  color: var(--dsw-alias-label-primary);
+  font-weight: 500;
+}
 .dshDesktopSettingsActions { display: flex; flex-wrap: wrap; gap: 8px; }
 .dshDesktopSettingsChoice,
 .dshDesktopSettingsToggleRow {
