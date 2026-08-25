@@ -121,6 +121,14 @@ dsh plugin update
 
 An explicit `--profile <name>` remains authoritative and is useful for preparing another profile before selecting it.
 
+The Desktop settings page also provides an **AWiki plugin updates** section for the bundled
+`@awiki/dsh-plugin` and `@awiki/dsh-model-proxy` pair. A manual check reads only the official npm
+Registry, selects stable releases whose peer ranges are compatible, and honors a 24-hour release
+age window. **Upgrade Plugins and Restart** uses exact versions and a one-shot preview, stops the
+Host before changing dependencies, and reuses the install recovery snapshot so a failed install or
+compatibility check restores the previous Profile. The application bundle remains the offline
+fallback; ordinary AWiki plugin releases do not require another Desktop installer release.
+
 `dshmarket@1.2.3` is not preinstalled and is not a dependency of DSH Desktop. That release still resolves a profile from config/argv and starts `dsh plugin` through private child-process code; it neither reads `desktopProfiles` nor uses `desktopPnpm`, and its package exports no runner injection seam. A later compatible release must detect the Desktop services dynamically and retain its existing CLI fallback under ordinary DSH. In addition, the `1.2.3` source repository and npm tarball contain no complete MIT license text or copyright notice, so that version does not pass the bundled-redistribution gate. User-directed installation of a third-party package is separate from Desktop embedding it in the application archive or installer.
 
 See [Plugin services for authors](docs/plugin-services.md) for required injection, optional Desktop adaptation, TypeScript examples, cancellation, and fallback guidance.

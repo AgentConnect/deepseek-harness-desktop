@@ -1,6 +1,6 @@
 /** DSH Desktop executable: minimal Electron bootstrap around the Host Cordis root. */
 
-import { app, crashReporter, dialog } from 'electron'
+import { app, crashReporter, dialog, net } from 'electron'
 import { randomUUID } from 'node:crypto'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -109,7 +109,10 @@ import {
 import {
   readDesktopAwikiProfileVersions,
   upgradeDesktopAwikiProfile,
+  type DesktopAwikiProfileVersions,
 } from './awiki-profile-upgrade.ts'
+import { discoverDesktopAwikiUpdate } from './awiki-update-discovery.ts'
+import { executeDesktopAwikiUpdate } from './awiki-update-execution.ts'
 
 const BIN_NAME = 'dsh-plugin-desktop'
 const PRODUCT_NAME = 'DSH Desktop'
@@ -1211,6 +1214,109 @@ async function start(): Promise<void> {
             },
           })
         }
+        let awikiUpgradePrepared = false
+        const prepareAwikiUpgrade = (
+          expectedCurrent: Partial<DesktopAwikiProfileVersions>,
+          target: DesktopAwikiProfileVersions,
+        ) => {
+          if (awikiUpgradePrepared) {
+            throw new Error(`${BIN_NAME}: an AWiki plugin update is already pending`)
+          }
+          const recovery = installRecovery
+          if (recovery === undefined) {
+            throw new Error(`${BIN_NAME}: AWiki plugin update recovery is unavailable`)
+          }
+          awikiUpgradePrepared = true
+          return Object.freeze({
+            response: Object.freeze({
+              accepted: true as const,
+              restartRequired: true as const,
+            }),
+            afterResponse: () => {
+              void (async () => {
+                const selection = readDesktopProfileState(selectionStatePath)
+                if (selection.active !== activeProfileName) {
+                  throw new Error(`${BIN_NAME}: active Profile changed before AWiki update`)
+                }
+                const locale = desktopLocaleFromLanguageTag(app.getLocale())
+                const performUpgrade = () => upgradeDesktopAwikiProfile({
+                  profileDir: prepared.profile.dir,
+                  target,
+                  receiptId: `awiki-pair:${randomUUID()}`,
+                  recovery,
+                  materialize: async updateLockfile => {
+                    await materializeProfile({
+                      appExecutable: process.execPath,
+                      clearEnvironmentPath: pnpmRuntime.clearEnvironmentPath,
+                      pnpmBinPath,
+                      nodeBinDir: pnpmRuntime.nodeBinDir,
+                      nodeShimPath: pnpmRuntime.nodeShimPath,
+                      homeDir,
+                      profileDir: prepared.profile.dir,
+                      electronVersion,
+                      updateLockfile,
+                    })
+                  },
+                  verify: () => prepareDesktopProfile(
+                    process.env.DSH_TELEMETRY_DISABLED,
+                    homeDir,
+                    process.platform,
+                    activeProfileName,
+                    pluginManagementStatePath,
+                    marketSelection,
+                    startupRecoveryStatePath,
+                    preparationHooks,
+                  ).awikiCompatibilityFallback,
+                })
+                let result = await executeDesktopAwikiUpdate({
+                  expectedCurrent,
+                  quiesceHost: () => generation.quiesceForRecovery(),
+                  readCurrent: () => readDesktopAwikiProfileVersions(prepared.profile.dir),
+                  upgrade: performUpgrade,
+                })
+                for (;;) {
+                  if (result.status === 'upgraded') {
+                    nativeExit.requestRelaunch()
+                    await shutdown?.request(0)
+                    return
+                  }
+                  const installDetail = result.cause instanceof ProfileMaterializationError
+                    ? result.cause.result?.stderr || result.cause.message
+                    : result.cause instanceof Error ? result.cause.message : String(result.cause)
+                  const rollbackDetail = result.rollbackCause === undefined
+                    ? ''
+                    : result.rollbackCause instanceof ProfileMaterializationError
+                      ? result.rollbackCause.result?.stderr || result.rollbackCause.message
+                      : result.rollbackCause instanceof Error ? result.rollbackCause.message : String(result.rollbackCause)
+                  const detail = maskSecrets([
+                    installDetail,
+                    ...(rollbackDetail.length === 0 ? [] : [`Rollback: ${rollbackDetail}`]),
+                  ].join('\n'))
+                  electronLogger.error(`${BIN_NAME}: settings AWiki Profile update failed: ${detail}`)
+                  const action = await requestAwikiUpgradeFailureAction(detail, result.rollback, locale, electronLogger)
+                  if (action === 'retry') {
+                    result = await performUpgrade()
+                    continue
+                  }
+                  if (action === 'terminal') runtime.openTerminal()
+                  await shutdown?.request(action === 'terminal' ? 0 : 1)
+                  return
+                }
+              })().catch(async (cause: unknown) => {
+                const detail = maskSecrets(cause instanceof Error ? cause.message : String(cause))
+                electronLogger.error(`${BIN_NAME}: failed to start settings AWiki Profile update: ${detail}`)
+                const action = await requestAwikiUpgradeFailureAction(
+                  detail,
+                  'failed',
+                  desktopLocaleFromLanguageTag(app.getLocale()),
+                  electronLogger,
+                )
+                if (action === 'terminal') runtime.openTerminal()
+                await shutdown?.request(action === 'terminal' ? 0 : 1)
+              })
+            },
+          })
+        }
         hostCtx.provide('desktopSettingsController', new DesktopSettingsController({
           profiles: hostCtx.desktopProfiles,
           persistProfileSelection: name => {
@@ -1233,6 +1339,11 @@ async function start(): Promise<void> {
             })
           },
           prepareProfileRollback,
+          checkAwikiUpdate: () => discoverDesktopAwikiUpdate({
+            profileDir: prepared.profile.dir,
+            request: (url, init) => net.fetch(url, { ...init, redirect: 'error' }),
+          }),
+          prepareAwikiUpgrade,
         }))
         provideCmdline(hostCtx, {
           args: ['--host', '127.0.0.1', '--port', String(prepared.port)],
