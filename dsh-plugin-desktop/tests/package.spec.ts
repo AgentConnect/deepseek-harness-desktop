@@ -78,11 +78,11 @@ const loaderBootVerifier = readFileSync(new URL('scripts/verify-loader-boot.mjs'
 const profileBootVerifier = readFileSync(new URL('scripts/verify-profile-boot.mjs', packageRoot), 'utf8')
 
 describe('published package surface', () => {
-  it('ships the latest compatible stable AWiki packages in a pre-release Desktop build', () => {
-    expect(workspaceManifest.version).toBe('2.1.0-rc.6')
-    expect(manifest.version).toBe('2.1.0-rc.6')
+  it('ships the latest compatible stable AWiki packages in the stable Desktop build', () => {
+    expect(workspaceManifest.version).toBe('2.1.0')
+    expect(manifest.version).toBe('2.1.0')
     expect(manifest.dependencies).toMatchObject({
-      '@awiki/dsh-plugin': '0.3.3',
+      '@awiki/dsh-plugin': '0.3.5',
       '@awiki/dsh-model-proxy': '0.1.4',
       '@deepseek-ai/dsh-llm-deepseek': '0.1.1-rc.2',
     })
@@ -101,7 +101,7 @@ describe('published package surface', () => {
     expect(manifest.build?.mac?.x64ArchFiles).toContain('@awiki/im-core-node-darwin-*/**')
     expect(yarnConfig).toContain([
       "npmPreapprovedPackages:",
-      "  - '@awiki/dsh-plugin@0.3.3'",
+      "  - '@awiki/dsh-plugin@0.3.5'",
       "  - '@awiki/dsh-model-proxy@0.1.4'",
       "  - '@awiki/im-core-node@0.1.8'",
       "  - '@awiki/im-core-node-darwin-arm64@0.1.8'",
@@ -125,7 +125,7 @@ describe('published package surface', () => {
     expect(desktopPrereleaseWorkflow).toContain('Refusing to replace existing tag')
     expect(desktopPrereleaseWorkflow).toContain('Windows x64 installer and portable archive are currently unsigned')
     expect(desktopPrereleaseWorkflow)
-      .toContain('bundles @awiki/dsh-plugin@0.3.3 and @awiki/dsh-model-proxy@0.1.4')
+      .toContain('bundles @awiki/dsh-plugin@0.3.5 and @awiki/dsh-model-proxy@0.1.4')
     expect(desktopPrereleaseWorkflow).toContain('target_path="DSH.Desktop-${RELEASE_VERSION}-universal.dmg"')
     expect(desktopPrereleaseWorkflow).toContain("-name '* *'")
     expect(desktopPrereleaseWorkflow).toContain('sha256sum * > SHA256SUMS.txt')

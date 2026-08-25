@@ -199,4 +199,4 @@ jobs:
             --title "DSH Desktop $RELEASE_VERSION" \
             --prerelease \
             --generate-notes \
-            --notes "This pre-release bundles @awiki/dsh-plugin@0.3.3 and @awiki/dsh-model-proxy@0.1.4 as the offline fallback for the default Desktop profile, and adds a Settings UI for discovering and installing a newer compatible stable pair from the official npm registry without rebuilding Desktop. The macOS universal DMG is Developer ID signed, notarized, stapled, and verified for Apple Silicon and Intel. The Windows x64 installer and portable archive are currently unsigned pre-release artifacts."
+            --notes "This pre-release bundles @awiki/dsh-plugin@0.3.5 and @awiki/dsh-model-proxy@0.1.4 as the offline fallback for the default Desktop profile, and adds a Settings UI for discovering and installing a newer compatible stable pair from the official npm registry without rebuilding Desktop. The macOS universal DMG is Developer ID signed, notarized, stapled, and verified for Apple Silicon and Intel. The Windows x64 installer and portable archive are currently unsigned pre-release artifacts."

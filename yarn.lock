@@ -97,9 +97,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@awiki/dsh-plugin@npm:0.3.3":
-  version: 0.3.3
-  resolution: "@awiki/dsh-plugin@npm:0.3.3"
+"@awiki/dsh-plugin@npm:0.3.5":
+  version: 0.3.5
+  resolution: "@awiki/dsh-plugin@npm:0.3.5"
   dependencies:
     "@awiki/im-core-node": "npm:0.1.8"
     "@deepseek-ai/schemastery": "npm:^3.18.1"
@@ -128,7 +128,7 @@ __metadata:
   peerDependenciesMeta:
     "@deepseek-ai/dsh-workspace":
       optional: true
-  checksum: 10c0/cdcff7f0019f732d23fe375c85ceb5f168fa8a1039d4861643c5a276b3b6f3912f0250379c286064ff34fa2e285fea2c25ba0af99fdf5e92d70394d6d101c5d0
+  checksum: 10c0/dc3375ca85c4d6ef4e527297fb76b5f1691a16d31f98beab7bc9bb08edbb53d2aad851eca793aab51d8673d7f0d2dd2b715318d28ef8c6a84c325a5755980780
   languageName: node
   linkType: hard
 
@@ -8343,7 +8343,7 @@ __metadata:
   resolution: "dsh-plugin-desktop@workspace:dsh-plugin-desktop"
   dependencies:
     "@awiki/dsh-model-proxy": "npm:0.1.4"
-    "@awiki/dsh-plugin": "npm:0.3.3"
+    "@awiki/dsh-plugin": "npm:0.3.5"
     "@base-ui/react": "npm:^1.7.0"
     "@deepseek-ai/cordis": "npm:4.0.1"
     "@deepseek-ai/cordis-plugin-group": "npm:1.0.1"
