@@ -20,7 +20,7 @@ describe('AWiki commercial license policy', () => {
 
   it('does not silently cover a later version, another package, or another upstream license', () => {
     const validated = validateCommercialGrant(grant, document)
-    expect(commercialLicenseForPackage(validated, '@awiki/im-core-node', '0.1.8', 'AGPL-3.0-only'))
+    expect(commercialLicenseForPackage(validated, '@awiki/im-core-node', '0.1.9', 'AGPL-3.0-only'))
       .toBeUndefined()
     expect(commercialLicenseForPackage(validated, '@awiki/other', '0.1.6', 'AGPL-3.0-only'))
       .toBeUndefined()
@@ -31,7 +31,7 @@ describe('AWiki commercial license policy', () => {
   it('rejects grant metadata that does not match the written package scope', () => {
     expect(() => validateCommercialGrant({
       ...grant,
-      packages: { ...grant.packages, '@awiki/im-core-node': '0.1.8' },
-    }, document)).toThrow('does not cover @awiki/im-core-node@0.1.8')
+      packages: { ...grant.packages, '@awiki/im-core-node': '0.1.9' },
+    }, document)).toThrow('does not cover @awiki/im-core-node@0.1.9')
   })
 })

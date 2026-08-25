@@ -1,6 +1,6 @@
 {
   "name": "dsh-plugin-desktop",
-  "version": "2.1.0-rc.5",
+  "version": "2.1.0-rc.6",
   "description": "DSH Desktop: an Electron shell composed as a DeepSeek Harness Cordis plugin",
   "license": "MIT",
   "publishConfig": {
@@ -139,8 +139,8 @@
     "prepack": "yarn run check"
   },
   "dependencies": {
-    "@awiki/dsh-model-proxy": "0.1.2",
-    "@awiki/dsh-plugin": "0.3.2",
+    "@awiki/dsh-model-proxy": "0.1.4",
+    "@awiki/dsh-plugin": "0.3.3",
     "@deepseek-ai/cordis": "4.0.1",
     "@deepseek-ai/cordis-plugin-group": "1.0.1",
     "@deepseek-ai/cordis-plugin-include": "1.0.6",

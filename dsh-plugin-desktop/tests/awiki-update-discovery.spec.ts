@@ -46,7 +46,7 @@ function manifest(packageName: string, version: string, pluginRange?: string): R
 
 function packument(
   packageName: string,
-  releases: readonly { readonly version: string; readonly publishedAt: string; readonly pluginRange?: string; readonly scripts?: object }[],
+  releases: readonly { readonly version: string; readonly publishedAt?: string; readonly pluginRange?: string; readonly scripts?: object }[],
 ): Record<string, unknown> {
   return {
     name: packageName,
@@ -54,7 +54,10 @@ function packument(
       release.version,
       { ...manifest(packageName, release.version, release.pluginRange), ...(release.scripts === undefined ? {} : { scripts: release.scripts }) },
     ])),
-    time: Object.fromEntries(releases.map(release => [release.version, release.publishedAt])),
+    time: Object.fromEntries(releases.map(release => [
+      release.version,
+      release.publishedAt ?? '2026-08-20T00:00:00.000Z',
+    ])),
   }
 }
 
@@ -79,19 +82,18 @@ describe('AWiki update discovery', () => {
     const profileDir = await profile()
     const request = registry(
       packument('@awiki/dsh-plugin', [
-        { version: '0.3.3', publishedAt: '2026-08-20T00:00:00.000Z' },
-        { version: '0.3.2', publishedAt: '2026-08-10T00:00:00.000Z' },
+        { version: '0.3.3' },
+        { version: '0.3.2' },
       ]),
       packument('@awiki/dsh-model-proxy', [
-        { version: '0.1.3', publishedAt: '2026-08-21T00:00:00.000Z', pluginRange: '^0.4.0' },
-        { version: '0.1.2', publishedAt: '2026-08-10T00:00:00.000Z', pluginRange: '^0.3.1' },
+        { version: '0.1.3', pluginRange: '^0.4.0' },
+        { version: '0.1.2', pluginRange: '^0.3.1' },
       ]),
     )
 
     await expect(discoverDesktopAwikiUpdate({
       profileDir,
       request,
-      now: () => Date.parse('2026-08-25T00:00:00.000Z'),
     })).resolves.toEqual({
       status: 'available',
       current: { pluginVersion: '0.3.2', modelProxyVersion: '0.1.2' },
@@ -103,10 +105,10 @@ describe('AWiki update discovery', () => {
     const profileDir = await profile()
     const request = registry(
       packument('@awiki/dsh-plugin', [
-        { version: '0.3.3', publishedAt: '2026-08-20T00:00:00.000Z' },
+        { version: '0.3.3' },
       ]),
       packument('@awiki/dsh-model-proxy', [
-        { version: '0.1.2', publishedAt: '2026-08-10T00:00:00.000Z', pluginRange: '^0.3.1' },
+        { version: '0.1.2', pluginRange: '^0.3.1' },
       ]),
       () => '',
     )
@@ -114,7 +116,6 @@ describe('AWiki update discovery', () => {
     await expect(discoverDesktopAwikiUpdate({
       profileDir,
       request,
-      now: () => Date.parse('2026-08-25T00:00:00.000Z'),
     })).resolves.toMatchObject({
       status: 'available',
       target: { pluginVersion: '0.3.3', modelProxyVersion: '0.1.2' },
@@ -125,10 +126,10 @@ describe('AWiki update discovery', () => {
     const profileDir = await profile()
     const request = registry(
       packument('@awiki/dsh-plugin', [
-        { version: '0.3.3', publishedAt: '2026-08-20T00:00:00.000Z' },
+        { version: '0.3.3' },
       ]),
       packument('@awiki/dsh-model-proxy', [
-        { version: '0.1.2', publishedAt: '2026-08-10T00:00:00.000Z', pluginRange: '^0.3.1' },
+        { version: '0.1.2', pluginRange: '^0.3.1' },
       ]),
       requestUrl => requestUrl.replace('registry.npmjs.org', 'registry.example.com'),
     )
@@ -136,31 +137,28 @@ describe('AWiki update discovery', () => {
     await expect(discoverDesktopAwikiUpdate({
       profileDir,
       request,
-      now: () => Date.parse('2026-08-25T00:00:00.000Z'),
     })).rejects.toThrow('npm registry request failed')
   })
 
-  it('reports a cooling release instead of bypassing the 24-hour trust window', async () => {
+  it('offers a newly published trusted compatible pair immediately', async () => {
     const profileDir = await profile('0.3.3', '0.1.2')
     const request = registry(
       packument('@awiki/dsh-plugin', [
-        { version: '0.3.4', publishedAt: '2026-08-25T11:00:00.000Z' },
-        { version: '0.3.3', publishedAt: '2026-08-20T00:00:00.000Z' },
+        { version: '0.3.4', publishedAt: '2026-08-25T12:00:00.000Z' },
+        { version: '0.3.3' },
       ]),
       packument('@awiki/dsh-model-proxy', [
-        { version: '0.1.2', publishedAt: '2026-08-10T00:00:00.000Z', pluginRange: '^0.3.1' },
+        { version: '0.1.2', pluginRange: '^0.3.1' },
       ]),
     )
 
     await expect(discoverDesktopAwikiUpdate({
       profileDir,
       request,
-      now: () => Date.parse('2026-08-25T12:00:00.000Z'),
     })).resolves.toEqual({
-      status: 'cooling-down',
+      status: 'available',
       current: { pluginVersion: '0.3.3', modelProxyVersion: '0.1.2' },
       target: { pluginVersion: '0.3.4', modelProxyVersion: '0.1.2' },
-      availableAt: '2026-08-26T11:00:00.000Z',
     })
   })
 
@@ -168,17 +166,16 @@ describe('AWiki update discovery', () => {
     const profileDir = await profile()
     const request = registry(
       packument('@awiki/dsh-plugin', [
-        { version: '0.3.3', publishedAt: '2026-08-20T00:00:00.000Z', scripts: { postinstall: 'unsafe' } },
+        { version: '0.3.3', scripts: { postinstall: 'unsafe' } },
       ]),
       packument('@awiki/dsh-model-proxy', [
-        { version: '0.1.2', publishedAt: '2026-08-10T00:00:00.000Z', pluginRange: '^0.3.1' },
+        { version: '0.1.2', pluginRange: '^0.3.1' },
       ]),
     )
 
     await expect(discoverDesktopAwikiUpdate({
       profileDir,
       request,
-      now: () => Date.parse('2026-08-25T00:00:00.000Z'),
     })).rejects.toThrow('no trusted stable AWiki release')
   })
 
@@ -186,22 +183,20 @@ describe('AWiki update discovery', () => {
     const profileDir = await profile('0.3.4', '0.1.2')
     const request = registry(
       packument('@awiki/dsh-plugin', [
-        { version: '0.3.3', publishedAt: '2026-08-20T00:00:00.000Z' },
+        { version: '0.3.3' },
       ]),
       packument('@awiki/dsh-model-proxy', [
-        { version: '0.1.2', publishedAt: '2026-08-10T00:00:00.000Z', pluginRange: '^0.3.1' },
+        { version: '0.1.2', pluginRange: '^0.3.1' },
       ]),
     )
 
     await expect(discoverDesktopAwikiUpdate({
       profileDir,
       request,
-      now: () => Date.parse('2026-08-25T00:00:00.000Z'),
     })).resolves.toMatchObject({ status: 'up-to-date' })
   })
 
-  it('keeps Registry URLs and release-age policy fixed', () => {
+  it('keeps the Registry origin fixed', () => {
     expect(awikiUpdateDiscoveryConstants.npmRegistryOrigin).toBe('https://registry.npmjs.org')
-    expect(awikiUpdateDiscoveryConstants.minimumReleaseAgeMs).toBe(24 * 60 * 60 * 1000)
   })
 })

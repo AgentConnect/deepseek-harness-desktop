@@ -59,6 +59,7 @@ const workspaceManifest = JSON.parse(readFileSync(new URL('package.json', worksp
   resolutions?: Record<string, unknown>
   scripts?: Record<string, unknown>
 }
+const yarnConfig = readFileSync(new URL('.yarnrc.yml', workspaceRoot), 'utf8')
 const ciWorkflow = readFileSync(new URL('.github/workflows/ci.yml', workspaceRoot), 'utf8')
 const desktopInstallersWorkflow = readFileSync(
   new URL('.github/workflows/desktop-installers.yml', workspaceRoot),
@@ -77,12 +78,12 @@ const loaderBootVerifier = readFileSync(new URL('scripts/verify-loader-boot.mjs'
 const profileBootVerifier = readFileSync(new URL('scripts/verify-profile-boot.mjs', packageRoot), 'utf8')
 
 describe('published package surface', () => {
-  it('ships the stable AWiki DSH rc2-compatible packages in a pre-release Desktop build', () => {
-    expect(workspaceManifest.version).toBe('2.1.0-rc.5')
-    expect(manifest.version).toBe('2.1.0-rc.5')
+  it('ships the latest compatible stable AWiki packages in a pre-release Desktop build', () => {
+    expect(workspaceManifest.version).toBe('2.1.0-rc.6')
+    expect(manifest.version).toBe('2.1.0-rc.6')
     expect(manifest.dependencies).toMatchObject({
-      '@awiki/dsh-plugin': '0.3.2',
-      '@awiki/dsh-model-proxy': '0.1.2',
+      '@awiki/dsh-plugin': '0.3.3',
+      '@awiki/dsh-model-proxy': '0.1.4',
       '@deepseek-ai/dsh-llm-deepseek': '0.1.1-rc.2',
     })
     expect(manifest.files).toEqual(expect.arrayContaining([
@@ -98,6 +99,17 @@ describe('published package surface', () => {
       'awiki-commercial-license.json',
     ]))
     expect(manifest.build?.mac?.x64ArchFiles).toContain('@awiki/im-core-node-darwin-*/**')
+    expect(yarnConfig).toContain([
+      "npmPreapprovedPackages:",
+      "  - '@awiki/dsh-plugin@0.3.3'",
+      "  - '@awiki/dsh-model-proxy@0.1.4'",
+      "  - '@awiki/im-core-node@0.1.8'",
+      "  - '@awiki/im-core-node-darwin-arm64@0.1.8'",
+      "  - '@awiki/im-core-node-darwin-x64@0.1.8'",
+      "  - '@awiki/im-core-node-linux-arm64-gnu@0.1.8'",
+      "  - '@awiki/im-core-node-linux-x64-gnu@0.1.8'",
+      "  - '@awiki/im-core-node-win32-x64-msvc@0.1.8'",
+    ].join('\n'))
   })
 
   it('isolates boot smoke checks from a running user AWiki state', () => {
@@ -112,6 +124,8 @@ describe('published package surface', () => {
     expect(desktopPrereleaseWorkflow).toContain('--prerelease')
     expect(desktopPrereleaseWorkflow).toContain('Refusing to replace existing tag')
     expect(desktopPrereleaseWorkflow).toContain('Windows x64 installer and portable archive are currently unsigned')
+    expect(desktopPrereleaseWorkflow)
+      .toContain('bundles @awiki/dsh-plugin@0.3.3 and @awiki/dsh-model-proxy@0.1.4')
     expect(desktopPrereleaseWorkflow).toContain('target_path="DSH.Desktop-${RELEASE_VERSION}-universal.dmg"')
     expect(desktopPrereleaseWorkflow).toContain("-name '* *'")
     expect(desktopPrereleaseWorkflow).toContain('sha256sum * > SHA256SUMS.txt')

@@ -89,12 +89,6 @@ export type DesktopAwikiUpdateCheckResponse =
       /** Opaque, short-lived authority for exactly this pair. */
       readonly previewId: string
     }
-  | {
-      readonly status: 'cooling-down'
-      readonly current: DesktopAwikiVersionsView
-      readonly target: Required<DesktopAwikiVersionsView>
-      readonly availableAt: string
-    }
 
 /** Exact empty body accepted by the manual AWiki update check. */
 export type DesktopAwikiUpdateCheckRequest = Readonly<Record<string, never>>

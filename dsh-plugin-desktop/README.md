@@ -123,8 +123,8 @@ An explicit `--profile <name>` remains authoritative and is useful for preparing
 
 The Desktop settings page also provides an **AWiki plugin updates** section for the bundled
 `@awiki/dsh-plugin` and `@awiki/dsh-model-proxy` pair. A manual check reads only the official npm
-Registry, selects stable releases whose peer ranges are compatible, and honors a 24-hour release
-age window. **Upgrade Plugins and Restart** uses exact versions and a one-shot preview, stops the
+Registry and immediately offers the newest stable releases whose peer ranges are compatible.
+**Upgrade Plugins and Restart** uses exact versions and a one-shot preview, stops the
 Host before changing dependencies, and reuses the install recovery snapshot so a failed install or
 compatibility check restores the previous Profile. The application bundle remains the offline
 fallback; ordinary AWiki plugin releases do not require another Desktop installer release.

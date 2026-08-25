@@ -64,6 +64,12 @@ describe('Desktop settings API', () => {
     expect(() => parseDesktopAwikiUpdateView({
       status: 'available', current: {}, target: {}, previewId: 'unsafe',
     })).toThrow('invalid AWiki update response')
+    expect(() => parseDesktopAwikiUpdateView({
+      status: 'cooling-down',
+      current: { pluginVersion: '0.3.2', modelProxyVersion: '0.1.2' },
+      target: { pluginVersion: '0.3.3', modelProxyVersion: '0.1.2' },
+      availableAt: '2026-08-26T00:00:00.000Z',
+    })).toThrow('invalid AWiki update response')
   })
 
   it('uses the strict same-origin routes and request bodies', async () => {
