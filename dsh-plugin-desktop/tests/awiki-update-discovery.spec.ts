@@ -61,6 +61,7 @@ function packument(
 function registry(
   plugin: Record<string, unknown>,
   proxy: Record<string, unknown>,
+  responseUrl: (requestUrl: string) => string = requestUrl => requestUrl,
 ): DesktopAwikiUpdateRequest {
   return vi.fn(async (url: string) => {
     const value = url.includes('dsh-plugin') ? plugin : proxy
@@ -68,7 +69,7 @@ function registry(
       status: 200,
       headers: { 'content-type': 'application/json' },
     })
-    Object.defineProperty(response, 'url', { configurable: true, value: url })
+    Object.defineProperty(response, 'url', { configurable: true, value: responseUrl(url) })
     return response
   })
 }
@@ -96,6 +97,47 @@ describe('AWiki update discovery', () => {
       current: { pluginVersion: '0.3.2', modelProxyVersion: '0.1.2' },
       target: { pluginVersion: '0.3.3', modelProxyVersion: '0.1.2' },
     })
+  })
+
+  it('accepts Electron net.fetch responses whose url is empty', async () => {
+    const profileDir = await profile()
+    const request = registry(
+      packument('@awiki/dsh-plugin', [
+        { version: '0.3.3', publishedAt: '2026-08-20T00:00:00.000Z' },
+      ]),
+      packument('@awiki/dsh-model-proxy', [
+        { version: '0.1.2', publishedAt: '2026-08-10T00:00:00.000Z', pluginRange: '^0.3.1' },
+      ]),
+      () => '',
+    )
+
+    await expect(discoverDesktopAwikiUpdate({
+      profileDir,
+      request,
+      now: () => Date.parse('2026-08-25T00:00:00.000Z'),
+    })).resolves.toMatchObject({
+      status: 'available',
+      target: { pluginVersion: '0.3.3', modelProxyVersion: '0.1.2' },
+    })
+  })
+
+  it('rejects a non-empty response url outside the official npm Registry', async () => {
+    const profileDir = await profile()
+    const request = registry(
+      packument('@awiki/dsh-plugin', [
+        { version: '0.3.3', publishedAt: '2026-08-20T00:00:00.000Z' },
+      ]),
+      packument('@awiki/dsh-model-proxy', [
+        { version: '0.1.2', publishedAt: '2026-08-10T00:00:00.000Z', pluginRange: '^0.3.1' },
+      ]),
+      requestUrl => requestUrl.replace('registry.npmjs.org', 'registry.example.com'),
+    )
+
+    await expect(discoverDesktopAwikiUpdate({
+      profileDir,
+      request,
+      now: () => Date.parse('2026-08-25T00:00:00.000Z'),
+    })).rejects.toThrow('npm registry request failed')
   })
 
   it('reports a cooling release instead of bypassing the 24-hour trust window', async () => {
