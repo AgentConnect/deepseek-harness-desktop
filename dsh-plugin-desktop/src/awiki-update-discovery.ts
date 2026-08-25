@@ -133,8 +133,14 @@ function trustedManifest(
   return { version, publishedAt, pluginRange }
 }
 
-async function readBoundedJson(response: Response): Promise<unknown> {
-  if (!response.ok || new URL(response.url).origin !== NPM_REGISTRY_ORIGIN) {
+async function readBoundedJson(response: Response, requestUrl: string): Promise<unknown> {
+  let responseOrigin: string
+  try {
+    responseOrigin = new URL(response.url || requestUrl).origin
+  } catch {
+    throw new Error('dsh-plugin-desktop: npm registry request failed')
+  }
+  if (!response.ok || responseOrigin !== NPM_REGISTRY_ORIGIN) {
     throw new Error('dsh-plugin-desktop: npm registry request failed')
   }
   const declared = response.headers.get('content-length')
@@ -153,11 +159,12 @@ async function fetchPackument(
   request: DesktopAwikiUpdateRequest,
   signal: AbortSignal,
 ): Promise<TrustedPackument> {
-  const response = await request(`${NPM_REGISTRY_ORIGIN}/${encodeURIComponent(packageName)}`, {
+  const requestUrl = `${NPM_REGISTRY_ORIGIN}/${encodeURIComponent(packageName)}`
+  const response = await request(requestUrl, {
     headers: { Accept: 'application/json' },
     signal,
   })
-  const packument = record(await readBoundedJson(response))
+  const packument = record(await readBoundedJson(response, requestUrl))
   const versions = record(packument?.versions)
   const times = record(packument?.time)
   if (packument?.name !== packageName || versions === undefined || times === undefined) {
