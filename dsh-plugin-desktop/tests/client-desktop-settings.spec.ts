@@ -1,7 +1,9 @@
 import { describe, expect, it, vi } from 'vitest'
+import { renderToStaticMarkup } from 'react-dom/server'
 import type { ClientContext, SettingsScope } from '@deepseek-ai/dsh-client-runtime/client'
-import { DesktopSettingsSection } from '../src/client/DesktopSettingsSection.tsx'
+import { DesktopAwikiUpdateResult, DesktopSettingsSection } from '../src/client/DesktopSettingsSection.tsx'
 import { DesktopTerminalSettingsAction } from '../src/client/DesktopTerminalSettingsAction.tsx'
+import { zh } from '../src/client/desktop-settings-locales.ts'
 import {
   createDesktopSettingsApi,
   desktopSettingsPaths,
@@ -127,6 +129,24 @@ describe('Desktop settings API', () => {
     const api = createDesktopSettingsApi(async () => json({ error: '/Users/private/profile failed' }, 400))
     await expect(api.read()).rejects.toThrow('Desktop settings request failed (400)')
     await expect(api.read()).rejects.not.toThrow('/Users/private')
+  })
+})
+
+describe('Desktop AWiki update result', () => {
+  it('keeps each plugin current version, target version, and status in one semantic table row', () => {
+    const html = renderToStaticMarkup(DesktopAwikiUpdateResult({
+      update: {
+        status: 'cooling-down',
+        current: { pluginVersion: '0.3.2', modelProxyVersion: '0.1.2' },
+        target: { pluginVersion: '0.3.3', modelProxyVersion: '0.1.2' },
+        availableAt: '2026-08-26T06:52:24+08:00',
+      },
+      t: ((key: keyof typeof zh) => zh[key]) as never,
+    }))
+
+    expect(html).toContain('<table class="dshDesktopSettingsAwikiTable">')
+    expect(html).toMatch(/<tr><th scope="row"><span>AWiki 主插件<\/span><code>@awiki\/dsh-plugin<\/code><\/th><td><code>0\.3\.2<\/code><\/td><td><code>0\.3\.3<\/code><\/td><td><span[^>]*>观察期中<\/span><\/td><\/tr>/)
+    expect(html).toMatch(/<tr><th scope="row"><span>Model Proxy<\/span><code>@awiki\/dsh-model-proxy<\/code><\/th><td><code>0\.1\.2<\/code><\/td><td><span aria-hidden="true">—<\/span><\/td><td><span[^>]*>已是最新<\/span><\/td><\/tr>/)
   })
 })
 
