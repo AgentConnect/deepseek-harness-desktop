@@ -72,13 +72,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@awiki/dsh-model-proxy@npm:0.1.2":
-  version: 0.1.2
-  resolution: "@awiki/dsh-model-proxy@npm:0.1.2"
+"@awiki/dsh-model-proxy@npm:0.1.4":
+  version: 0.1.4
+  resolution: "@awiki/dsh-model-proxy@npm:0.1.4"
   dependencies:
     "@deepseek-ai/schemastery": "npm:^3.18.1"
   peerDependencies:
-    "@awiki/dsh-plugin": ^0.3.2
+    "@awiki/dsh-plugin": ^0.3.3
     "@deepseek-ai/cordis": ^4.0.1
     "@deepseek-ai/dsh-agent-default-model": 0.1.1-rc.2
     "@deepseek-ai/dsh-anonymous-user-id": 0.1.1-rc.2
@@ -93,15 +93,15 @@ __metadata:
     "@deepseek-ai/dsh-llm-deepseek": 0.1.1-rc.2
     "@deepseek-ai/dsh-settings": 0.1.1-rc.2
     react: ^18.2.0
-  checksum: 10c0/9b461866a2c30b3a5b80a8c0b67ad239a2b7a04ddf0b2e897d37e91fd6b2243363c56d292779651a9267261d798a1ae7e7fad8d9282668a4e753b75caaf65be3
+  checksum: 10c0/fe94ee0075730923504dc5fa3af68a044823868dbc42da4db0cff071e474f28fee1fd446ae7778a4a53c7c75dea7c69e9a61dad676148a8a33defd4cb6fd7813
   languageName: node
   linkType: hard
 
-"@awiki/dsh-plugin@npm:0.3.2":
-  version: 0.3.2
-  resolution: "@awiki/dsh-plugin@npm:0.3.2"
+"@awiki/dsh-plugin@npm:0.3.3":
+  version: 0.3.3
+  resolution: "@awiki/dsh-plugin@npm:0.3.3"
   dependencies:
-    "@awiki/im-core-node": "npm:0.1.7"
+    "@awiki/im-core-node": "npm:0.1.8"
     "@deepseek-ai/schemastery": "npm:^3.18.1"
     zod: "npm:^4.4.3"
   peerDependencies:
@@ -128,54 +128,54 @@ __metadata:
   peerDependenciesMeta:
     "@deepseek-ai/dsh-workspace":
       optional: true
-  checksum: 10c0/0afb846a3680baaa7de5253fd644547604fd64779b0ead6112b2c7fa3ea47ea02f63defc41598bcbc31878500f8dd50ff4857a7eac3cb7af0e925f1192aedbb9
+  checksum: 10c0/cdcff7f0019f732d23fe375c85ceb5f168fa8a1039d4861643c5a276b3b6f3912f0250379c286064ff34fa2e285fea2c25ba0af99fdf5e92d70394d6d101c5d0
   languageName: node
   linkType: hard
 
-"@awiki/im-core-node-darwin-arm64@npm:0.1.7":
-  version: 0.1.7
-  resolution: "@awiki/im-core-node-darwin-arm64@npm:0.1.7"
+"@awiki/im-core-node-darwin-arm64@npm:0.1.8":
+  version: 0.1.8
+  resolution: "@awiki/im-core-node-darwin-arm64@npm:0.1.8"
   conditions: os=darwin & cpu=arm64
   languageName: node
   linkType: hard
 
-"@awiki/im-core-node-darwin-x64@npm:0.1.7":
-  version: 0.1.7
-  resolution: "@awiki/im-core-node-darwin-x64@npm:0.1.7"
+"@awiki/im-core-node-darwin-x64@npm:0.1.8":
+  version: 0.1.8
+  resolution: "@awiki/im-core-node-darwin-x64@npm:0.1.8"
   conditions: os=darwin & cpu=x64
   languageName: node
   linkType: hard
 
-"@awiki/im-core-node-linux-arm64-gnu@npm:0.1.7":
-  version: 0.1.7
-  resolution: "@awiki/im-core-node-linux-arm64-gnu@npm:0.1.7"
+"@awiki/im-core-node-linux-arm64-gnu@npm:0.1.8":
+  version: 0.1.8
+  resolution: "@awiki/im-core-node-linux-arm64-gnu@npm:0.1.8"
   conditions: os=linux & cpu=arm64 & libc=glibc
   languageName: node
   linkType: hard
 
-"@awiki/im-core-node-linux-x64-gnu@npm:0.1.7":
-  version: 0.1.7
-  resolution: "@awiki/im-core-node-linux-x64-gnu@npm:0.1.7"
+"@awiki/im-core-node-linux-x64-gnu@npm:0.1.8":
+  version: 0.1.8
+  resolution: "@awiki/im-core-node-linux-x64-gnu@npm:0.1.8"
   conditions: os=linux & cpu=x64 & libc=glibc
   languageName: node
   linkType: hard
 
-"@awiki/im-core-node-win32-x64-msvc@npm:0.1.7":
-  version: 0.1.7
-  resolution: "@awiki/im-core-node-win32-x64-msvc@npm:0.1.7"
+"@awiki/im-core-node-win32-x64-msvc@npm:0.1.8":
+  version: 0.1.8
+  resolution: "@awiki/im-core-node-win32-x64-msvc@npm:0.1.8"
   conditions: os=win32 & cpu=x64
   languageName: node
   linkType: hard
 
-"@awiki/im-core-node@npm:0.1.7":
-  version: 0.1.7
-  resolution: "@awiki/im-core-node@npm:0.1.7"
+"@awiki/im-core-node@npm:0.1.8":
+  version: 0.1.8
+  resolution: "@awiki/im-core-node@npm:0.1.8"
   dependencies:
-    "@awiki/im-core-node-darwin-arm64": "npm:0.1.7"
-    "@awiki/im-core-node-darwin-x64": "npm:0.1.7"
-    "@awiki/im-core-node-linux-arm64-gnu": "npm:0.1.7"
-    "@awiki/im-core-node-linux-x64-gnu": "npm:0.1.7"
-    "@awiki/im-core-node-win32-x64-msvc": "npm:0.1.7"
+    "@awiki/im-core-node-darwin-arm64": "npm:0.1.8"
+    "@awiki/im-core-node-darwin-x64": "npm:0.1.8"
+    "@awiki/im-core-node-linux-arm64-gnu": "npm:0.1.8"
+    "@awiki/im-core-node-linux-x64-gnu": "npm:0.1.8"
+    "@awiki/im-core-node-win32-x64-msvc": "npm:0.1.8"
   dependenciesMeta:
     "@awiki/im-core-node-darwin-arm64":
       optional: true
@@ -187,7 +187,7 @@ __metadata:
       optional: true
     "@awiki/im-core-node-win32-x64-msvc":
       optional: true
-  checksum: 10c0/5811389f6973a80d2f4c941be1a247d202ac5112e043016ca5f4ac2057e2a0dff2087fc71774cbe7c90737dbcbaca1349272ac32d9e04f6b9c63b826e6e48d2c
+  checksum: 10c0/a3ff6d43c86f8fb6829bc46ecec23b574f2ae9dd49b6f69dae31846aec9c59087765b766df4cbd7bb93fcd5c58c65b9f634582843149ac772756c28a2b9dcc3f
   languageName: node
   linkType: hard
 
@@ -8342,8 +8342,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "dsh-plugin-desktop@workspace:dsh-plugin-desktop"
   dependencies:
-    "@awiki/dsh-model-proxy": "npm:0.1.2"
-    "@awiki/dsh-plugin": "npm:0.3.2"
+    "@awiki/dsh-model-proxy": "npm:0.1.4"
+    "@awiki/dsh-plugin": "npm:0.3.3"
     "@base-ui/react": "npm:^1.7.0"
     "@deepseek-ai/cordis": "npm:4.0.1"
     "@deepseek-ai/cordis-plugin-group": "npm:1.0.1"

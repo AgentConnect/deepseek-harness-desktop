@@ -14,14 +14,12 @@ const NPM_REGISTRY_ORIGIN = 'https://registry.npmjs.org'
 const EXPECTED_REPOSITORY = 'github.com/AgentConnect/dsh-awiki'
 const MAX_PACKUMENT_BYTES = 4 * 1024 * 1024
 const DEFAULT_TIMEOUT_MS = 15_000
-const DEFAULT_MINIMUM_RELEASE_AGE_MS = 24 * 60 * 60 * 1000
 const INSTALL_LIFECYCLE_SCRIPTS = ['preinstall', 'install', 'postinstall'] as const
 
 type UnknownRecord = Record<string, unknown>
 
 interface TrustedVersion {
   readonly version: string
-  readonly publishedAt: number
   readonly pluginRange?: string
 }
 
@@ -37,8 +35,6 @@ export interface DesktopAwikiUpdateRequest {
 export interface DesktopAwikiUpdateDiscoveryOptions {
   readonly profileDir: string
   readonly request: DesktopAwikiUpdateRequest
-  readonly now?: () => number
-  readonly minimumReleaseAgeMs?: number
   readonly timeoutMs?: number
 }
 
@@ -52,12 +48,6 @@ export type DesktopAwikiUpdateDiscovery =
       readonly status: 'available'
       readonly current: Partial<DesktopAwikiProfileVersions>
       readonly target: DesktopAwikiProfileVersions
-    }
-  | {
-      readonly status: 'cooling-down'
-      readonly current: Partial<DesktopAwikiProfileVersions>
-      readonly target: DesktopAwikiProfileVersions
-      readonly availableAt: string
     }
 
 function record(value: unknown): UnknownRecord | undefined {
@@ -115,7 +105,6 @@ function trustedManifest(
   packageName: string,
   version: string,
   value: unknown,
-  publishedAt: number,
 ): TrustedVersion | undefined {
   const manifest = record(value)
   if (manifest === undefined || manifest.name !== packageName || manifest.version !== version) return undefined
@@ -127,10 +116,10 @@ function trustedManifest(
     || !sha512Integrity(dist.integrity)
     || !officialTarball(dist.tarball, packageName, version)) return undefined
 
-  if (packageName !== AWIKI_MODEL_PROXY_PACKAGE) return { version, publishedAt }
+  if (packageName !== AWIKI_MODEL_PROXY_PACKAGE) return { version }
   const pluginRange = record(manifest.peerDependencies)?.[AWIKI_PLUGIN_PACKAGE]
   if (typeof pluginRange !== 'string' || pluginRange.length === 0 || pluginRange.length > 256) return undefined
-  return { version, publishedAt, pluginRange }
+  return { version, pluginRange }
 }
 
 async function readBoundedJson(response: Response, requestUrl: string): Promise<unknown> {
@@ -174,10 +163,8 @@ async function fetchPackument(
   for (const [version, manifest] of Object.entries(versions)) {
     if (!stableVersion(version)) continue
     const published = times[version]
-    if (typeof published !== 'string') continue
-    const publishedAt = Date.parse(published)
-    if (!Number.isFinite(publishedAt)) continue
-    const candidate = trustedManifest(packageName, version, manifest, publishedAt)
+    if (typeof published !== 'string' || !Number.isFinite(Date.parse(published))) continue
+    const candidate = trustedManifest(packageName, version, manifest)
     if (candidate !== undefined) trusted.push(candidate)
   }
   trusted.sort((left, right) => rcompare(left.version, right.version))
@@ -188,8 +175,8 @@ async function fetchPackument(
 function compatiblePairs(
   plugins: TrustedPackument,
   proxies: TrustedPackument,
-): readonly { readonly target: DesktopAwikiProfileVersions; readonly publishedAt: number }[] {
-  const pairs: { target: DesktopAwikiProfileVersions; publishedAt: number }[] = []
+): readonly DesktopAwikiProfileVersions[] {
+  const pairs: DesktopAwikiProfileVersions[] = []
   for (const plugin of plugins.versions) {
     for (const proxy of proxies.versions) {
       try {
@@ -197,10 +184,7 @@ function compatiblePairs(
       } catch {
         continue
       }
-      pairs.push({
-        target: { pluginVersion: plugin.version, modelProxyVersion: proxy.version },
-        publishedAt: Math.max(plugin.publishedAt, proxy.publishedAt),
-      })
+      pairs.push({ pluginVersion: plugin.version, modelProxyVersion: proxy.version })
       break
     }
   }
@@ -225,14 +209,12 @@ function newerPair(
   return plugin >= 0 && proxy >= 0 && (plugin > 0 || proxy > 0)
 }
 
-/** Resolve the newest trusted compatible pair while honoring the release-age policy. */
+/** Resolve the newest trusted compatible pair. */
 export async function discoverDesktopAwikiUpdate(
   options: DesktopAwikiUpdateDiscoveryOptions,
 ): Promise<DesktopAwikiUpdateDiscovery> {
   const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS
-  const minimumReleaseAgeMs = options.minimumReleaseAgeMs ?? DEFAULT_MINIMUM_RELEASE_AGE_MS
-  if (!Number.isFinite(timeoutMs) || timeoutMs <= 0
-    || !Number.isFinite(minimumReleaseAgeMs) || minimumReleaseAgeMs < 0) {
+  if (!Number.isFinite(timeoutMs) || timeoutMs <= 0) {
     throw new Error('dsh-plugin-desktop: AWiki update policy is invalid')
   }
   const controller = new AbortController()
@@ -247,22 +229,10 @@ export async function discoverDesktopAwikiUpdate(
     const pairs = compatiblePairs(pluginPackument, proxyPackument)
     const newest = pairs[0]
     if (newest === undefined) throw new Error('dsh-plugin-desktop: npm registry has no compatible stable AWiki pair')
-    if (samePair(current, newest.target) || !newerPair(current, newest.target)) {
-      return { status: 'up-to-date', current, target: newest.target }
+    if (samePair(current, newest) || !newerPair(current, newest)) {
+      return { status: 'up-to-date', current, target: newest }
     }
-
-    const now = (options.now ?? Date.now)()
-    const eligible = pairs.find(pair =>
-      now - pair.publishedAt >= minimumReleaseAgeMs && newerPair(current, pair.target))
-    if (eligible !== undefined) {
-      return { status: 'available', current, target: eligible.target }
-    }
-    return {
-      status: 'cooling-down',
-      current,
-      target: newest.target,
-      availableAt: new Date(newest.publishedAt + minimumReleaseAgeMs).toISOString(),
-    }
+    return { status: 'available', current, target: newest }
   } finally {
     clearTimeout(timer)
   }
@@ -270,6 +240,5 @@ export async function discoverDesktopAwikiUpdate(
 
 export const awikiUpdateDiscoveryConstants = Object.freeze({
   npmRegistryOrigin: NPM_REGISTRY_ORIGIN,
-  minimumReleaseAgeMs: DEFAULT_MINIMUM_RELEASE_AGE_MS,
   maxPackumentBytes: MAX_PACKUMENT_BYTES,
 })

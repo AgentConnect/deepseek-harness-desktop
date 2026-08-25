@@ -123,7 +123,7 @@ dsh plugin update
 
 Desktop 设置页还为内置的 `@awiki/dsh-plugin` 与 `@awiki/dsh-model-proxy` 组合提供了
 **AWiki 插件更新**区域。手动检查只会访问 npm 官方 Registry，选择 peer range 兼容的稳定
-版本，并遵守 24 小时发布观察期。点击**升级插件并重启**后，Desktop 会使用精确版本和
+版本，并立即开放最新兼容组合的升级。点击**升级插件并重启**后，Desktop 会使用精确版本和
 一次性预览凭证，在修改 dependency 前停止 Host，并复用安装恢复快照；安装或兼容检查失败时
 会恢复原 Profile。应用内置组合继续作为离线兜底，因此普通 AWiki 插件发布不再要求重新发布
 Desktop installer。

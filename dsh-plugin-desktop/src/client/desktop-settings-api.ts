@@ -60,12 +60,6 @@ export type DesktopAwikiUpdateView =
       readonly target: Required<DesktopAwikiVersionsView>
       readonly previewId: string
     }
-  | {
-      readonly status: 'cooling-down'
-      readonly current: DesktopAwikiVersionsView
-      readonly target: Required<DesktopAwikiVersionsView>
-      readonly availableAt: string
-    }
 
 /** Browser operations consumed by the Desktop settings section. */
 export interface DesktopSettingsApi {
@@ -173,7 +167,7 @@ function parseAwikiVersions(value: unknown, required: boolean): DesktopAwikiVers
 /** Validate a bounded update result before it reaches the settings UI. */
 export function parseDesktopAwikiUpdateView(value: unknown): DesktopAwikiUpdateView {
   if (!isObject(value)
-    || (value.status !== 'up-to-date' && value.status !== 'available' && value.status !== 'cooling-down')) {
+    || (value.status !== 'up-to-date' && value.status !== 'available')) {
     throw new Error('dsh-plugin-desktop: invalid AWiki update response')
   }
   const current = parseAwikiVersions(value.current, false)
@@ -183,12 +177,6 @@ export function parseDesktopAwikiUpdateView(value: unknown): DesktopAwikiUpdateV
       throw new Error('dsh-plugin-desktop: invalid AWiki update response')
     }
     return Object.freeze({ status: value.status, current, target, previewId: value.previewId })
-  }
-  if (value.status === 'cooling-down') {
-    if (typeof value.availableAt !== 'string' || !Number.isFinite(Date.parse(value.availableAt))) {
-      throw new Error('dsh-plugin-desktop: invalid AWiki update response')
-    }
-    return Object.freeze({ status: value.status, current, target, availableAt: value.availableAt })
   }
   return Object.freeze({ status: value.status, current, target })
 }
