@@ -268,7 +268,7 @@ virtualStoreDirMaxLength: 120
     expect(prepared.requiresDependencyMigration).toBe(true)
     expect(prepared.awikiCompatibilityFallback).toMatchObject({
       source: 'install',
-      rejectedPluginVersion: '0.3.3',
+      rejectedPluginVersion: '0.3.5',
       rejectedModelProxyVersion: '0.2.0',
     })
     expect(Object.fromEntries(prepared.packageSourceOverrides)).toEqual({

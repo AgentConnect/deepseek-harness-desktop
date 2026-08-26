@@ -18,7 +18,7 @@ Each installer contains only the platform packages relevant to that target. The 
 | --- | --- | --- |
 | @anthropic-ai/sdk | 0.91.1 | MIT |
 | @awiki/dsh-model-proxy | 0.1.4 | MIT |
-| @awiki/dsh-plugin | 0.3.3 | MIT |
+| @awiki/dsh-plugin | 0.3.5 | MIT |
 | @awiki/im-core-node | 0.1.8 | AWiki Commercial License (AWIKI-DSH-DESKTOP-2026-08-25; upstream AGPL-3.0-only) |
 | @awiki/im-core-node-darwin-arm64 | 0.1.8 | AWiki Commercial License (AWIKI-DSH-DESKTOP-2026-08-25; upstream AGPL-3.0-only) |
 | @awiki/im-core-node-darwin-x64 | 0.1.8 | AWiki Commercial License (AWIKI-DSH-DESKTOP-2026-08-25; upstream AGPL-3.0-only) |
