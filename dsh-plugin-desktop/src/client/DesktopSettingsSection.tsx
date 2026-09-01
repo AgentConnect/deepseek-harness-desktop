@@ -445,11 +445,6 @@ export function DesktopSettingsSection({
             {awikiUpdate.status === 'up-to-date' && (
               <p className="dshDesktopSettingsSuccess" role="status">{t('awikiUpToDate')}</p>
             )}
-            {awikiUpdate.status === 'cooling-down' && (
-              <p className="dshDesktopSettingsNotice" role="status">
-                {t('awikiCoolingDown')} <time dateTime={awikiUpdate.availableAt}>{new Date(awikiUpdate.availableAt).toLocaleString()}</time>
-              </p>
-            )}
             {awikiUpdate.status === 'available' && (
               <p className="dshDesktopSettingsNotice" role="status">{t('awikiUpdateAvailable')}</p>
             )}

@@ -27,6 +27,11 @@ const VIEW: DesktopSettingsView = {
   ],
   market: { requested: 'disabled', effective: 'disabled', legacyDefaulted: true },
 }
+const AWIKI_POLICY_VIEW = {
+  tenantId: 'official-china',
+  tenantGeneration: 7,
+  policyRevision: 12,
+}
 
 function json(value: unknown, status = 200): Response {
   return new Response(JSON.stringify(value), {
@@ -55,11 +60,13 @@ describe('Desktop settings API', () => {
       current: { pluginVersion: '0.3.2', modelProxyVersion: '0.1.2' },
       target: { pluginVersion: '0.3.3', modelProxyVersion: '0.1.2' },
       previewId: 'a'.repeat(43),
+      policy: AWIKI_POLICY_VIEW,
     })).toEqual({
       status: 'available',
       current: { pluginVersion: '0.3.2', modelProxyVersion: '0.1.2' },
       target: { pluginVersion: '0.3.3', modelProxyVersion: '0.1.2' },
       previewId: 'a'.repeat(43),
+      policy: AWIKI_POLICY_VIEW,
     })
     expect(() => parseDesktopAwikiUpdateView({
       status: 'available', current: {}, target: {}, previewId: 'unsafe',
@@ -76,6 +83,7 @@ describe('Desktop settings API', () => {
           current: { pluginVersion: '0.3.2', modelProxyVersion: '0.1.2' },
           target: { pluginVersion: '0.3.3', modelProxyVersion: '0.1.2' },
           previewId: 'a'.repeat(43),
+          policy: AWIKI_POLICY_VIEW,
         })
       }
       return path === desktopSettingsPaths.settings || path === desktopSettingsPaths.profileCreate || path === desktopSettingsPaths.profileDelete

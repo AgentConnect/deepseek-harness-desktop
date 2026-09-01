@@ -12,6 +12,16 @@ const INTEGRITY = `sha512-${Buffer.alloc(64).toString('base64')}`
 const REPOSITORY = 'git+https://github.com/AgentConnect/dsh-awiki.git'
 const roots: string[] = []
 
+function policy(pluginVersion: string, modelProxyVersion: string) {
+  return {
+    tenantId: 'official-china',
+    tenantGeneration: 7,
+    policyRevision: 12,
+    plugin: { version: pluginVersion, integrity: INTEGRITY },
+    modelProxy: { version: modelProxyVersion, integrity: INTEGRITY },
+  }
+}
+
 afterEach(async () => {
   const { rm } = await import('node:fs/promises')
   await Promise.all(roots.splice(0).map(root => rm(root, { recursive: true, force: true })))
@@ -75,7 +85,7 @@ function registry(
 }
 
 describe('AWiki update discovery', () => {
-  it('selects the newest trusted stable plugin with the newest compatible proxy', async () => {
+  it('selects only the active tenant policy pair from trusted npm metadata', async () => {
     const profileDir = await profile()
     const request = registry(
       packument('@awiki/dsh-plugin', [
@@ -91,8 +101,8 @@ describe('AWiki update discovery', () => {
     await expect(discoverDesktopAwikiUpdate({
       profileDir,
       request,
-      now: () => Date.parse('2026-08-25T00:00:00.000Z'),
-    })).resolves.toEqual({
+      policy: policy('0.3.3', '0.1.2'),
+    })).resolves.toMatchObject({
       status: 'available',
       current: { pluginVersion: '0.3.2', modelProxyVersion: '0.1.2' },
       target: { pluginVersion: '0.3.3', modelProxyVersion: '0.1.2' },
@@ -114,7 +124,7 @@ describe('AWiki update discovery', () => {
     await expect(discoverDesktopAwikiUpdate({
       profileDir,
       request,
-      now: () => Date.parse('2026-08-25T00:00:00.000Z'),
+      policy: policy('0.3.3', '0.1.2'),
     })).resolves.toMatchObject({
       status: 'available',
       target: { pluginVersion: '0.3.3', modelProxyVersion: '0.1.2' },
@@ -136,11 +146,11 @@ describe('AWiki update discovery', () => {
     await expect(discoverDesktopAwikiUpdate({
       profileDir,
       request,
-      now: () => Date.parse('2026-08-25T00:00:00.000Z'),
+      policy: policy('0.3.3', '0.1.2'),
     })).rejects.toThrow('npm registry request failed')
   })
 
-  it('reports a cooling release instead of bypassing the 24-hour trust window', async () => {
+  it('makes an exact tenant-published target available without a second cooling window', async () => {
     const profileDir = await profile('0.3.3', '0.1.2')
     const request = registry(
       packument('@awiki/dsh-plugin', [
@@ -155,12 +165,11 @@ describe('AWiki update discovery', () => {
     await expect(discoverDesktopAwikiUpdate({
       profileDir,
       request,
-      now: () => Date.parse('2026-08-25T12:00:00.000Z'),
-    })).resolves.toEqual({
-      status: 'cooling-down',
+      policy: policy('0.3.4', '0.1.2'),
+    })).resolves.toMatchObject({
+      status: 'available',
       current: { pluginVersion: '0.3.3', modelProxyVersion: '0.1.2' },
       target: { pluginVersion: '0.3.4', modelProxyVersion: '0.1.2' },
-      availableAt: '2026-08-26T11:00:00.000Z',
     })
   })
 
@@ -178,7 +187,7 @@ describe('AWiki update discovery', () => {
     await expect(discoverDesktopAwikiUpdate({
       profileDir,
       request,
-      now: () => Date.parse('2026-08-25T00:00:00.000Z'),
+      policy: policy('0.3.3', '0.1.2'),
     })).rejects.toThrow('no trusted stable AWiki release')
   })
 
@@ -196,12 +205,11 @@ describe('AWiki update discovery', () => {
     await expect(discoverDesktopAwikiUpdate({
       profileDir,
       request,
-      now: () => Date.parse('2026-08-25T00:00:00.000Z'),
+      policy: policy('0.3.3', '0.1.2'),
     })).resolves.toMatchObject({ status: 'up-to-date' })
   })
 
-  it('keeps Registry URLs and release-age policy fixed', () => {
+  it('keeps the trusted Registry origin fixed', () => {
     expect(awikiUpdateDiscoveryConstants.npmRegistryOrigin).toBe('https://registry.npmjs.org')
-    expect(awikiUpdateDiscoveryConstants.minimumReleaseAgeMs).toBe(24 * 60 * 60 * 1000)
   })
 })

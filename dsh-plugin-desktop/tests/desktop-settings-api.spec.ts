@@ -22,6 +22,13 @@ import {
 import type { DesktopProfileSummary } from '../src/profile-manager.ts'
 
 const ORIGIN = 'http://127.0.0.1:43120'
+const AWIKI_POLICY = {
+  tenantId: 'official-china',
+  tenantGeneration: 7,
+  policyRevision: 12,
+  plugin: { version: '0.3.3', integrity: `sha512-${Buffer.alloc(64).toString('base64')}` },
+  modelProxy: { version: '0.1.2', integrity: `sha512-${Buffer.alloc(64).toString('base64')}` },
+}
 
 const DESKTOP: DesktopProfileSummary = {
   name: 'desktop',
@@ -81,6 +88,7 @@ function bootstrap(
       status: 'up-to-date',
       current: { pluginVersion: '0.3.3', modelProxyVersion: '0.1.2' },
       target: { pluginVersion: '0.3.3', modelProxyVersion: '0.1.2' },
+      policy: AWIKI_POLICY,
     }),
     prepareAwikiUpgrade: () => ({
       response: { accepted: true, restartRequired: true },
@@ -322,6 +330,7 @@ describe('desktop settings controller', () => {
         status: 'available',
         current: { pluginVersion: '0.3.2', modelProxyVersion: '0.1.2' },
         target: { pluginVersion: '0.3.3', modelProxyVersion: '0.1.2' },
+        policy: AWIKI_POLICY,
       }),
       prepareAwikiUpgrade,
     }))
@@ -337,7 +346,7 @@ describe('desktop settings controller', () => {
 
     const operation = controller.applyAwikiUpdate(preview.previewId)
     expect(operation.response).toEqual({ accepted: true, restartRequired: true })
-    expect(prepareAwikiUpgrade).toHaveBeenCalledWith(preview.current, preview.target)
+    expect(prepareAwikiUpgrade).toHaveBeenCalledWith(preview.current, preview.target, AWIKI_POLICY)
     expect(afterResponse).not.toHaveBeenCalled()
     operation.afterResponse?.()
     expect(afterResponse).toHaveBeenCalledOnce()
@@ -355,6 +364,7 @@ describe('desktop settings controller', () => {
         status: 'available',
         current: { pluginVersion: '0.3.2', modelProxyVersion: '0.1.2' },
         target: { pluginVersion: '0.3.3', modelProxyVersion: '0.1.2' },
+        policy: AWIKI_POLICY,
       }),
       prepareAwikiUpgrade,
     }))
@@ -585,6 +595,7 @@ describe('desktop settings HTTP boundary', () => {
         status: 'available',
         current: { pluginVersion: '0.3.2', modelProxyVersion: '0.1.2' },
         target: { pluginVersion: '0.3.3', modelProxyVersion: '0.1.2' },
+        policy: AWIKI_POLICY,
       }),
       prepareAwikiUpgrade: () => ({
         response: { accepted: true, restartRequired: true },

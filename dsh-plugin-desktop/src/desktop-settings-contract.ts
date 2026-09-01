@@ -81,20 +81,24 @@ export type DesktopAwikiUpdateCheckResponse =
       readonly status: 'up-to-date'
       readonly current: DesktopAwikiVersionsView
       readonly target: Required<DesktopAwikiVersionsView>
+      readonly policy: DesktopAwikiUpdatePolicyView
     }
   | {
       readonly status: 'available'
       readonly current: DesktopAwikiVersionsView
       readonly target: Required<DesktopAwikiVersionsView>
+      readonly policy: DesktopAwikiUpdatePolicyView
       /** Opaque, short-lived authority for exactly this pair. */
       readonly previewId: string
     }
-  | {
-      readonly status: 'cooling-down'
-      readonly current: DesktopAwikiVersionsView
-      readonly target: Required<DesktopAwikiVersionsView>
-      readonly availableAt: string
-    }
+
+export interface DesktopAwikiUpdatePolicyView {
+  readonly tenantId: string
+  readonly tenantGeneration: number
+  readonly policyRevision: number
+  readonly plugin: { readonly version: string; readonly integrity: string }
+  readonly modelProxy: { readonly version: string; readonly integrity: string }
+}
 
 /** Exact empty body accepted by the manual AWiki update check. */
 export type DesktopAwikiUpdateCheckRequest = Readonly<Record<string, never>>

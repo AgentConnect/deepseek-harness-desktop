@@ -1,6 +1,6 @@
 /** Discover one trusted, compatible stable AWiki plugin pair from npm. */
 
-import { compare, prerelease, rcompare, satisfies, valid } from 'semver'
+import { compare, prerelease, satisfies, valid } from 'semver'
 import {
   AWIKI_MODEL_PROXY_PACKAGE,
   AWIKI_PLUGIN_PACKAGE,
@@ -14,14 +14,13 @@ const NPM_REGISTRY_ORIGIN = 'https://registry.npmjs.org'
 const EXPECTED_REPOSITORY = 'github.com/AgentConnect/dsh-awiki'
 const MAX_PACKUMENT_BYTES = 4 * 1024 * 1024
 const DEFAULT_TIMEOUT_MS = 15_000
-const DEFAULT_MINIMUM_RELEASE_AGE_MS = 24 * 60 * 60 * 1000
 const INSTALL_LIFECYCLE_SCRIPTS = ['preinstall', 'install', 'postinstall'] as const
 
 type UnknownRecord = Record<string, unknown>
 
 interface TrustedVersion {
   readonly version: string
-  readonly publishedAt: number
+  readonly integrity: string
   readonly pluginRange?: string
 }
 
@@ -37,9 +36,16 @@ export interface DesktopAwikiUpdateRequest {
 export interface DesktopAwikiUpdateDiscoveryOptions {
   readonly profileDir: string
   readonly request: DesktopAwikiUpdateRequest
-  readonly now?: () => number
-  readonly minimumReleaseAgeMs?: number
+  readonly policy: DesktopAwikiUpdatePolicySelection
   readonly timeoutMs?: number
+}
+
+export interface DesktopAwikiUpdatePolicySelection {
+  readonly tenantId: string
+  readonly tenantGeneration: number
+  readonly policyRevision: number
+  readonly plugin: { readonly version: string; readonly integrity: string }
+  readonly modelProxy: { readonly version: string; readonly integrity: string }
 }
 
 export type DesktopAwikiUpdateDiscovery =
@@ -47,17 +53,13 @@ export type DesktopAwikiUpdateDiscovery =
       readonly status: 'up-to-date'
       readonly current: Partial<DesktopAwikiProfileVersions>
       readonly target: DesktopAwikiProfileVersions
+      readonly policy: DesktopAwikiUpdatePolicySelection
     }
   | {
       readonly status: 'available'
       readonly current: Partial<DesktopAwikiProfileVersions>
       readonly target: DesktopAwikiProfileVersions
-    }
-  | {
-      readonly status: 'cooling-down'
-      readonly current: Partial<DesktopAwikiProfileVersions>
-      readonly target: DesktopAwikiProfileVersions
-      readonly availableAt: string
+      readonly policy: DesktopAwikiUpdatePolicySelection
     }
 
 function record(value: unknown): UnknownRecord | undefined {
@@ -115,7 +117,6 @@ function trustedManifest(
   packageName: string,
   version: string,
   value: unknown,
-  publishedAt: number,
 ): TrustedVersion | undefined {
   const manifest = record(value)
   if (manifest === undefined || manifest.name !== packageName || manifest.version !== version) return undefined
@@ -127,10 +128,11 @@ function trustedManifest(
     || !sha512Integrity(dist.integrity)
     || !officialTarball(dist.tarball, packageName, version)) return undefined
 
-  if (packageName !== AWIKI_MODEL_PROXY_PACKAGE) return { version, publishedAt }
+  const integrity = dist.integrity as string
+  if (packageName !== AWIKI_MODEL_PROXY_PACKAGE) return { version, integrity }
   const pluginRange = record(manifest.peerDependencies)?.[AWIKI_PLUGIN_PACKAGE]
   if (typeof pluginRange !== 'string' || pluginRange.length === 0 || pluginRange.length > 256) return undefined
-  return { version, publishedAt, pluginRange }
+  return { version, integrity, pluginRange }
 }
 
 async function readBoundedJson(response: Response, requestUrl: string): Promise<unknown> {
@@ -166,45 +168,17 @@ async function fetchPackument(
   })
   const packument = record(await readBoundedJson(response, requestUrl))
   const versions = record(packument?.versions)
-  const times = record(packument?.time)
-  if (packument?.name !== packageName || versions === undefined || times === undefined) {
+  if (packument?.name !== packageName || versions === undefined) {
     throw new Error('dsh-plugin-desktop: npm registry response was invalid')
   }
   const trusted: TrustedVersion[] = []
   for (const [version, manifest] of Object.entries(versions)) {
     if (!stableVersion(version)) continue
-    const published = times[version]
-    if (typeof published !== 'string') continue
-    const publishedAt = Date.parse(published)
-    if (!Number.isFinite(publishedAt)) continue
-    const candidate = trustedManifest(packageName, version, manifest, publishedAt)
+    const candidate = trustedManifest(packageName, version, manifest)
     if (candidate !== undefined) trusted.push(candidate)
   }
-  trusted.sort((left, right) => rcompare(left.version, right.version))
   if (trusted.length === 0) throw new Error('dsh-plugin-desktop: npm registry has no trusted stable AWiki release')
   return { packageName, versions: Object.freeze(trusted) }
-}
-
-function compatiblePairs(
-  plugins: TrustedPackument,
-  proxies: TrustedPackument,
-): readonly { readonly target: DesktopAwikiProfileVersions; readonly publishedAt: number }[] {
-  const pairs: { target: DesktopAwikiProfileVersions; publishedAt: number }[] = []
-  for (const plugin of plugins.versions) {
-    for (const proxy of proxies.versions) {
-      try {
-        if (proxy.pluginRange === undefined || !satisfies(plugin.version, proxy.pluginRange)) continue
-      } catch {
-        continue
-      }
-      pairs.push({
-        target: { pluginVersion: plugin.version, modelProxyVersion: proxy.version },
-        publishedAt: Math.max(plugin.publishedAt, proxy.publishedAt),
-      })
-      break
-    }
-  }
-  return pairs
 }
 
 function samePair(
@@ -225,14 +199,18 @@ function newerPair(
   return plugin >= 0 && proxy >= 0 && (plugin > 0 || proxy > 0)
 }
 
-/** Resolve the newest trusted compatible pair while honoring the release-age policy. */
+/** Verify the active tenant's exact pair against trusted npm metadata. */
 export async function discoverDesktopAwikiUpdate(
   options: DesktopAwikiUpdateDiscoveryOptions,
 ): Promise<DesktopAwikiUpdateDiscovery> {
   const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS
-  const minimumReleaseAgeMs = options.minimumReleaseAgeMs ?? DEFAULT_MINIMUM_RELEASE_AGE_MS
   if (!Number.isFinite(timeoutMs) || timeoutMs <= 0
-    || !Number.isFinite(minimumReleaseAgeMs) || minimumReleaseAgeMs < 0) {
+    || !stableVersion(options.policy.plugin.version)
+    || !stableVersion(options.policy.modelProxy.version)
+    || !sha512Integrity(options.policy.plugin.integrity)
+    || !sha512Integrity(options.policy.modelProxy.integrity)
+    || !Number.isSafeInteger(options.policy.tenantGeneration) || options.policy.tenantGeneration < 0
+    || !Number.isSafeInteger(options.policy.policyRevision) || options.policy.policyRevision < 1) {
     throw new Error('dsh-plugin-desktop: AWiki update policy is invalid')
   }
   const controller = new AbortController()
@@ -244,25 +222,25 @@ export async function discoverDesktopAwikiUpdate(
       fetchPackument(AWIKI_PLUGIN_PACKAGE, options.request, controller.signal),
       fetchPackument(AWIKI_MODEL_PROXY_PACKAGE, options.request, controller.signal),
     ])
-    const pairs = compatiblePairs(pluginPackument, proxyPackument)
-    const newest = pairs[0]
-    if (newest === undefined) throw new Error('dsh-plugin-desktop: npm registry has no compatible stable AWiki pair')
-    if (samePair(current, newest.target) || !newerPair(current, newest.target)) {
-      return { status: 'up-to-date', current, target: newest.target }
+    const plugin = pluginPackument.versions.find(item => item.version === options.policy.plugin.version)
+    const proxy = proxyPackument.versions.find(item => item.version === options.policy.modelProxy.version)
+    if (plugin === undefined || proxy === undefined
+      || plugin.integrity !== options.policy.plugin.integrity
+      || proxy.integrity !== options.policy.modelProxy.integrity) {
+      throw new Error('dsh-plugin-desktop: tenant policy target does not match trusted npm metadata')
     }
-
-    const now = (options.now ?? Date.now)()
-    const eligible = pairs.find(pair =>
-      now - pair.publishedAt >= minimumReleaseAgeMs && newerPair(current, pair.target))
-    if (eligible !== undefined) {
-      return { status: 'available', current, target: eligible.target }
+    try {
+      if (proxy.pluginRange === undefined || !satisfies(plugin.version, proxy.pluginRange)) {
+        throw new Error('incompatible')
+      }
+    } catch {
+      throw new Error('dsh-plugin-desktop: tenant policy selected an incompatible AWiki pair')
     }
-    return {
-      status: 'cooling-down',
-      current,
-      target: newest.target,
-      availableAt: new Date(newest.publishedAt + minimumReleaseAgeMs).toISOString(),
+    const target = { pluginVersion: plugin.version, modelProxyVersion: proxy.version }
+    if (samePair(current, target) || !newerPair(current, target)) {
+      return { status: 'up-to-date', current, target, policy: options.policy }
     }
+    return { status: 'available', current, target, policy: options.policy }
   } finally {
     clearTimeout(timer)
   }
@@ -270,6 +248,5 @@ export async function discoverDesktopAwikiUpdate(
 
 export const awikiUpdateDiscoveryConstants = Object.freeze({
   npmRegistryOrigin: NPM_REGISTRY_ORIGIN,
-  minimumReleaseAgeMs: DEFAULT_MINIMUM_RELEASE_AGE_MS,
   maxPackumentBytes: MAX_PACKUMENT_BYTES,
 })

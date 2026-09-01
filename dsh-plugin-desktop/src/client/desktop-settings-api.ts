@@ -53,19 +53,21 @@ export type DesktopAwikiUpdateView =
       readonly status: 'up-to-date'
       readonly current: DesktopAwikiVersionsView
       readonly target: Required<DesktopAwikiVersionsView>
+      readonly policy: DesktopAwikiUpdatePolicyView
     }
   | {
       readonly status: 'available'
       readonly current: DesktopAwikiVersionsView
       readonly target: Required<DesktopAwikiVersionsView>
       readonly previewId: string
+      readonly policy: DesktopAwikiUpdatePolicyView
     }
-  | {
-      readonly status: 'cooling-down'
-      readonly current: DesktopAwikiVersionsView
-      readonly target: Required<DesktopAwikiVersionsView>
-      readonly availableAt: string
-    }
+
+export interface DesktopAwikiUpdatePolicyView {
+  readonly tenantId: string
+  readonly tenantGeneration: number
+  readonly policyRevision: number
+}
 
 /** Browser operations consumed by the Desktop settings section. */
 export interface DesktopSettingsApi {
@@ -173,24 +175,27 @@ function parseAwikiVersions(value: unknown, required: boolean): DesktopAwikiVers
 /** Validate a bounded update result before it reaches the settings UI. */
 export function parseDesktopAwikiUpdateView(value: unknown): DesktopAwikiUpdateView {
   if (!isObject(value)
-    || (value.status !== 'up-to-date' && value.status !== 'available' && value.status !== 'cooling-down')) {
+    || (value.status !== 'up-to-date' && value.status !== 'available')
+    || !isObject(value.policy)
+    || typeof value.policy.tenantId !== 'string'
+    || !Number.isSafeInteger(value.policy.tenantGeneration)
+    || !Number.isSafeInteger(value.policy.policyRevision)) {
     throw new Error('dsh-plugin-desktop: invalid AWiki update response')
   }
   const current = parseAwikiVersions(value.current, false)
   const target = parseAwikiVersions(value.target, true) as Required<DesktopAwikiVersionsView>
+  const policy = Object.freeze({
+    tenantId: value.policy.tenantId,
+    tenantGeneration: value.policy.tenantGeneration as number,
+    policyRevision: value.policy.policyRevision as number,
+  })
   if (value.status === 'available') {
     if (typeof value.previewId !== 'string' || !/^[A-Za-z0-9_-]{43}$/u.test(value.previewId)) {
       throw new Error('dsh-plugin-desktop: invalid AWiki update response')
     }
-    return Object.freeze({ status: value.status, current, target, previewId: value.previewId })
+    return Object.freeze({ status: value.status, current, target, previewId: value.previewId, policy })
   }
-  if (value.status === 'cooling-down') {
-    if (typeof value.availableAt !== 'string' || !Number.isFinite(Date.parse(value.availableAt))) {
-      throw new Error('dsh-plugin-desktop: invalid AWiki update response')
-    }
-    return Object.freeze({ status: value.status, current, target, availableAt: value.availableAt })
-  }
-  return Object.freeze({ status: value.status, current, target })
+  return Object.freeze({ status: value.status, current, target, policy })
 }
 
 async function readResponse(response: Response): Promise<unknown> {

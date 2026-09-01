@@ -111,7 +111,10 @@ import {
   upgradeDesktopAwikiProfile,
   type DesktopAwikiProfileVersions,
 } from './awiki-profile-upgrade.ts'
-import { discoverDesktopAwikiUpdate } from './awiki-update-discovery.ts'
+import {
+  discoverDesktopAwikiUpdate,
+  type DesktopAwikiUpdatePolicySelection,
+} from './awiki-update-discovery.ts'
 import { executeDesktopAwikiUpdate } from './awiki-update-execution.ts'
 
 const BIN_NAME = 'dsh-plugin-desktop'
@@ -1215,9 +1218,45 @@ async function start(): Promise<void> {
           })
         }
         let awikiUpgradePrepared = false
+        const readAwikiUpdatePolicy = (): DesktopAwikiUpdatePolicySelection => {
+          const awiki = (hostCtx as unknown as {
+            readonly awiki?: {
+              getUpdatePolicyStatus(): {
+                readonly tenantId: string
+                readonly tenantGeneration: number
+                readonly policyRevision?: number
+                readonly policyUnavailable: boolean
+                readonly pluginTarget?: { readonly recommendedVersion: string; readonly integrity: string }
+                readonly modelProxyTarget?: { readonly recommendedVersion: string; readonly integrity: string }
+              }
+            }
+          }).awiki
+          const status = awiki?.getUpdatePolicyStatus()
+          if (status === undefined
+            || status.policyUnavailable
+            || status.policyRevision === undefined
+            || status.pluginTarget === undefined
+            || status.modelProxyTarget === undefined) {
+            throw new Error(`${BIN_NAME}: active tenant has no verifiable AWiki update target`)
+          }
+          return Object.freeze({
+            tenantId: status.tenantId,
+            tenantGeneration: status.tenantGeneration,
+            policyRevision: status.policyRevision,
+            plugin: Object.freeze({
+              version: status.pluginTarget.recommendedVersion,
+              integrity: status.pluginTarget.integrity,
+            }),
+            modelProxy: Object.freeze({
+              version: status.modelProxyTarget.recommendedVersion,
+              integrity: status.modelProxyTarget.integrity,
+            }),
+          })
+        }
         const prepareAwikiUpgrade = (
           expectedCurrent: Partial<DesktopAwikiProfileVersions>,
           target: DesktopAwikiProfileVersions,
+          expectedPolicy: DesktopAwikiUpdatePolicySelection,
         ) => {
           if (awikiUpgradePrepared) {
             throw new Error(`${BIN_NAME}: an AWiki plugin update is already pending`)
@@ -1270,6 +1309,8 @@ async function start(): Promise<void> {
                 })
                 let result = await executeDesktopAwikiUpdate({
                   expectedCurrent,
+                  expectedPolicy,
+                  readPolicy: readAwikiUpdatePolicy,
                   quiesceHost: () => generation.quiesceForRecovery(),
                   readCurrent: () => readDesktopAwikiProfileVersions(prepared.profile.dir),
                   upgrade: performUpgrade,
@@ -1342,6 +1383,7 @@ async function start(): Promise<void> {
           checkAwikiUpdate: () => discoverDesktopAwikiUpdate({
             profileDir: prepared.profile.dir,
             request: (url, init) => net.fetch(url, { ...init, redirect: 'error' }),
+            policy: readAwikiUpdatePolicy(),
           }),
           prepareAwikiUpgrade,
         }))

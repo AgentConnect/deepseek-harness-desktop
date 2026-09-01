@@ -23,7 +23,10 @@ import type {
   DesktopSettingsResponse,
   DesktopTerminalOpenResponse,
 } from './desktop-settings-contract.ts'
-import type { DesktopAwikiUpdateDiscovery } from './awiki-update-discovery.ts'
+import type {
+  DesktopAwikiUpdateDiscovery,
+  DesktopAwikiUpdatePolicySelection,
+} from './awiki-update-discovery.ts'
 import type { DesktopAwikiProfileVersions } from './awiki-profile-upgrade.ts'
 
 const AWIKI_UPDATE_PREVIEW_TTL_MS = 5 * 60 * 1000
@@ -32,6 +35,7 @@ const MAX_AWIKI_UPDATE_PREVIEWS = 4
 interface DesktopAwikiUpdatePreview {
   readonly current: DesktopAwikiVersionsView
   readonly target: DesktopAwikiProfileVersions
+  readonly policy: DesktopAwikiUpdatePolicySelection
   readonly expiresAt: number
 }
 
@@ -62,6 +66,7 @@ export interface DesktopSettingsControllerBootstrap {
   prepareAwikiUpgrade(
     current: DesktopAwikiVersionsView,
     target: DesktopAwikiProfileVersions,
+    policy: DesktopAwikiUpdatePolicySelection,
   ): DesktopSettingsPostResponse<DesktopAwikiUpdateApplyResponse>
   /** Injectable clock for preview expiry tests. */
   readonly now?: () => number
@@ -210,6 +215,7 @@ export class DesktopSettingsController {
     this.awikiUpdatePreviews.set(previewId, {
       current: result.current,
       target: result.target,
+      policy: result.policy,
       expiresAt: now + AWIKI_UPDATE_PREVIEW_TTL_MS,
     })
     return Object.freeze({ ...result, previewId })
@@ -226,7 +232,7 @@ export class DesktopSettingsController {
       throw new Error('dsh-plugin-desktop: AWiki update preview expired or was already used')
     }
     this.awikiUpdatePreviews.delete(previewId)
-    return this.bootstrap.prepareAwikiUpgrade(preview.current, preview.target)
+    return this.bootstrap.prepareAwikiUpgrade(preview.current, preview.target, preview.policy)
   }
 
   private pruneAwikiUpdatePreviews(now: number): void {
