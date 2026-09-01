@@ -128,6 +128,18 @@ Desktop 设置页还为内置的 `@awiki/dsh-plugin` 与 `@awiki/dsh-model-proxy
 会恢复原 Profile。应用内置组合继续作为离线兜底，因此普通 AWiki 插件发布不再要求重新发布
 Desktop installer。
 
+租户版 AWiki 插件尚未发布时，可以让 Desktop 直接对平行工作区中的精确源码执行无界面门禁，
+且不改变既有 Profile 安装、更新和卸载语义：
+
+```sh
+DSH_AWIKI_TENANT_SOURCE_ROOT=/absolute/path/to/dsh-awiki \
+  yarn workspace dsh-plugin-desktop verify:awiki-tenant-source
+```
+
+普通 Profile smoke 负责验证 Desktop 固定的 Registry 可安装版本；这个额外门禁先确认本地源码的包
+身份，再直接对未发布源码运行 Host 注册表加载、中美租户双向切换、完整提交后的重启恢复、
+generation 隔离、生命周期参与者与 Model Proxy 能力绑定测试；不会访问网络或启动图形界面。
+
 `dshmarket@1.2.3` 尚未预装，也不是 DSH Desktop 的 dependency。该版本仍从 config/argv 解析 profile，并通过私有 child-process 代码启动 `dsh plugin`；它既不读取 `desktopProfiles`，也不使用 `desktopPnpm`，package exports 也没有 runner injection seam。后续兼容版本必须动态探测 Desktop service，同时在普通 DSH 中保留现有 CLI fallback。此外，`1.2.3` 的源码仓库与 npm tarball 均未包含完整 MIT 许可文本或版权通知，因此该版本尚未通过内置再分发 gate。用户主动安装第三方 package 与 Desktop 将其嵌入 application archive 或 installer 是两个独立边界。
 
 Required injection、可选 Desktop 适配、TypeScript 示例、cancellation 与 fallback 指南详见[面向插件作者的 service 文档](docs/plugin-services.zh.md)。
