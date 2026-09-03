@@ -6,7 +6,6 @@ import {
   createDesktopSettingsApi,
   desktopSettingsPaths,
   parseDesktopActionAcceptance,
-  parseDesktopAwikiUpdateView,
   parseDesktopRestartAcceptance,
   parseDesktopSettingsView,
   type DesktopSettingsView,
@@ -27,12 +26,6 @@ const VIEW: DesktopSettingsView = {
   ],
   market: { requested: 'disabled', effective: 'disabled', legacyDefaulted: true },
 }
-const AWIKI_POLICY_VIEW = {
-  tenantId: 'official-china',
-  tenantGeneration: 7,
-  policyRevision: 12,
-}
-
 function json(value: unknown, status = 200): Response {
   return new Response(JSON.stringify(value), {
     status,
@@ -55,37 +48,12 @@ describe('Desktop settings API', () => {
     expect(parseDesktopActionAcceptance({ accepted: true })).toBeUndefined()
     expect(() => parseDesktopActionAcceptance({ accepted: true, detail: 'extra' }))
       .toThrow('invalid Desktop action response')
-    expect(parseDesktopAwikiUpdateView({
-      status: 'available',
-      current: { pluginVersion: '0.3.2', modelProxyVersion: '0.1.2' },
-      target: { pluginVersion: '0.3.3', modelProxyVersion: '0.1.2' },
-      previewId: 'a'.repeat(43),
-      policy: AWIKI_POLICY_VIEW,
-    })).toEqual({
-      status: 'available',
-      current: { pluginVersion: '0.3.2', modelProxyVersion: '0.1.2' },
-      target: { pluginVersion: '0.3.3', modelProxyVersion: '0.1.2' },
-      previewId: 'a'.repeat(43),
-      policy: AWIKI_POLICY_VIEW,
-    })
-    expect(() => parseDesktopAwikiUpdateView({
-      status: 'available', current: {}, target: {}, previewId: 'unsafe',
-    })).toThrow('invalid AWiki update response')
   })
 
   it('uses the strict same-origin routes and request bodies', async () => {
     const fetcher = vi.fn(async (input: RequestInfo | URL, _init?: RequestInit) => {
       const path = String(input)
       if (path === desktopSettingsPaths.terminalOpen) return json({ accepted: true })
-      if (path === desktopSettingsPaths.awikiUpdateCheck) {
-        return json({
-          status: 'available',
-          current: { pluginVersion: '0.3.2', modelProxyVersion: '0.1.2' },
-          target: { pluginVersion: '0.3.3', modelProxyVersion: '0.1.2' },
-          previewId: 'a'.repeat(43),
-          policy: AWIKI_POLICY_VIEW,
-        })
-      }
       return path === desktopSettingsPaths.settings || path === desktopSettingsPaths.profileCreate || path === desktopSettingsPaths.profileDelete
         ? json(VIEW)
         : json({ accepted: true, restartRequired: true })
@@ -98,8 +66,6 @@ describe('Desktop settings API', () => {
     await expect(api.deleteProfile('work')).resolves.toEqual(VIEW)
     await expect(api.selectMarket('community-market')).resolves.toEqual({ accepted: true, restartRequired: true })
     await expect(api.openTerminal()).resolves.toBeUndefined()
-    await expect(api.checkAwikiUpdate()).resolves.toMatchObject({ status: 'available' })
-    await expect(api.applyAwikiUpdate('a'.repeat(43))).resolves.toEqual({ accepted: true, restartRequired: true })
 
     expect(fetcher.mock.calls.map(call => call[0])).toEqual([
       desktopSettingsPaths.settings,
@@ -108,8 +74,6 @@ describe('Desktop settings API', () => {
       desktopSettingsPaths.profileDelete,
       desktopSettingsPaths.marketSelect,
       desktopSettingsPaths.terminalOpen,
-      desktopSettingsPaths.awikiUpdateCheck,
-      desktopSettingsPaths.awikiUpdateApply,
     ])
     expect(fetcher.mock.calls[1]?.[1]).toMatchObject({
       method: 'POST',
@@ -127,8 +91,6 @@ describe('Desktop settings API', () => {
       method: 'POST',
       body: JSON.stringify({}),
     })
-    expect(fetcher.mock.calls[6]?.[1]).toMatchObject({ body: JSON.stringify({}) })
-    expect(fetcher.mock.calls[7]?.[1]).toMatchObject({ body: JSON.stringify({ previewId: 'a'.repeat(43) }) })
   })
 
   it('does not reflect an untrusted error body into its public error', async () => {

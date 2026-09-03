@@ -6,7 +6,7 @@ import {
 import type { SettingsScope } from '@deepseek-ai/dsh-client-runtime/client'
 import type { InjectFace, PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 import type {
-  DesktopAwikiUpdateView, DesktopMarketProvider, DesktopProfileView, DesktopSettingsApi, DesktopSettingsView,
+  DesktopMarketProvider, DesktopProfileView, DesktopSettingsApi, DesktopSettingsView,
 } from './desktop-settings-api.ts'
 import type { DesktopSettingsLocaleKey } from './desktop-settings-locales.ts'
 import type { DesktopClientPlatform } from './environment.ts'
@@ -43,7 +43,7 @@ export type DesktopSettingsSectionProps =
   & InjectFace<DesktopSettingsSectionInjected>
 
 type Translate = DesktopSettingsSectionProps['t']
-type BusyOperation = 'load' | 'create-profile' | 'select-profile' | 'delete-profile' | 'select-market' | 'check-awiki-update' | 'apply-awiki-update' | 'mode' | 'notification'
+type BusyOperation = 'load' | 'create-profile' | 'select-profile' | 'delete-profile' | 'select-market' | 'mode' | 'notification'
 type RestartState = 'none' | 'restarting' | 'required'
 
 function useScope<T>(scope: SettingsScope<T>) {
@@ -204,8 +204,6 @@ export function DesktopSettingsSection({
   const [operationFailed, setOperationFailed] = useState(false)
   const [restart, setRestart] = useState<RestartState>('none')
   const [pendingProfileDelete, setPendingProfileDelete] = useState<string>()
-  const [awikiUpdate, setAwikiUpdate] = useState<DesktopAwikiUpdateView>()
-  const [awikiCheckFailed, setAwikiCheckFailed] = useState(false)
 
   const load = useCallback(async () => {
     setBusy('load')
@@ -283,25 +281,6 @@ export function DesktopSettingsSection({
         market: { requested: provider, effective: current.market.effective, legacyDefaulted: false },
       })
       if (response.restartRequired) requestRestart()
-    })
-  }
-
-  const checkAwikiUpdate = (): void => {
-    setAwikiCheckFailed(false)
-    void run('check-awiki-update', async () => {
-      try {
-        setAwikiUpdate(await api.checkAwikiUpdate())
-      } catch (cause) {
-        setAwikiCheckFailed(true)
-        throw cause
-      }
-    })
-  }
-
-  const applyAwikiUpdate = (previewId: string): void => {
-    void run('apply-awiki-update', async () => {
-      await api.applyAwikiUpdate(previewId)
-      requestRestart()
     })
   }
 
@@ -420,57 +399,6 @@ export function DesktopSettingsSection({
             </form>
           </>
         )}
-      </section>
-
-      <section className="dshDesktopSettingsGroup" aria-labelledby="dsh-desktop-awiki-update-title">
-        <div>
-          <h3 id="dsh-desktop-awiki-update-title">{t('awikiUpdateTitle')}</h3>
-          <p className="dshDesktopSettingsGroupIntro">{t('awikiUpdateIntro')}</p>
-        </div>
-        {awikiCheckFailed && <p className="dshDesktopSettingsError" role="alert">{t('awikiUpdateCheckFailed')}</p>}
-        {awikiUpdate !== undefined && (
-          <div className="dshDesktopSettingsAwikiCard">
-            <div className="dshDesktopSettingsAwikiVersions">
-              <span>{t('awikiCurrentVersions')}</span>
-              <code>@awiki/dsh-plugin {awikiUpdate.current.pluginVersion ?? t('notInstalled')}</code>
-              <code>@awiki/dsh-model-proxy {awikiUpdate.current.modelProxyVersion ?? t('notInstalled')}</code>
-              {awikiUpdate.status !== 'up-to-date' && (
-                <>
-                  <span>{t('awikiTargetVersions')}</span>
-                  <code>@awiki/dsh-plugin {awikiUpdate.target.pluginVersion}</code>
-                  <code>@awiki/dsh-model-proxy {awikiUpdate.target.modelProxyVersion}</code>
-                </>
-              )}
-            </div>
-            {awikiUpdate.status === 'up-to-date' && (
-              <p className="dshDesktopSettingsSuccess" role="status">{t('awikiUpToDate')}</p>
-            )}
-            {awikiUpdate.status === 'available' && (
-              <p className="dshDesktopSettingsNotice" role="status">{t('awikiUpdateAvailable')}</p>
-            )}
-          </div>
-        )}
-        <div className="dshDesktopSettingsActions">
-          <button
-            type="button"
-            className="dshDesktopSettingsButton dshDesktopSettingsButtonSecondary"
-            disabled={busy !== undefined || restart !== 'none'}
-            onClick={checkAwikiUpdate}
-          >
-            {busy === 'check-awiki-update' ? t('checkingAwikiUpdate') : t('checkAwikiUpdate')}
-          </button>
-          {awikiUpdate?.status === 'available' && (
-            <button
-              type="button"
-              className="dshDesktopSettingsButton"
-              disabled={busy !== undefined || restart !== 'none'}
-              onClick={() => { applyAwikiUpdate(awikiUpdate.previewId) }}
-            >
-              {busy === 'apply-awiki-update' ? t('upgradingAwiki') : t('upgradeAwikiAndRestart')}
-            </button>
-          )}
-        </div>
-        <p className="dshDesktopSettingsHint">{t('awikiUpdateSafety')}</p>
       </section>
 
       <section className="dshDesktopSettingsGroup" aria-labelledby="dsh-desktop-market-title">

@@ -6,8 +6,6 @@ const PROFILE_SELECT_PATH = '/api/desktop/profiles/select'
 const PROFILE_DELETE_PATH = '/api/desktop/profiles/delete'
 const MARKET_SELECT_PATH = '/api/desktop/market/select'
 const TERMINAL_OPEN_PATH = '/api/desktop/terminal/open'
-const AWIKI_UPDATE_CHECK_PATH = '/api/desktop/awiki/check-update'
-const AWIKI_UPDATE_APPLY_PATH = '/api/desktop/awiki/apply-update'
 const MAX_PROFILES = 256
 const MAX_PROFILE_NAME_LENGTH = 255
 
@@ -43,32 +41,6 @@ export interface DesktopRestartAcceptance {
   readonly restartRequired: boolean
 }
 
-export interface DesktopAwikiVersionsView {
-  readonly pluginVersion?: string
-  readonly modelProxyVersion?: string
-}
-
-export type DesktopAwikiUpdateView =
-  | {
-      readonly status: 'up-to-date'
-      readonly current: DesktopAwikiVersionsView
-      readonly target: Required<DesktopAwikiVersionsView>
-      readonly policy: DesktopAwikiUpdatePolicyView
-    }
-  | {
-      readonly status: 'available'
-      readonly current: DesktopAwikiVersionsView
-      readonly target: Required<DesktopAwikiVersionsView>
-      readonly previewId: string
-      readonly policy: DesktopAwikiUpdatePolicyView
-    }
-
-export interface DesktopAwikiUpdatePolicyView {
-  readonly tenantId: string
-  readonly tenantGeneration: number
-  readonly policyRevision: number
-}
-
 /** Browser operations consumed by the Desktop settings section. */
 export interface DesktopSettingsApi {
   read(): Promise<DesktopSettingsView>
@@ -77,8 +49,6 @@ export interface DesktopSettingsApi {
   deleteProfile(name: string): Promise<DesktopSettingsView>
   selectMarket(provider: DesktopMarketProvider): Promise<DesktopRestartAcceptance>
   openTerminal(): Promise<void>
-  checkAwikiUpdate(): Promise<DesktopAwikiUpdateView>
-  applyAwikiUpdate(previewId: string): Promise<DesktopRestartAcceptance & { readonly restartRequired: true }>
 }
 
 type FetchLike = (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>
@@ -157,47 +127,6 @@ export function parseDesktopActionAcceptance(value: unknown): void {
   }
 }
 
-function parseAwikiVersions(value: unknown, required: boolean): DesktopAwikiVersionsView {
-  if (!isObject(value)) throw new Error('dsh-plugin-desktop: invalid AWiki update response')
-  const pluginVersion = value.pluginVersion
-  const modelProxyVersion = value.modelProxyVersion
-  if ((pluginVersion !== undefined && typeof pluginVersion !== 'string')
-    || (modelProxyVersion !== undefined && typeof modelProxyVersion !== 'string')
-    || (required && (typeof pluginVersion !== 'string' || typeof modelProxyVersion !== 'string'))) {
-    throw new Error('dsh-plugin-desktop: invalid AWiki update response')
-  }
-  return Object.freeze({
-    ...(typeof pluginVersion === 'string' ? { pluginVersion } : {}),
-    ...(typeof modelProxyVersion === 'string' ? { modelProxyVersion } : {}),
-  })
-}
-
-/** Validate a bounded update result before it reaches the settings UI. */
-export function parseDesktopAwikiUpdateView(value: unknown): DesktopAwikiUpdateView {
-  if (!isObject(value)
-    || (value.status !== 'up-to-date' && value.status !== 'available')
-    || !isObject(value.policy)
-    || typeof value.policy.tenantId !== 'string'
-    || !Number.isSafeInteger(value.policy.tenantGeneration)
-    || !Number.isSafeInteger(value.policy.policyRevision)) {
-    throw new Error('dsh-plugin-desktop: invalid AWiki update response')
-  }
-  const current = parseAwikiVersions(value.current, false)
-  const target = parseAwikiVersions(value.target, true) as Required<DesktopAwikiVersionsView>
-  const policy = Object.freeze({
-    tenantId: value.policy.tenantId,
-    tenantGeneration: value.policy.tenantGeneration as number,
-    policyRevision: value.policy.policyRevision as number,
-  })
-  if (value.status === 'available') {
-    if (typeof value.previewId !== 'string' || !/^[A-Za-z0-9_-]{43}$/u.test(value.previewId)) {
-      throw new Error('dsh-plugin-desktop: invalid AWiki update response')
-    }
-    return Object.freeze({ status: value.status, current, target, previewId: value.previewId, policy })
-  }
-  return Object.freeze({ status: value.status, current, target, policy })
-}
-
 async function readResponse(response: Response): Promise<unknown> {
   if (!response.ok) {
     throw new Error(`dsh-plugin-desktop: Desktop settings request failed (${String(response.status)})`)
@@ -250,18 +179,6 @@ export function createDesktopSettingsApi(fetcher: FetchLike = globalThis.fetch.b
     async openTerminal() {
       parseDesktopActionAcceptance(await readResponse(await post(fetcher, TERMINAL_OPEN_PATH, {})))
     },
-    async checkAwikiUpdate() {
-      return parseDesktopAwikiUpdateView(await readResponse(await post(fetcher, AWIKI_UPDATE_CHECK_PATH, {})))
-    },
-    async applyAwikiUpdate(previewId: string) {
-      const acceptance = parseDesktopRestartAcceptance(
-        await readResponse(await post(fetcher, AWIKI_UPDATE_APPLY_PATH, { previewId })),
-      )
-      if (!acceptance.restartRequired) {
-        throw new Error('dsh-plugin-desktop: invalid AWiki update restart response')
-      }
-      return Object.freeze({ accepted: true as const, restartRequired: true as const })
-    },
   })
 }
 
@@ -272,6 +189,4 @@ export const desktopSettingsPaths = Object.freeze({
   profileDelete: PROFILE_DELETE_PATH,
   marketSelect: MARKET_SELECT_PATH,
   terminalOpen: TERMINAL_OPEN_PATH,
-  awikiUpdateCheck: AWIKI_UPDATE_CHECK_PATH,
-  awikiUpdateApply: AWIKI_UPDATE_APPLY_PATH,
 })
