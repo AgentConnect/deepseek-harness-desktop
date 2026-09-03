@@ -29,12 +29,6 @@ export const DESKTOP_PROFILE_CREATE_WINDOW_PATH = '/api/desktop/profiles/create-
 /** Restore the last successful Profile and its latest healthy configuration. */
 export const DESKTOP_PROFILE_ROLLBACK_PATH = '/api/desktop/profiles/rollback'
 
-/** Check npm for one trusted, compatible AWiki plugin pair. */
-export const DESKTOP_AWIKI_UPDATE_CHECK_PATH = '/api/desktop/awiki/check-update'
-
-/** Apply one exact AWiki update preview, then restart Desktop. */
-export const DESKTOP_AWIKI_UPDATE_APPLY_PATH = '/api/desktop/awiki/apply-update'
-
 /** Renderer-safe projection of one discovered profile. */
 export interface DesktopSettingsProfileView {
   /** Profile name accepted by the launcher. */
@@ -67,46 +61,6 @@ export interface DesktopSettingsResponse {
   readonly profiles: readonly DesktopSettingsProfileView[]
   /** Market choice for the current and next generation. */
   readonly market: DesktopSettingsMarketView
-}
-
-/** Renderer-safe AWiki package pair. Missing values mean the Profile did not declare that package. */
-export interface DesktopAwikiVersionsView {
-  readonly pluginVersion?: string
-  readonly modelProxyVersion?: string
-}
-
-/** Result of one explicit Registry update check. */
-export type DesktopAwikiUpdateCheckResponse =
-  | {
-      readonly status: 'up-to-date'
-      readonly current: DesktopAwikiVersionsView
-      readonly target: Required<DesktopAwikiVersionsView>
-    }
-  | {
-      readonly status: 'available'
-      readonly current: DesktopAwikiVersionsView
-      readonly target: Required<DesktopAwikiVersionsView>
-      /** Opaque, short-lived authority for exactly this pair. */
-      readonly previewId: string
-    }
-  | {
-      readonly status: 'cooling-down'
-      readonly current: DesktopAwikiVersionsView
-      readonly target: Required<DesktopAwikiVersionsView>
-      readonly availableAt: string
-    }
-
-/** Exact empty body accepted by the manual AWiki update check. */
-export type DesktopAwikiUpdateCheckRequest = Readonly<Record<string, never>>
-
-/** Exact one-shot preview accepted by the AWiki updater. */
-export interface DesktopAwikiUpdateApplyRequest {
-  readonly previewId: string
-}
-
-/** Upgrade acknowledgement returned before Host quiescence and installation. */
-export interface DesktopAwikiUpdateApplyResponse extends DesktopRestartAcceptance {
-  readonly restartRequired: true
 }
 
 /** Exact body accepted by the profile-creation endpoint. */
