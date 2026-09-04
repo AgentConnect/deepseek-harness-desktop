@@ -121,12 +121,10 @@ dsh plugin update
 
 显式 `--profile <name>` 始终具有更高优先级，可用于在切换前准备其他 profile。
 
-Desktop 设置页还为内置的 `@awiki/dsh-plugin` 与 `@awiki/dsh-model-proxy` 组合提供了
-**AWiki 插件更新**区域。手动检查只会访问 npm 官方 Registry，选择 peer range 兼容的稳定
-版本，并遵守 24 小时发布观察期。点击**升级插件并重启**后，Desktop 会使用精确版本和
-一次性预览凭证，在修改 dependency 前停止 Host，并复用安装恢复快照；安装或兼容检查失败时
-会恢复原 Profile。应用内置组合继续作为离线兜底，因此普通 AWiki 插件发布不再要求重新发布
-Desktop installer。
+AWiki 插件自己拥有按租户隔离的更新卡片，并为当前租户显示精确的恢复命令；Desktop 不再从
+这个界面查询、选择或安装 AWiki package。请从托盘选择**打开 DSH 终端**，执行卡片显示的裸
+`dsh plugin add ...` 命令；生成的终端会把它绑定到打开终端时不可变的当前 profile。命令完成后
+重启 Desktop。安装、兼容检查与失败恢复继续由上游 DSH CLI 和该 active profile 负责。
 
 租户版 AWiki 插件尚未发布时，可以让 Desktop 直接对平行工作区中的精确源码执行无界面门禁，
 且不改变既有 Profile 安装、更新和卸载语义：

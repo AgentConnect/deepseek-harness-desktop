@@ -121,13 +121,12 @@ dsh plugin update
 
 An explicit `--profile <name>` remains authoritative and is useful for preparing another profile before selecting it.
 
-The Desktop settings page also provides an **AWiki plugin updates** section for the bundled
-`@awiki/dsh-plugin` and `@awiki/dsh-model-proxy` pair. A manual check reads only the official npm
-Registry, selects stable releases whose peer ranges are compatible, and honors a 24-hour release
-age window. **Upgrade Plugins and Restart** uses exact versions and a one-shot preview, stops the
-Host before changing dependencies, and reuses the install recovery snapshot so a failed install or
-compatibility check restores the previous Profile. The application bundle remains the offline
-fallback; ordinary AWiki plugin releases do not require another Desktop installer release.
+The AWiki plugin owns its tenant-scoped update card and renders the exact recovery command for the
+active tenant. Desktop does not fetch, select, or install AWiki package releases from that surface.
+Choose **Open DSH Terminal** from the tray and run the displayed bare `dsh plugin add ...` command;
+the generated terminal binds it to the immutable profile that was active when the terminal opened.
+Restart Desktop after the command completes. Installation, compatibility checks, and recovery remain
+owned by the upstream DSH CLI and that active profile.
 
 Before an unpublished tenant-aware AWiki pair is released, Desktop can verify the exact sibling source
 headlessly without changing profile install/update/uninstall semantics:
