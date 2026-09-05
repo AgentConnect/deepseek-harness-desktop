@@ -121,13 +121,25 @@ dsh plugin update
 
 An explicit `--profile <name>` remains authoritative and is useful for preparing another profile before selecting it.
 
-The Desktop settings page also provides an **AWiki plugin updates** section for the bundled
-`@awiki/dsh-plugin` and `@awiki/dsh-model-proxy` pair. A manual check reads only the official npm
-Registry, selects stable releases whose peer ranges are compatible, and honors a 24-hour release
-age window. **Upgrade Plugins and Restart** uses exact versions and a one-shot preview, stops the
-Host before changing dependencies, and reuses the install recovery snapshot so a failed install or
-compatibility check restores the previous Profile. The application bundle remains the offline
-fallback; ordinary AWiki plugin releases do not require another Desktop installer release.
+The AWiki plugin owns its tenant-scoped update card and renders the exact recovery command for the
+active tenant. Desktop does not fetch, select, or install AWiki package releases from that surface.
+Choose **Open DSH Terminal** from the tray and run the displayed bare `dsh plugin add ...` command;
+the generated terminal binds it to the immutable profile that was active when the terminal opened.
+Restart Desktop after the command completes. Installation, compatibility checks, and recovery remain
+owned by the upstream DSH CLI and that active profile.
+
+Before an unpublished tenant-aware AWiki pair is released, Desktop can verify the exact sibling source
+headlessly without changing profile install/update/uninstall semantics:
+
+```sh
+DSH_AWIKI_TENANT_SOURCE_ROOT=/absolute/path/to/dsh-awiki \
+  yarn workspace dsh-plugin-desktop verify:awiki-tenant-source
+```
+
+The normal profile smoke validates Desktop's exact installable Registry pins. This additional gate validates
+the local package identities, then runs the Host-owned registry load, China ↔ Global switching, committed
+restart recovery, generation fencing, lifecycle participant, and Model Proxy capability-binding tests against
+the unpublished source. It performs no network or graphical launch.
 
 `dshmarket@1.2.3` is not preinstalled and is not a dependency of DSH Desktop. That release still resolves a profile from config/argv and starts `dsh plugin` through private child-process code; it neither reads `desktopProfiles` nor uses `desktopPnpm`, and its package exports no runner injection seam. A later compatible release must detect the Desktop services dynamically and retain its existing CLI fallback under ordinary DSH. In addition, the `1.2.3` source repository and npm tarball contain no complete MIT license text or copyright notice, so that version does not pass the bundled-redistribution gate. User-directed installation of a third-party package is separate from Desktop embedding it in the application archive or installer.
 

@@ -27,8 +27,6 @@ import {
   handleDesktopDirectoryValidationRequest,
 } from './directory-picker-route.ts'
 import {
-  DESKTOP_AWIKI_UPDATE_APPLY_PATH,
-  DESKTOP_AWIKI_UPDATE_CHECK_PATH,
   DESKTOP_DIAGNOSTICS_EXPORT_PATH,
   DESKTOP_MARKET_SELECT_PATH,
   DESKTOP_PROFILE_CREATE_PATH,
@@ -40,8 +38,6 @@ import {
   DESKTOP_TERMINAL_OPEN_PATH,
 } from './desktop-settings-contract.ts'
 import {
-  handleDesktopAwikiUpdateApplyRequest,
-  handleDesktopAwikiUpdateCheckRequest,
   handleDesktopDiagnosticsExportRequest,
   handleDesktopMarketSelectRequest,
   handleDesktopProfileCreateRequest,
@@ -190,8 +186,6 @@ export function apply(ctx: Context, config: Config): void {
     }
     const settingsRoutes = [
       [DESKTOP_SETTINGS_PATH, handleDesktopSettingsRequest],
-      [DESKTOP_AWIKI_UPDATE_CHECK_PATH, handleDesktopAwikiUpdateCheckRequest],
-      [DESKTOP_AWIKI_UPDATE_APPLY_PATH, handleDesktopAwikiUpdateApplyRequest],
       [DESKTOP_PROFILE_CREATE_PATH, handleDesktopProfileCreateRequest],
       [DESKTOP_PROFILE_CREATE_WINDOW_PATH, handleDesktopProfileCreateWindowRequest],
       [DESKTOP_PROFILE_DELETE_PATH, handleDesktopProfileDeleteRequest],

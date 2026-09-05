@@ -1,6 +1,6 @@
 /** DSH Desktop executable: minimal Electron bootstrap around the Host Cordis root. */
 
-import { app, crashReporter, dialog, net } from 'electron'
+import { app, crashReporter, dialog } from 'electron'
 import { randomUUID } from 'node:crypto'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -106,13 +106,6 @@ import {
   type DesktopAwikiCompatibilityFallback,
   type DesktopAwikiCompatibilityIssue,
 } from './awiki-package-compatibility.ts'
-import {
-  readDesktopAwikiProfileVersions,
-  upgradeDesktopAwikiProfile,
-  type DesktopAwikiProfileVersions,
-} from './awiki-profile-upgrade.ts'
-import { discoverDesktopAwikiUpdate } from './awiki-update-discovery.ts'
-import { executeDesktopAwikiUpdate } from './awiki-update-execution.ts'
 
 const BIN_NAME = 'dsh-plugin-desktop'
 const PRODUCT_NAME = 'DSH Desktop'
@@ -192,42 +185,34 @@ async function showAwikiCompatibilityFallbackNotice(
 
 async function requestAwikiProfileUpgrade(
   fallback: DesktopAwikiCompatibilityFallback,
-  profileVersions: Awaited<ReturnType<typeof readDesktopAwikiProfileVersions>>,
   locale: 'en' | 'zh',
   logger: DesktopLogger,
-): Promise<'upgrade' | 'exit'> {
-  const currentPlugin = profileVersions.pluginVersion ?? '未安装'
-  const currentProxy = profileVersions.modelProxyVersion ?? '未安装'
+): Promise<'terminal' | 'exit'> {
+  // The launcher opens a Profile-scoped DSH terminal. Omitting --profile keeps
+  // display text out of shell syntax and lets the terminal own Profile routing.
+  const command = `dsh plugin add @awiki/dsh-plugin@${fallback.pluginVersion} @awiki/dsh-model-proxy@${fallback.modelProxyVersion}`
   const copy = locale === 'zh'
     ? {
-        title: '需要升级 AWiki 插件',
-        message: '当前 Profile 中的 AWiki 插件版本不兼容，继续启动可能导致功能异常。',
+        title: '需要恢复 AWiki 本地兼容性',
+        message: '当前 Profile 中的 AWiki 插件组合不兼容，DSH Desktop 已停止启动以避免功能异常。',
         detail: [
-          `当前：@awiki/dsh-plugin ${currentPlugin}`,
-          `当前：@awiki/dsh-model-proxy ${currentProxy}`,
+          'DSH Desktop 不会自动修改 Profile。以下命令只使用当前安装内置的兼容版本恢复本地 Profile；租户更新策略仍由 DSH 管理。请在打开的 DSH Terminal 中运行，然后重启 DSH：',
           '',
-          `将升级为：@awiki/dsh-plugin ${fallback.pluginVersion}`,
-          `将升级为：@awiki/dsh-model-proxy ${fallback.modelProxyVersion}`,
-          '',
-          '两个插件会一起升级。升级失败时会自动恢复原 Profile。',
+          command,
         ].join('\n'),
-        upgrade: '升级插件并重启',
-        exit: '暂不升级并退出',
+        terminal: '打开 DSH Terminal',
+        exit: '退出',
       }
     : {
-        title: 'AWiki plugins need an upgrade',
-        message: 'The AWiki versions in this Profile are incompatible. Continuing could cause features to fail.',
+        title: 'AWiki local compatibility recovery required',
+        message: 'The AWiki package pair in this Profile is incompatible. DSH Desktop stopped startup to avoid feature failures.',
         detail: [
-          `Current: @awiki/dsh-plugin ${currentPlugin}`,
-          `Current: @awiki/dsh-model-proxy ${currentProxy}`,
+          'DSH Desktop will not modify the Profile automatically. This command only restores the local Profile with compatible versions built into the current installation; DSH continues to own tenant update policy. Run it in the opened DSH Terminal, then restart DSH:',
           '',
-          `Upgrade to: @awiki/dsh-plugin ${fallback.pluginVersion}`,
-          `Upgrade to: @awiki/dsh-model-proxy ${fallback.modelProxyVersion}`,
-          '',
-          'Both plugins are upgraded together. The original Profile is restored if the upgrade fails.',
+          command,
         ].join('\n'),
-        upgrade: 'Upgrade and Restart',
-        exit: 'Exit Without Upgrading',
+        terminal: 'Open DSH Terminal',
+        exit: 'Exit',
       }
   try {
     const result = await dialog.showMessageBox({
@@ -235,67 +220,14 @@ async function requestAwikiProfileUpgrade(
       title: copy.title,
       message: copy.message,
       detail: copy.detail,
-      buttons: [copy.upgrade, copy.exit],
+      buttons: [copy.terminal, copy.exit],
       defaultId: 0,
       cancelId: 1,
       noLink: true,
     })
-    return result.response === 0 ? 'upgrade' : 'exit'
-  } catch (cause) {
-    logger.error(`${BIN_NAME}: failed to show AWiki upgrade choice: ${cause instanceof Error ? cause.message : String(cause)}`)
-    return 'exit'
-  }
-}
-
-async function requestAwikiUpgradeFailureAction(
-  detail: string,
-  rollback: 'restored' | 'manual-recovery-required' | 'failed',
-  locale: 'en' | 'zh',
-  logger: DesktopLogger,
-): Promise<'retry' | 'terminal' | 'exit'> {
-  const retryAvailable = rollback === 'restored'
-  const copy = locale === 'zh'
-    ? {
-        title: 'AWiki 插件升级失败',
-        message: rollback === 'restored'
-          ? '升级未完成，原 Profile 已自动恢复。'
-          : '升级未完成，Profile 需要手动检查。',
-        detail,
-        retry: '重试升级',
-        terminal: '打开 DSH Terminal',
-        exit: '退出应用',
-      }
-    : {
-        title: 'AWiki plugin upgrade failed',
-        message: rollback === 'restored'
-          ? 'The upgrade did not complete. The original Profile was restored.'
-          : 'The upgrade did not complete. The Profile needs manual inspection.',
-        detail,
-        retry: 'Retry Upgrade',
-        terminal: 'Open DSH Terminal',
-        exit: 'Exit',
-      }
-  const buttons = retryAvailable
-    ? [copy.retry, copy.terminal, copy.exit]
-    : [copy.terminal, copy.exit]
-  try {
-    const result = await dialog.showMessageBox({
-      type: 'error',
-      title: copy.title,
-      message: copy.message,
-      detail: copy.detail,
-      buttons,
-      defaultId: 0,
-      cancelId: buttons.length - 1,
-      noLink: true,
-    })
-    if (retryAvailable) {
-      if (result.response === 0) return 'retry'
-      return result.response === 1 ? 'terminal' : 'exit'
-    }
     return result.response === 0 ? 'terminal' : 'exit'
   } catch (cause) {
-    logger.error(`${BIN_NAME}: failed to show AWiki upgrade failure: ${cause instanceof Error ? cause.message : String(cause)}`)
+    logger.error(`${BIN_NAME}: failed to show AWiki upgrade choice: ${cause instanceof Error ? cause.message : String(cause)}`)
     return 'exit'
   }
 }
@@ -857,79 +789,14 @@ async function start(): Promise<void> {
       startupStage = 'profile-composition'
       lifecycleRecorder.transitionStartupStage(startupStage)
       const locale = desktopLocaleFromLanguageTag(app.getLocale())
-      const profileVersions = await readDesktopAwikiProfileVersions(prepared.profile.dir)
       const choice = await requestAwikiProfileUpgrade(
         awikiFallback,
-        profileVersions,
         locale,
         electronLogger,
       )
-      if (choice === 'exit') {
-        await shutdown.request(0)
-        return
-      }
-      for (;;) {
-        const result = await upgradeDesktopAwikiProfile({
-          profileDir: prepared.profile.dir,
-          target: {
-            pluginVersion: awikiFallback.pluginVersion,
-            modelProxyVersion: awikiFallback.modelProxyVersion,
-          },
-          receiptId: `awiki-pair:${randomUUID()}`,
-          recovery: installRecovery,
-          materialize: async updateLockfile => {
-            await materializeProfile({
-              appExecutable: process.execPath,
-              clearEnvironmentPath: pnpmRuntime.clearEnvironmentPath,
-              pnpmBinPath,
-              nodeBinDir: pnpmRuntime.nodeBinDir,
-              nodeShimPath: pnpmRuntime.nodeShimPath,
-              homeDir,
-              profileDir: prepared.profile.dir,
-              electronVersion,
-              updateLockfile,
-            })
-          },
-          verify: () => prepareDesktopProfile(
-            process.env.DSH_TELEMETRY_DISABLED,
-            homeDir,
-            process.platform,
-            activeProfileName,
-            pluginManagementStatePath,
-            marketSelection,
-            startupRecoveryStatePath,
-            preparationHooks,
-          ).awikiCompatibilityFallback,
-        })
-        if (result.status === 'upgraded') {
-          nativeExit.requestRelaunch()
-          await shutdown.request(0)
-          return
-        }
-        const installDetail = result.cause instanceof ProfileMaterializationError
-          ? result.cause.result?.stderr || result.cause.message
-          : result.cause instanceof Error ? result.cause.message : String(result.cause)
-        const rollbackDetail = result.rollbackCause === undefined
-          ? ''
-          : result.rollbackCause instanceof ProfileMaterializationError
-            ? result.rollbackCause.result?.stderr || result.rollbackCause.message
-            : result.rollbackCause instanceof Error ? result.rollbackCause.message : String(result.rollbackCause)
-        const detail = maskSecrets([
-          installDetail,
-          ...(rollbackDetail.length === 0 ? [] : [`Rollback: ${rollbackDetail}`]),
-        ].join('\n'))
-        electronLogger.error(`${BIN_NAME}: AWiki Profile upgrade failed: ${detail}`)
-        const failureAction = await requestAwikiUpgradeFailureAction(
-          detail,
-          result.rollback,
-          locale,
-          electronLogger,
-        )
-        if (failureAction === 'retry') continue
-        if (failureAction === 'terminal') runtime.openTerminal()
-        await shutdown.request(failureAction === 'terminal' ? 0 : 1)
-        return
-      }
+      if (choice === 'terminal') runtime.openTerminal()
+      await shutdown.request(0)
+      return
     }
     if (prepared.marketFailure !== undefined) {
       electronLogger.error(
@@ -1214,109 +1081,6 @@ async function start(): Promise<void> {
             },
           })
         }
-        let awikiUpgradePrepared = false
-        const prepareAwikiUpgrade = (
-          expectedCurrent: Partial<DesktopAwikiProfileVersions>,
-          target: DesktopAwikiProfileVersions,
-        ) => {
-          if (awikiUpgradePrepared) {
-            throw new Error(`${BIN_NAME}: an AWiki plugin update is already pending`)
-          }
-          const recovery = installRecovery
-          if (recovery === undefined) {
-            throw new Error(`${BIN_NAME}: AWiki plugin update recovery is unavailable`)
-          }
-          awikiUpgradePrepared = true
-          return Object.freeze({
-            response: Object.freeze({
-              accepted: true as const,
-              restartRequired: true as const,
-            }),
-            afterResponse: () => {
-              void (async () => {
-                const selection = readDesktopProfileState(selectionStatePath)
-                if (selection.active !== activeProfileName) {
-                  throw new Error(`${BIN_NAME}: active Profile changed before AWiki update`)
-                }
-                const locale = desktopLocaleFromLanguageTag(app.getLocale())
-                const performUpgrade = () => upgradeDesktopAwikiProfile({
-                  profileDir: prepared.profile.dir,
-                  target,
-                  receiptId: `awiki-pair:${randomUUID()}`,
-                  recovery,
-                  materialize: async updateLockfile => {
-                    await materializeProfile({
-                      appExecutable: process.execPath,
-                      clearEnvironmentPath: pnpmRuntime.clearEnvironmentPath,
-                      pnpmBinPath,
-                      nodeBinDir: pnpmRuntime.nodeBinDir,
-                      nodeShimPath: pnpmRuntime.nodeShimPath,
-                      homeDir,
-                      profileDir: prepared.profile.dir,
-                      electronVersion,
-                      updateLockfile,
-                    })
-                  },
-                  verify: () => prepareDesktopProfile(
-                    process.env.DSH_TELEMETRY_DISABLED,
-                    homeDir,
-                    process.platform,
-                    activeProfileName,
-                    pluginManagementStatePath,
-                    marketSelection,
-                    startupRecoveryStatePath,
-                    preparationHooks,
-                  ).awikiCompatibilityFallback,
-                })
-                let result = await executeDesktopAwikiUpdate({
-                  expectedCurrent,
-                  quiesceHost: () => generation.quiesceForRecovery(),
-                  readCurrent: () => readDesktopAwikiProfileVersions(prepared.profile.dir),
-                  upgrade: performUpgrade,
-                })
-                for (;;) {
-                  if (result.status === 'upgraded') {
-                    nativeExit.requestRelaunch()
-                    await shutdown?.request(0)
-                    return
-                  }
-                  const installDetail = result.cause instanceof ProfileMaterializationError
-                    ? result.cause.result?.stderr || result.cause.message
-                    : result.cause instanceof Error ? result.cause.message : String(result.cause)
-                  const rollbackDetail = result.rollbackCause === undefined
-                    ? ''
-                    : result.rollbackCause instanceof ProfileMaterializationError
-                      ? result.rollbackCause.result?.stderr || result.rollbackCause.message
-                      : result.rollbackCause instanceof Error ? result.rollbackCause.message : String(result.rollbackCause)
-                  const detail = maskSecrets([
-                    installDetail,
-                    ...(rollbackDetail.length === 0 ? [] : [`Rollback: ${rollbackDetail}`]),
-                  ].join('\n'))
-                  electronLogger.error(`${BIN_NAME}: settings AWiki Profile update failed: ${detail}`)
-                  const action = await requestAwikiUpgradeFailureAction(detail, result.rollback, locale, electronLogger)
-                  if (action === 'retry') {
-                    result = await performUpgrade()
-                    continue
-                  }
-                  if (action === 'terminal') runtime.openTerminal()
-                  await shutdown?.request(action === 'terminal' ? 0 : 1)
-                  return
-                }
-              })().catch(async (cause: unknown) => {
-                const detail = maskSecrets(cause instanceof Error ? cause.message : String(cause))
-                electronLogger.error(`${BIN_NAME}: failed to start settings AWiki Profile update: ${detail}`)
-                const action = await requestAwikiUpgradeFailureAction(
-                  detail,
-                  'failed',
-                  desktopLocaleFromLanguageTag(app.getLocale()),
-                  electronLogger,
-                )
-                if (action === 'terminal') runtime.openTerminal()
-                await shutdown?.request(action === 'terminal' ? 0 : 1)
-              })
-            },
-          })
-        }
         hostCtx.provide('desktopSettingsController', new DesktopSettingsController({
           profiles: hostCtx.desktopProfiles,
           persistProfileSelection: name => {
@@ -1339,11 +1103,6 @@ async function start(): Promise<void> {
             })
           },
           prepareProfileRollback,
-          checkAwikiUpdate: () => discoverDesktopAwikiUpdate({
-            profileDir: prepared.profile.dir,
-            request: (url, init) => net.fetch(url, { ...init, redirect: 'error' }),
-          }),
-          prepareAwikiUpgrade,
         }))
         provideCmdline(hostCtx, {
           args: ['--host', '127.0.0.1', '--port', String(prepared.port)],

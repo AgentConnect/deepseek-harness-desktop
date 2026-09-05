@@ -601,6 +601,16 @@ describe('published package surface', () => {
     expect(main).toContain('lifecycleStartupFailureReason(cause, runtime)')
   })
 
+  it('keeps AWiki compatibility recovery local and delegates tenant policy to DSH', () => {
+    const main = readFileSync(new URL('src/main.ts', packageRoot), 'utf8')
+
+    expect(main).toContain('dsh plugin add @awiki/dsh-plugin@${fallback.pluginVersion}')
+    expect(main).not.toContain('dsh plugin --profile ${JSON.stringify(profileName)}')
+    expect(main).toContain('DSH continues to own tenant update policy')
+    expect(main).not.toContain('discoverDesktopAwikiUpdate')
+    expect(main).not.toContain('executeDesktopAwikiUpdate')
+  })
+
   it('routes protected and ordinary startup failures through the native recovery window', () => {
     const main = readFileSync(new URL('src/main.ts', packageRoot), 'utf8')
     const windows = [...main.matchAll(/await openStartupRecoveryWindow\(/gu)]
