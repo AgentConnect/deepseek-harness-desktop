@@ -1,9 +1,11 @@
-import { existsSync, mkdirSync, readFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it, vi } from 'vitest'
 import AdmZip from 'adm-zip'
 import {
   afterPack,
+  createUnpackedPackageResolver,
   REQUIRED_PACKAGED_RUNTIME_ENTRIES,
   REQUIRED_MACOS_UNIVERSAL_ENTRIES,
   REQUIRED_UNPACKED_PACKAGE_SPECIFIERS,
@@ -335,5 +337,41 @@ describe('packaged desktop runtime verification', () => {
     )).toThrow(
       `required package export @deepseek-ai/dsh-base/package.json resolved outside ${unpackedRoot}: ${escapedPath}`,
     )
+  })
+})
+
+
+describe('physical ESM package resolution', () => {
+  function fixture(run: (root: string, packageDir: string) => void): void {
+    const root = mkdtempSync(join(tmpdir(), 'dsh-esm-package-'))
+    const packageDir = join(root, 'node_modules', 'import-only-fixture')
+    mkdirSync(packageDir, { recursive: true })
+    writeFileSync(join(root, 'package.json'), JSON.stringify({ type: 'module' }))
+    writeFileSync(join(packageDir, 'package.json'), JSON.stringify({
+      name: 'import-only-fixture', type: 'module', exports: { '.': { import: './index.js' } },
+    }))
+    try { run(root, packageDir) } finally { rmSync(root, { recursive: true, force: true }) }
+  }
+
+  it('resolves import-only exports from the physical parent without evaluating native code', () => {
+    fixture((root, packageDir) => {
+      writeFileSync(join(packageDir, 'index.js'), 'throw new Error("must not evaluate")')
+      const resolve = createUnpackedPackageResolver(root, ['import-only-fixture'])
+      expect(resolve('import-only-fixture')).toBe(realpathSync(join(packageDir, 'index.js')))
+    })
+  })
+
+  it('rejects an import export whose declared physical file is absent', () => {
+    fixture((root) => {
+      const resolve = createUnpackedPackageResolver(root, ['import-only-fixture'])
+      expect(() => resolve('import-only-fixture')).toThrow('ENOENT')
+    })
+  })
+
+  it('rejects missing packages instead of resolving relative to the build workspace', () => {
+    fixture((root) => {
+      const resolve = createUnpackedPackageResolver(root, ['@awiki/im-core-node'])
+      expect(() => resolve('@awiki/im-core-node')).toThrow('Cannot find package')
+    })
   })
 })

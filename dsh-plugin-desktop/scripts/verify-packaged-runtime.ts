@@ -1,7 +1,7 @@
 /** Fail-loud verification of the runtime entries sealed into Electron's app.asar. */
 
 import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
-import { createRequire } from 'node:module'
+import { spawnSync } from 'node:child_process'
 import { tmpdir } from 'node:os'
 import { isAbsolute, join, relative, sep } from 'node:path'
 import { Worker } from 'node:worker_threads'
@@ -335,6 +335,40 @@ export function verifyUnpackedArchiveMirror(
   }
 }
 
+/** Resolve the actual Loader's ESM export conditions without executing packaged modules. */
+export function createUnpackedPackageResolver(
+  unpackedRoot: string,
+  specifiers: readonly string[] = REQUIRED_UNPACKED_PACKAGE_SPECIFIERS,
+): PackageResolver {
+  // An ESM eval is anchored at cwd/[eval1], so Node uses the physical application
+  // package scope. Do not use import.meta.resolve's flag-dependent parent argument.
+  const result = spawnSync(process.execPath, ['--input-type=module', '--eval', `
+    import { realpathSync, statSync } from 'node:fs'
+    import { fileURLToPath } from 'node:url'
+    const entries = JSON.parse(process.argv[1]).map(specifier => {
+      try {
+        const path = realpathSync(fileURLToPath(import.meta.resolve(specifier)))
+        if (!statSync(path).isFile()) throw new Error('resolved export is not a physical file')
+        return [specifier, { path }]
+      } catch (cause) {
+        return [specifier, { error: String(cause) }]
+      }
+    })
+    process.stdout.write(JSON.stringify(entries))
+  `, JSON.stringify(specifiers)], { cwd: unpackedRoot, encoding: 'utf8', timeout: 30_000 })
+  if (result.error !== undefined || result.status !== 0) {
+    throw new Error(`dsh-plugin-desktop: cannot inspect physical ESM exports at ${unpackedRoot}: ${result.stderr}`, {
+      cause: result.error,
+    })
+  }
+  const entries = new Map<string, { path?: string; error?: string }>(JSON.parse(result.stdout))
+  return (specifier) => {
+    const entry = entries.get(specifier)
+    if (entry?.path === undefined) throw new Error(entry?.error ?? `uninspected package export ${specifier}`)
+    return entry.path
+  }
+}
+
 /**
  * Verify package exports resolve through the physical tree instead of the build workspace.
  * @param unpackedRoot - absolute path to app.asar.unpacked.
@@ -343,7 +377,7 @@ export function verifyUnpackedArchiveMirror(
  */
 export function verifyUnpackedPackageResolution(
   unpackedRoot: string,
-  resolvePackage: PackageResolver = createRequire(join(unpackedRoot, 'package.json')).resolve,
+  resolvePackage: PackageResolver = createUnpackedPackageResolver(unpackedRoot),
 ): void {
   for (const specifier of REQUIRED_UNPACKED_PACKAGE_SPECIFIERS) {
     let resolvedPath: string
