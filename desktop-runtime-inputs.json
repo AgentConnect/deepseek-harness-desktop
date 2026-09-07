@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "purpose": "Desktop bundled runtime build inputs; not independent npm releases",
+  "archive": {
+    "url": "https://github.com/AgentConnect/deepseek-harness-desktop/releases/download/desktop-build-inputs-20260907-1d16d2ea351bd3ce/desktop-runtime-inputs-1d16d2ea351bd3ce.tar.gz",
+    "sha256": "1d16d2ea351bd3ceb121af6b7056e42400d1b9a7f6184d9d7d5592e7cd95e491",
+    "sizeBytes": 19746856
+  },
+  "packages": [
+    {
+      "name": "@agent-network-protocol/anp-identity",
+      "version": "0.2.0",
+      "file": "agent-network-protocol-anp-identity-0.2.0.tgz",
+      "sha256": "5be5ccb8021b35ae796fe5431487715e785f2e324e833931b73b46c67dfec451",
+      "sourceCommit": "5a102abdd3be3aa08609e2897a81a55e50f7f166"
+    },
+    {
+      "name": "@agent-network-protocol/anp-identity-darwin-arm64",
+      "version": "0.2.0",
+      "file": "agent-network-protocol-anp-identity-darwin-arm64-0.2.0.tgz",
+      "sha256": "a2ef93a5e3860dc9e08bfcce466c2d0358e33eb78665a2d716b723e3f75c3e65",
+      "sourceCommit": "5a102abdd3be3aa08609e2897a81a55e50f7f166"
+    },
+    {
+      "name": "@agent-network-protocol/anp-identity-darwin-x64",
+      "version": "0.2.0",
+      "file": "agent-network-protocol-anp-identity-darwin-x64-0.2.0.tgz",
+      "sha256": "268013c98343a23a9e40b0eca89375c7eb681b99191a509d99eb7005248fc8cd",
+      "sourceCommit": "5a102abdd3be3aa08609e2897a81a55e50f7f166"
+    },
+    {
+      "name": "@agent-network-protocol/anp-identity-linux-arm64-gnu",
+      "version": "0.2.0",
+      "file": "agent-network-protocol-anp-identity-linux-arm64-gnu-0.2.0.tgz",
+      "sha256": "a2598005528fcff0b2617719083011377183d88d1d8cbf3f3c5898e475ca04cc",
+      "sourceCommit": "5a102abdd3be3aa08609e2897a81a55e50f7f166"
+    },
+    {
+      "name": "@agent-network-protocol/anp-identity-linux-x64-gnu",
+      "version": "0.2.0",
+      "file": "agent-network-protocol-anp-identity-linux-x64-gnu-0.2.0.tgz",
+      "sha256": "8b692f93dfda80b5e3796955b6c9c15505528eac58d0a230aad04df06d9a8b7f",
+      "sourceCommit": "5a102abdd3be3aa08609e2897a81a55e50f7f166"
+    },
+    {
+      "name": "@agent-network-protocol/anp-identity-win32-x64-msvc",
+      "version": "0.2.0",
+      "file": "agent-network-protocol-anp-identity-win32-x64-msvc-0.2.0.tgz",
+      "sha256": "4257d8302e1c7fea2e0b4f1c859644c61e505831b9e8d895626b364b5d3e8b0c",
+      "sourceCommit": "5a102abdd3be3aa08609e2897a81a55e50f7f166"
+    },
+    {
+      "name": "@agent-network-protocol/dsh-anp-identity",
+      "version": "0.1.0",
+      "file": "agent-network-protocol-dsh-anp-identity-0.1.0.tgz",
+      "sha256": "1d426a06bd90ad416dc68da73e0a2c428d1583869e2ed916c2e6961ac070e447",
+      "sourceCommit": "8dc65ccc388af0f0622263811776a6aadcd11d18"
+    },
+    {
+      "name": "@awiki/dsh-model-proxy",
+      "version": "0.1.5",
+      "file": "awiki-dsh-model-proxy-0.1.5.tgz",
+      "sha256": "20561146c4a8139d00cb5e82a58bc69cda13e85813580e5d5ec52e911392cb79",
+      "sourceCommit": "a5724046be9fd2e8bdf596f7ddb1a8c6198b8044"
+    },
+    {
+      "name": "@awiki/dsh-plugin",
+      "version": "0.3.9",
+      "file": "awiki-dsh-plugin-0.3.9.tgz",
+      "sha256": "f3719cbd6d269110a00903a2d0a88ae86f94cbc7c699a24438e31e489db2f03c",
+      "sourceCommit": "a5724046be9fd2e8bdf596f7ddb1a8c6198b8044"
+    }
+  ]
+}
