@@ -89,6 +89,7 @@ jobs:
         with:
           path: ${{ steps.yarn-cache.outputs.dir }}
           key: yarn-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('yarn.lock', '.yarnrc.yml') }}
+      - run: node scripts/prepare-runtime-inputs.mjs
       - run: yarn install --immutable
       - name: Materialize App Store Connect API key
         shell: bash
@@ -148,6 +149,7 @@ jobs:
         with:
           path: ${{ steps.yarn-cache.outputs.dir }}
           key: yarn-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('yarn.lock', '.yarnrc.yml') }}
+      - run: node scripts/prepare-runtime-inputs.mjs
       - run: yarn install --immutable
       - run: yarn workspace dsh-plugin-desktop check:win-package
       - name: Build and verify unsigned NSIS installer
@@ -229,4 +231,4 @@ jobs:
             --title "DSH Desktop $RELEASE_VERSION" \
             --prerelease \
             --generate-notes \
-            --notes "Built from exact Desktop source $RELEASE_SOURCE_COMMIT with its immutable Registry dependency lock. The default profile includes the native ANP Identity provider and the tenant-aware AWiki plugin pair. The macOS universal DMG is Developer ID signed, notarized, stapled, and verified for Apple Silicon and Intel. The Windows x64 installer and portable archive are currently unsigned pre-release artifacts."
+            --notes "Built from exact Desktop source $RELEASE_SOURCE_COMMIT with its verified Desktop runtime archive and immutable Yarn dependency lock. The default profile includes the native ANP Identity provider and the tenant-aware AWiki plugin pair. The macOS universal DMG is Developer ID signed, notarized, stapled, and verified for Apple Silicon and Intel. The Windows x64 installer and portable archive are currently unsigned pre-release artifacts."
