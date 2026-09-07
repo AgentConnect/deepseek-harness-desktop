@@ -2,6 +2,11 @@ name: Desktop pre-release
 
 on:
   workflow_dispatch:
+    inputs:
+      source_ref:
+        description: Exact 40-character Desktop source commit to package
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -12,6 +17,7 @@ concurrency:
 
 env:
   DSH_TELEMETRY_DISABLED: '1'
+  RELEASE_SOURCE_COMMIT: ${{ inputs.source_ref }}
 
 jobs:
   validate:
@@ -21,9 +27,21 @@ jobs:
       tag: ${{ steps.version.outputs.tag }}
       version: ${{ steps.version.outputs.version }}
     steps:
+      - name: Require immutable release source
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ ! "$RELEASE_SOURCE_COMMIT" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "source_ref must be an exact lowercase 40-character commit SHA" >&2
+            exit 1
+          fi
       - uses: actions/checkout@v6
         with:
           persist-credentials: false
+          ref: ${{ inputs.source_ref }}
+      - name: Verify checked out release source
+        shell: bash
+        run: test "$(git rev-parse HEAD)" = "$RELEASE_SOURCE_COMMIT"
       - uses: actions/setup-node@v6
         with:
           node-version: 22.23.2
@@ -55,7 +73,11 @@ jobs:
       - uses: actions/checkout@v6
         with:
           persist-credentials: false
+          ref: ${{ inputs.source_ref }}
           submodules: recursive
+      - name: Verify checked out release source
+        shell: bash
+        run: test "$(git rev-parse HEAD)" = "$RELEASE_SOURCE_COMMIT"
       - uses: actions/setup-node@v6
         with:
           node-version: 22.23.2
@@ -110,7 +132,11 @@ jobs:
       - uses: actions/checkout@v6
         with:
           persist-credentials: false
+          ref: ${{ inputs.source_ref }}
           submodules: recursive
+      - name: Verify checked out release source
+        shell: bash
+        run: test "$(git rev-parse HEAD)" = "$RELEASE_SOURCE_COMMIT"
       - uses: actions/setup-node@v6
         with:
           node-version: 22.23.2
@@ -152,6 +178,10 @@ jobs:
       - uses: actions/checkout@v6
         with:
           persist-credentials: false
+          ref: ${{ inputs.source_ref }}
+      - name: Verify checked out release source
+        shell: bash
+        run: test "$(git rev-parse HEAD)" = "$RELEASE_SOURCE_COMMIT"
       - uses: actions/download-artifact@v4
         with:
           pattern: dsh-desktop-prerelease-*
@@ -195,8 +225,8 @@ jobs:
             exit 1
           fi
           gh release create "$RELEASE_TAG" release-assets/* \
-            --target "$GITHUB_SHA" \
+            --target "$RELEASE_SOURCE_COMMIT" \
             --title "DSH Desktop $RELEASE_VERSION" \
             --prerelease \
             --generate-notes \
-            --notes "This pre-release bundles @awiki/dsh-plugin@0.3.5 and @awiki/dsh-model-proxy@0.1.4 as the offline fallback for the default Desktop profile, and adds a Settings UI for discovering and installing a newer compatible stable pair from the official npm registry without rebuilding Desktop. The macOS universal DMG is Developer ID signed, notarized, stapled, and verified for Apple Silicon and Intel. The Windows x64 installer and portable archive are currently unsigned pre-release artifacts."
+            --notes "Built from exact Desktop source $RELEASE_SOURCE_COMMIT with its immutable Registry dependency lock. The default profile includes the native ANP Identity provider and the tenant-aware AWiki plugin pair. The macOS universal DMG is Developer ID signed, notarized, stapled, and verified for Apple Silicon and Intel. The Windows x64 installer and portable archive are currently unsigned pre-release artifacts."
