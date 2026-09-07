@@ -63,6 +63,22 @@ export const MACOS_UNIVERSAL_NATIVE_ENTRIES = [
     arch: 'x86_64',
     path: 'node_modules/node-pty/prebuilds/darwin-x64/spawn-helper',
   },
+  {
+    arch: 'arm64',
+    path: 'node_modules/@awiki/im-core-node-darwin-arm64/awiki-im-core-node.darwin-arm64.node',
+  },
+  {
+    arch: 'arm64',
+    path: 'node_modules/@agent-network-protocol/anp-identity-darwin-arm64/anp-identity.darwin-arm64.node',
+  },
+  {
+    arch: 'x86_64',
+    path: 'node_modules/@awiki/im-core-node-darwin-x64/awiki-im-core-node.darwin-x64.node',
+  },
+  {
+    arch: 'x86_64',
+    path: 'node_modules/@agent-network-protocol/anp-identity-darwin-x64/anp-identity.darwin-x64.node',
+  },
 ] as const satisfies readonly { readonly arch: MacUniversalArch; readonly path: string }[]
 
 /** Generated host-architecture files that must never shadow the prebuilt pair. */

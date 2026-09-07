@@ -1,5 +1,6 @@
 /** AWiki bundles owned by the Desktop distribution and enabled in its default profile. */
 export const DESKTOP_AWIKI_BUNDLES = Object.freeze([
+  '@agent-network-protocol/dsh-anp-identity',
   '@awiki/dsh-plugin',
   '@awiki/dsh-model-proxy',
 ] as const)

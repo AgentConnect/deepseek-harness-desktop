@@ -78,11 +78,12 @@ const profileBootVerifier = readFileSync(new URL('scripts/verify-profile-boot.mj
 
 describe('published package surface', () => {
   it('ships the stable AWiki DSH rc2-compatible packages in a pre-release Desktop build', () => {
-    expect(workspaceManifest.version).toBe('2.1.0-rc.5')
-    expect(manifest.version).toBe('2.1.0-rc.5')
+    expect(workspaceManifest.version).toBe('2.1.0-rc.7')
+    expect(manifest.version).toBe('2.1.0-rc.7')
     expect(manifest.dependencies).toMatchObject({
-      '@awiki/dsh-plugin': '0.3.2',
-      '@awiki/dsh-model-proxy': '0.1.2',
+      '@agent-network-protocol/dsh-anp-identity': '0.1.0',
+      '@awiki/dsh-plugin': '0.3.9',
+      '@awiki/dsh-model-proxy': '0.1.5',
       '@deepseek-ai/dsh-llm-deepseek': '0.1.1-rc.2',
     })
     expect(manifest.files).toEqual(expect.arrayContaining([
@@ -98,6 +99,7 @@ describe('published package surface', () => {
       'awiki-commercial-license.json',
     ]))
     expect(manifest.build?.mac?.x64ArchFiles).toContain('@awiki/im-core-node-darwin-*/**')
+    expect(manifest.build?.mac?.x64ArchFiles).toContain('@agent-network-protocol/anp-identity-darwin-*/**')
   })
 
   it('isolates boot smoke checks from a running user AWiki state', () => {
@@ -110,6 +112,10 @@ describe('published package surface', () => {
     expect(desktopPrereleaseWorkflow).toContain('if [[ "$workspace_version" != *-* ]]')
     expect(desktopPrereleaseWorkflow).toContain('needs: [validate, macos-universal-signed, windows-x64]')
     expect(desktopPrereleaseWorkflow).toContain('--prerelease')
+    expect(desktopPrereleaseWorkflow).toContain('^[0-9a-f]{40}$')
+    expect(desktopPrereleaseWorkflow.match(/ref: \$\{\{ inputs.source_ref \}\}/gu)).toHaveLength(4)
+    expect(desktopPrereleaseWorkflow.match(/Verify checked out release source/gu)).toHaveLength(4)
+    expect(desktopPrereleaseWorkflow).toContain('--target "$RELEASE_SOURCE_COMMIT"')
     expect(desktopPrereleaseWorkflow).toContain('Refusing to replace existing tag')
     expect(desktopPrereleaseWorkflow).toContain('Windows x64 installer and portable archive are currently unsigned')
     expect(desktopPrereleaseWorkflow).toContain('target_path="DSH.Desktop-${RELEASE_VERSION}-universal.dmg"')

@@ -77,11 +77,12 @@ On macOS the advanced window uses a transparent hidden-inset title bar, position
 
 ## Development
 
-This package is managed by the Yarn workspace at the repository root. The sibling `deepseek-harness/` checkout remains an independent upstream pnpm project and is not part of the Yarn workspace. Install and verify DSH Desktop from the repository root:
+This package is managed by the Yarn workspace at the repository root. The sibling `deepseek-harness/` checkout remains an independent upstream pnpm project and is not part of the Yarn workspace. Install and verify DSH Desktop from the repository root. First run `node scripts/prepare-runtime-inputs.mjs` to download the Desktop-owned runtime archive: its total SHA-256, nine package checksums, versions and source commits are frozen in `desktop-runtime-inputs.json`. Yarn resolves these packages from relative `.build/runtime-inputs/` paths and keeps published IM Core and third-party packages on the immutable Registry lock. These build inputs do not publish independent npm plugins:
 
 ```sh
-yarn install
-yarn check
+node scripts/prepare-runtime-inputs.mjs
+corepack yarn install --immutable
+corepack yarn check
 ```
 
 The check verifies that every required first-party peer in the production graph is declared by the desktop deploy root. Headless Loader smokes activate the launcher-owned desktop row and a profile-local third-party row, then boot the published Web profile and inspect its loopback root and client manifest. Unit and type tests cover both profile compositions, restart fencing, client environment validation, desktop layout state, and platform-native window options.
@@ -128,6 +129,14 @@ the generated terminal binds it to the immutable profile that was active when th
 Restart Desktop after the command completes. Installation, compatibility checks, and recovery remain
 owned by the upstream DSH CLI and that active profile.
 
+Desktop 2.1.0-rc.7 bundles the exact archived runtime packages
+`@agent-network-protocol/dsh-anp-identity@0.1.0`, `@awiki/dsh-plugin@0.3.9`, and
+`@awiki/dsh-model-proxy@0.1.5`. The default profile loads Identity before AWiki,
+including when repairing an older profile. The headless profile gate opens the
+real native Identity provider in a disposable directory using a test-only local
+root key; normal product profiles keep the keyring provider. Packaging requires
+both IM Core and Identity native assets for Windows x64 and both macOS CPUs.
+
 Before an unpublished tenant-aware AWiki pair is released, Desktop can verify the exact sibling source
 headlessly without changing profile install/update/uninstall semantics:
 
@@ -136,7 +145,7 @@ DSH_AWIKI_TENANT_SOURCE_ROOT=/absolute/path/to/dsh-awiki \
   yarn workspace dsh-plugin-desktop verify:awiki-tenant-source
 ```
 
-The normal profile smoke validates Desktop's exact installable Registry pins. This additional gate validates
+The normal profile smoke validates Desktop's exact archived runtime inputs and Registry pins. This additional gate validates
 the local package identities, then runs the Host-owned registry load, China ↔ Global switching, committed
 restart recovery, generation fencing, lifecycle participant, and Model Proxy capability-binding tests against
 the unpublished source. It performs no network or graphical launch.

@@ -119,6 +119,7 @@ describe('desktop profile discovery', () => {
         bundles: [
           '@deepseek-ai/dsh-base',
           '@deepseek-ai/dsh-web-app',
+          '@agent-network-protocol/dsh-anp-identity',
           '@awiki/dsh-plugin',
           '@awiki/dsh-model-proxy',
         ],

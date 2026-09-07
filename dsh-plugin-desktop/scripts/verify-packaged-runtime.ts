@@ -104,6 +104,12 @@ export const REQUIRED_WINDOWS_X64_NODE_PTY_ENTRIES = [
   'node_modules/node-pty/prebuilds/win32-x64/conpty/conpty.dll',
 ] as const
 
+/** Windows native AWiki runtime assets supplied by the exact release dependencies. */
+export const REQUIRED_WINDOWS_X64_AWIKI_ENTRIES = [
+  'node_modules/@awiki/im-core-node-win32-x64-msvc/awiki-im-core-node.win32-x64-msvc.node',
+  'node_modules/@agent-network-protocol/anp-identity-win32-x64-msvc/anp-identity.win32-x64-msvc.node',
+] as const
+
 /** CPU-specific runtime assets that must coexist in a universal macOS application. */
 export const REQUIRED_MACOS_UNIVERSAL_ENTRIES = [
   ...MACOS_UNIVERSAL_NATIVE_ENTRIES.map(entry => entry.path),
@@ -124,6 +130,11 @@ export const REQUIRED_UNPACKED_PACKAGE_SPECIFIERS = [
   'dsh-plugin-desktop/windows-agent-presets',
   'dsh-plugin-desktop/windows-pwsh-sandbox',
   'dsh-plugin-desktop/package.json',
+  '@agent-network-protocol/dsh-anp-identity',
+  '@agent-network-protocol/anp-identity',
+  '@awiki/dsh-plugin',
+  '@awiki/dsh-model-proxy',
+  '@awiki/im-core-node',
   '@deepseek-ai/dsh-base/package.json',
   '@deepseek-ai/schemastery/package.json',
   '@deepseek-ai/dsh-web-app/package.json',
@@ -376,7 +387,7 @@ export function verifyPackagedRuntime(
   const archiveEntries = verifyPackagedAsar(resolvePackagedAsarPath(context), list)
   const unpackedRoot = resolvePackagedUnpackedRoot(context)
   const requiredPhysicalEntries = context.electronPlatformName === 'win32'
-    ? [...REQUIRED_UNPACKED_RUNTIME_ENTRIES, ...REQUIRED_WINDOWS_X64_NODE_PTY_ENTRIES]
+    ? [...REQUIRED_UNPACKED_RUNTIME_ENTRIES, ...REQUIRED_WINDOWS_X64_NODE_PTY_ENTRIES, ...REQUIRED_WINDOWS_X64_AWIKI_ENTRIES]
     : context.electronPlatformName === 'darwin' && context.arch === 4
       ? [...REQUIRED_UNPACKED_RUNTIME_ENTRIES, ...REQUIRED_MACOS_UNIVERSAL_ENTRIES]
       : REQUIRED_UNPACKED_RUNTIME_ENTRIES

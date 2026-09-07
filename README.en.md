@@ -139,6 +139,7 @@ Desktop source lives in `dsh-plugin-desktop/`. The outer repository uses Yarn, w
 
 ```sh
 git submodule update --init --recursive
+node scripts/prepare-runtime-inputs.mjs
 corepack yarn install --immutable
 corepack yarn dev
 ```

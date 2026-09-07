@@ -1,6 +1,6 @@
 {
   "name": "dsh-plugin-desktop",
-  "version": "2.1.0-rc.5",
+  "version": "2.1.0-rc.7",
   "description": "DSH Desktop: an Electron shell composed as a DeepSeek Harness Cordis plugin",
   "license": "MIT",
   "publishConfig": {
@@ -140,8 +140,9 @@
     "prepack": "yarn run check"
   },
   "dependencies": {
-    "@awiki/dsh-model-proxy": "0.1.2",
-    "@awiki/dsh-plugin": "0.3.2",
+    "@agent-network-protocol/dsh-anp-identity": "0.1.0",
+    "@awiki/dsh-model-proxy": "0.1.5",
+    "@awiki/dsh-plugin": "0.3.9",
     "@deepseek-ai/cordis": "4.0.1",
     "@deepseek-ai/cordis-plugin-group": "1.0.1",
     "@deepseek-ai/cordis-plugin-include": "1.0.6",
@@ -345,7 +346,7 @@
       "signIgnore": [
         "\\.(?:pak|dat|wasm)$"
       ],
-      "x64ArchFiles": "**/node_modules/{node-pty/prebuilds/darwin-*/**,node-addon-require-builtin-darwin-*/**,@vscode/ripgrep-darwin-*/**,@img/sharp-darwin-*/**,@img/sharp-libvips-darwin-*/**,@koromix/koffi-darwin-*/**,@awiki/im-core-node-darwin-*/**}"
+      "x64ArchFiles": "**/node_modules/{node-pty/prebuilds/darwin-*/**,node-addon-require-builtin-darwin-*/**,@vscode/ripgrep-darwin-*/**,@img/sharp-darwin-*/**,@img/sharp-libvips-darwin-*/**,@koromix/koffi-darwin-*/**,@awiki/im-core-node-darwin-*/**,@agent-network-protocol/anp-identity-darwin-*/**}"
     },
     "win": {
       "target": [

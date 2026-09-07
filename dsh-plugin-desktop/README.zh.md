@@ -77,11 +77,12 @@ desktop sidebar surface 会把上游 sidebar-fill token 局部设为透明，因
 
 ## 开发
 
-该包由仓库根目录的 Yarn workspace 管理。相邻的 `deepseek-harness/` checkout 仍是独立的上游 pnpm 项目，不属于 Yarn workspace。请从仓库根目录安装并验证 DSH Desktop：
+该包由仓库根目录的 Yarn workspace 管理。相邻的 `deepseek-harness/` checkout 仍是独立的上游 pnpm 项目，不属于 Yarn workspace。请从仓库根目录安装并验证 DSH Desktop。先运行 `node scripts/prepare-runtime-inputs.mjs` 下载 Desktop 自有运行时归档；归档总 SHA-256、九包校验值、版本和来源提交固定在 `desktop-runtime-inputs.json`。Yarn 从相对 `.build/runtime-inputs/` 路径解析这些包；已发布的 IM Core 与第三方包保留不可变 Registry lock。这些构建材料不作为独立 npm 插件发布：
 
 ```sh
-yarn install
-yarn check
+node scripts/prepare-runtime-inputs.mjs
+corepack yarn install --immutable
+corepack yarn check
 ```
 
 该检查会验证生产依赖图中的每个必需第一方 peer 都由 desktop deploy root 声明。Headless Loader smoke 会激活 launcher 拥有的 desktop row 与 profile 本地第三方 row，然后启动已发布 Web profile 并检查其 loopback 根页面与 client manifest。单元和类型测试覆盖两种 profile 组合、重启栅栏、client environment 校验、desktop layout 状态与各平台原生窗口选项。
@@ -126,6 +127,13 @@ AWiki 插件自己拥有按租户隔离的更新卡片，并为当前租户显�
 `dsh plugin add ...` 命令；生成的终端会把它绑定到打开终端时不可变的当前 profile。命令完成后
 重启 Desktop。安装、兼容检查与失败恢复继续由上游 DSH CLI 和该 active profile 负责。
 
+Desktop 2.1.0-rc.7 内置归档中的精确运行时包
+`@agent-network-protocol/dsh-anp-identity@0.1.0`、`@awiki/dsh-plugin@0.3.9` 与
+`@awiki/dsh-model-proxy@0.1.5`。默认 Profile 在 AWiki 之前加载 Identity，修复旧
+Profile 时也采用这一顺序。无界面 Profile 门禁在临时目录内使用仅限测试的本地根密钥打开
+真实原生 Identity Provider；正常产品 Profile 保持使用系统钥匙串。打包门禁要求 Windows
+x64 以及 macOS 两种 CPU 都包含 IM Core 和 Identity 原生产物。
+
 租户版 AWiki 插件尚未发布时，可以让 Desktop 直接对平行工作区中的精确源码执行无界面门禁，
 且不改变既有 Profile 安装、更新和卸载语义：
 
@@ -134,7 +142,7 @@ DSH_AWIKI_TENANT_SOURCE_ROOT=/absolute/path/to/dsh-awiki \
   yarn workspace dsh-plugin-desktop verify:awiki-tenant-source
 ```
 
-普通 Profile smoke 负责验证 Desktop 固定的 Registry 可安装版本；这个额外门禁先确认本地源码的包
+普通 Profile smoke 负责验证 Desktop 固定的运行时归档与 Registry 依赖；这个额外门禁先确认本地源码的包
 身份，再直接对未发布源码运行 Host 注册表加载、中美租户双向切换、完整提交后的重启恢复、
 generation 隔离、生命周期参与者与 Model Proxy 能力绑定测试；不会访问网络或启动图形界面。
 

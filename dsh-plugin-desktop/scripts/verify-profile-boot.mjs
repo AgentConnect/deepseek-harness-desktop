@@ -21,6 +21,16 @@ const HOST_SERVICE_PLUGIN_NAME = 'dsh-desktop-host-services-smoke-plugin'
 const HOST_SERVICE_PROBE_KEY = 'desktopHostServiceProbe'
 const home = mkdtempSync(join(tmpdir(), 'dsh-desktop-profile-'))
 const originalDshHome = process.env.DSH_HOME
+const identityEnvironment = {
+  DSH_AWIKI_STATE_ROOT: join(home, 'awiki'),
+  DSH_ANP_IDENTITY_STATE_ROOT: join(home, 'anp-identity'),
+  DSH_ANP_IDENTITY_ROOT_KEY_PROVIDER: 'local-file',
+  DSH_ANP_IDENTITY_ROOT_KEY_PROVIDER_ID: 'desktop-profile-smoke',
+}
+const originalIdentityEnvironment = Object.fromEntries(
+  Object.keys(identityEnvironment).map(key => [key, process.env[key]]),
+)
+Object.assign(process.env, identityEnvironment)
 process.env.DSH_HOME = home
 let ctx
 let releasePackageResolver
@@ -160,6 +170,17 @@ try {
   )
   await runtime.mountScheduled()
 
+  const identityHealth = await ctx.anpIdentity.health()
+  if (identityHealth.status !== 'ready') {
+    throw new Error(`assembled desktop profile has no ready native ANP Identity provider: ${JSON.stringify(identityHealth)}`)
+  }
+  const tenantRegistry = ctx.awiki.getTenantRegistryView()
+  const chinaTenant = tenantRegistry.tenants.find(tenant => tenant.kind === 'built_in' && tenant.didHost === 'awiki.me')
+  if (chinaTenant?.backendBaseUrl !== 'https://awiki.me'
+    || chinaTenant.didHost !== 'awiki.me'
+    || tenantRegistry.activeTenantId !== chinaTenant.tenantId) {
+    throw new Error(`assembled desktop profile has an unexpected China tenant: ${JSON.stringify(tenantRegistry)}`)
+  }
   const awikiSession = await ctx.awiki.getSession()
   if (awikiSession.ok !== true || awikiSession.value.status !== 'unregistered') {
     throw new Error(`assembled desktop profile produced an unexpected AWiki session: ${JSON.stringify(awikiSession)}`)
@@ -267,6 +288,10 @@ try {
   releasePackageResolver?.()
   pnpmRuntime?.dispose()
   rmSync(home, { recursive: true, force: true })
+  for (const [key, value] of Object.entries(originalIdentityEnvironment)) {
+    if (value === undefined) delete process.env[key]
+    else process.env[key] = value
+  }
   if (originalDshHome === undefined) delete process.env.DSH_HOME
   else process.env.DSH_HOME = originalDshHome
 }

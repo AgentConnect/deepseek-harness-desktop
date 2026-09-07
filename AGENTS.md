@@ -6,6 +6,7 @@ This repository owns the desktop product around an unmodified DeepSeek Harness c
 
 - Use Node.js `^22.19.0` or `>=24.0.0` and the root Yarn `4.18.0` release through Corepack.
 - Initialize the pinned upstream checkout with `git submodule update --init --recursive`.
+- Materialize the SHA-pinned bundled runtime with `node scripts/prepare-runtime-inputs.mjs`.
 - Install root dependencies with `corepack yarn install --immutable`.
 
 ## Build, run, and verify
