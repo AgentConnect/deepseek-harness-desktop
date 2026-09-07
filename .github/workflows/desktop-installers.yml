@@ -62,6 +62,7 @@ jobs:
         with:
           path: ${{ steps.yarn-cache.outputs.dir }}
           key: yarn-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('yarn.lock', '.yarnrc.yml') }}
+      - run: node scripts/prepare-runtime-inputs.mjs
       - run: yarn install --immutable
       - run: yarn workspace dsh-plugin-desktop check:mac-package
       - name: Build and verify unsigned universal DMG
@@ -96,6 +97,7 @@ jobs:
         with:
           path: ${{ steps.yarn-cache.outputs.dir }}
           key: yarn-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('yarn.lock', '.yarnrc.yml') }}
+      - run: node scripts/prepare-runtime-inputs.mjs
       - run: yarn install --immutable
       - run: yarn workspace dsh-plugin-desktop check:win-package
       - name: Build and verify unsigned NSIS installer

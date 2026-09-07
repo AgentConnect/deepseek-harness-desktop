@@ -6,11 +6,12 @@
   "coveredRepository": "https://github.com/AgentConnect/deepseek-harness-desktop",
   "licenseDocument": "AWIKI-COMMERCIAL-LICENSE.md",
   "packages": {
-    "@awiki/im-core-node": "0.1.7",
-    "@awiki/im-core-node-darwin-arm64": "0.1.7",
-    "@awiki/im-core-node-darwin-x64": "0.1.7",
-    "@awiki/im-core-node-linux-arm64-gnu": "0.1.7",
-    "@awiki/im-core-node-linux-x64-gnu": "0.1.7",
-    "@awiki/im-core-node-win32-x64-msvc": "0.1.7"
-  }
+    "@awiki/im-core-node": "0.2.3",
+    "@awiki/im-core-node-darwin-arm64": "0.2.3",
+    "@awiki/im-core-node-darwin-x64": "0.2.3",
+    "@awiki/im-core-node-linux-arm64-gnu": "0.2.3",
+    "@awiki/im-core-node-linux-x64-gnu": "0.2.3",
+    "@awiki/im-core-node-win32-x64-msvc": "0.2.3"
+  },
+  "addendumEffectiveDate": "2026-09-07"
 }

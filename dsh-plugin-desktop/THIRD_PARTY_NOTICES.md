@@ -7,21 +7,25 @@ The following exact package set is authorized for target-specific DSH Desktop di
 Each installer contains only the platform packages relevant to that target. The complete grant is shipped as AWIKI-COMMERCIAL-LICENSE.md.
 | Package | Authorized version | Upstream license |
 | --- | --- | --- |
-| @awiki/im-core-node | 0.1.7 | AGPL-3.0-only |
-| @awiki/im-core-node-darwin-arm64 | 0.1.7 | AGPL-3.0-only |
-| @awiki/im-core-node-darwin-x64 | 0.1.7 | AGPL-3.0-only |
-| @awiki/im-core-node-linux-arm64-gnu | 0.1.7 | AGPL-3.0-only |
-| @awiki/im-core-node-linux-x64-gnu | 0.1.7 | AGPL-3.0-only |
-| @awiki/im-core-node-win32-x64-msvc | 0.1.7 | AGPL-3.0-only |
+| @awiki/im-core-node | 0.2.3 | AGPL-3.0-only |
+| @awiki/im-core-node-darwin-arm64 | 0.2.3 | AGPL-3.0-only |
+| @awiki/im-core-node-darwin-x64 | 0.2.3 | AGPL-3.0-only |
+| @awiki/im-core-node-linux-arm64-gnu | 0.2.3 | AGPL-3.0-only |
+| @awiki/im-core-node-linux-x64-gnu | 0.2.3 | AGPL-3.0-only |
+| @awiki/im-core-node-win32-x64-msvc | 0.2.3 | AGPL-3.0-only |
 ## Installed dependency inventory
 | Package | Version | License |
 | --- | --- | --- |
+| @agent-network-protocol/anp-identity | 0.2.0 | Apache-2.0 |
+| @agent-network-protocol/anp-identity-darwin-arm64 | 0.2.0 | Apache-2.0 |
+| @agent-network-protocol/anp-identity-darwin-x64 | 0.2.0 | Apache-2.0 |
+| @agent-network-protocol/dsh-anp-identity | 0.1.0 | Apache-2.0 |
 | @anthropic-ai/sdk | 0.91.1 | MIT |
-| @awiki/dsh-model-proxy | 0.1.2 | MIT |
-| @awiki/dsh-plugin | 0.3.2 | MIT |
-| @awiki/im-core-node | 0.1.7 | AWiki Commercial License (AWIKI-DSH-DESKTOP-2026-08-24; upstream AGPL-3.0-only) |
-| @awiki/im-core-node-darwin-arm64 | 0.1.7 | AWiki Commercial License (AWIKI-DSH-DESKTOP-2026-08-24; upstream AGPL-3.0-only) |
-| @awiki/im-core-node-darwin-x64 | 0.1.7 | AWiki Commercial License (AWIKI-DSH-DESKTOP-2026-08-24; upstream AGPL-3.0-only) |
+| @awiki/dsh-model-proxy | 0.1.5 | MIT |
+| @awiki/dsh-plugin | 0.3.9 | MIT |
+| @awiki/im-core-node | 0.2.3 | AWiki Commercial License (AWIKI-DSH-DESKTOP-2026-08-24; upstream AGPL-3.0-only) |
+| @awiki/im-core-node-darwin-arm64 | 0.2.3 | AWiki Commercial License (AWIKI-DSH-DESKTOP-2026-08-24; upstream AGPL-3.0-only) |
+| @awiki/im-core-node-darwin-x64 | 0.2.3 | AWiki Commercial License (AWIKI-DSH-DESKTOP-2026-08-24; upstream AGPL-3.0-only) |
 | @aws-crypto/sha256-browser | 5.2.0 | Apache-2.0 |
 | @aws-crypto/sha256-js | 5.2.0 | Apache-2.0 |
 | @aws-crypto/supports-web-crypto | 5.2.0 | Apache-2.0 |
@@ -391,6 +395,7 @@ Each installer contains only the platform packages relevant to that target. The 
 | google-auth-library | 10.9.1 | Apache-2.0 |
 | google-logging-utils | 1.1.3 | Apache-2.0 |
 | gopd | 1.2.0 | MIT |
+| graceful-fs | 4.2.11 | ISC |
 | has-symbols | 1.1.0 | MIT |
 | hasown | 2.0.4 | MIT |
 | hast-util-to-html | 9.0.5 | MIT |
@@ -501,6 +506,7 @@ Each installer contains only the platform packages relevant to that target. The 
 | pkce-challenge | 5.0.1 | MIT |
 | pnpm | 11.7.0 | MIT |
 | powershell-utils | 0.2.0 | MIT |
+| proper-lockfile | 4.1.2 | MIT |
 | property-information | 7.2.0 | MIT |
 | protobufjs | 7.6.5 | BSD-3-Clause |
 | proxy-addr | 2.0.7 | MIT |
@@ -514,7 +520,7 @@ Each installer contains only the platform packages relevant to that target. The 
 | regex-recursion | 6.0.2 | MIT |
 | regex-utilities | 2.3.0 | MIT |
 | require-from-string | 2.0.2 | MIT |
-| retry | 0.13.1 | MIT |
+| retry | 0.12.0 | MIT |
 | router | 2.2.0 | MIT |
 | run-applescript | 7.1.0 | MIT |
 | safe-buffer | 5.2.1 | MIT |
@@ -532,6 +538,7 @@ Each installer contains only the platform packages relevant to that target. The 
 | side-channel-list | 1.0.1 | MIT |
 | side-channel-map | 1.0.1 | MIT |
 | side-channel-weakmap | 1.0.2 | MIT |
+| signal-exit | 3.0.7 | ISC |
 | space-separated-tokens | 2.0.2 | MIT |
 | statuses | 2.0.2 | MIT |
 | stringify-entities | 4.0.4 | MIT |

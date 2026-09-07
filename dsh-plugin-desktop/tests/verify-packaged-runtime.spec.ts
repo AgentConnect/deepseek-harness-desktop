@@ -9,6 +9,7 @@ import {
   REQUIRED_UNPACKED_PACKAGE_SPECIFIERS,
   REQUIRED_UNPACKED_RUNTIME_ENTRIES,
   REQUIRED_WINDOWS_X64_NODE_PTY_ENTRIES,
+  REQUIRED_WINDOWS_X64_AWIKI_ENTRIES,
   resolvePackagedAsarPath,
   resolvePackagedUnpackedRoot,
   smokePackagedDiagnosticWorker,
@@ -137,11 +138,22 @@ describe('packaged desktop runtime verification', () => {
     expect(resolvePackagedUnpackedRoot(context('/build', platform))).toBe(unpackedRoot)
     expect(exists).toHaveBeenCalledTimes(
       REQUIRED_UNPACKED_RUNTIME_ENTRIES.length
-        + (platform === 'win32' ? REQUIRED_WINDOWS_X64_NODE_PTY_ENTRIES.length : 0)
+        + (platform === 'win32' ? REQUIRED_WINDOWS_X64_NODE_PTY_ENTRIES.length + REQUIRED_WINDOWS_X64_AWIKI_ENTRIES.length : 0)
         + completeArchiveEntries().length,
     )
     expect(resolvePackage.mock.calls.map(([specifier]) => specifier))
       .toEqual(REQUIRED_UNPACKED_PACKAGE_SPECIFIERS)
+  })
+
+  it.each(REQUIRED_WINDOWS_X64_AWIKI_ENTRIES)('rejects missing packaged native dependency %s', missing => {
+    const runtimeContext = context('/build', 'win32')
+    const unpackedRoot = resolvePackagedUnpackedRoot(runtimeContext)
+    expect(() => verifyPackagedRuntime(
+      runtimeContext,
+      () => completeArchiveEntries(),
+      filename => filename !== join(unpackedRoot, missing),
+      completePackageResolver(unpackedRoot),
+    )).toThrow(`missing required physical entries: ${missing}`)
   })
 
   it('rejects an unsupported platform instead of guessing an archive layout', () => {

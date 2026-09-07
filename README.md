@@ -139,6 +139,7 @@ DSH Desktop 是基于 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek
 
 ```sh
 git submodule update --init --recursive
+node scripts/prepare-runtime-inputs.mjs
 corepack yarn install --immutable
 corepack yarn dev
 ```

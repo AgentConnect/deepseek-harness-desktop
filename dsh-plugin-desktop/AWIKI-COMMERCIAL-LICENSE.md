@@ -32,3 +32,23 @@ The npm packages remain available separately under their published
 `AGPL-3.0-only` terms. This grant does not change the licenses of third-party
 components, grant trademark rights, or provide any warranty. A later package
 version is not covered unless the Licensor adds it to a written grant.
+
+
+## Written addendum — September 7, 2026
+
+Effective date: September 7, 2026
+
+The Licensor extends Grant `AWIKI-DSH-DESKTOP-2026-08-24` to the following
+additional exact package versions for official DSH Desktop distributions,
+including the Shanghai production release prepared on September 7, 2026:
+
+- `@awiki/im-core-node@0.2.3`
+- `@awiki/im-core-node-darwin-arm64@0.2.3`
+- `@awiki/im-core-node-darwin-x64@0.2.3`
+- `@awiki/im-core-node-linux-arm64-gnu@0.2.3`
+- `@awiki/im-core-node-linux-x64-gnu@0.2.3`
+- `@awiki/im-core-node-win32-x64-msvc@0.2.3`
+
+All original terms and coverage for version 0.1.7 remain unchanged. This
+addendum does not authorize separate redistribution outside DSH Desktop or
+change any third-party license.

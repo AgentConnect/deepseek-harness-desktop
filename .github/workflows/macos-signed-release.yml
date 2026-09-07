@@ -35,6 +35,7 @@ jobs:
         with:
           path: ${{ steps.yarn-cache.outputs.dir }}
           key: yarn-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('yarn.lock', '.yarnrc.yml') }}
+      - run: node scripts/prepare-runtime-inputs.mjs
       - run: yarn install --immutable
       - name: Materialize App Store Connect API key
         shell: bash
