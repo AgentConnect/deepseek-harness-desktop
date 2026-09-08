@@ -90,20 +90,14 @@ export interface DesktopNotification {
 export interface DesktopUpdateAdapter {
   /** Whether the running executable came from an Electron package. */
   readonly isPackaged: boolean
-  /** Whether this platform has a fixed installer download endpoint. */
-  readonly canDownload: boolean
   /** Installed desktop product version. */
   readonly currentVersion: string
   /** Private file used for update-prompt history. */
   readonly statePath: string
   /** Request adapter backed by Electron's native network session. */
   readonly request: UpdateRequest
-  /** Ask whether one strictly newer version may be downloaded. */
-  confirmDownload(version: string): Promise<boolean>
   /** Present the outcome of a user-triggered version check. */
   showManualCheckResult(result: UpdateCheckResult | null): Promise<void>
-  /** Download and hand one confirmed update to the platform installer. */
-  downloadAndOpen(version: string, signal: AbortSignal): Promise<void>
   /** Present a native status notification without blocking the Host tree. */
   notify(notification: DesktopNotification): void
 }
@@ -148,7 +142,7 @@ export interface DesktopRuntime {
   /** Locale currently used for native tray contributions. */
   readonly locale: DesktopLocale
 
-  /** Native network, update-download, and notification adapter. */
+  /** Native version discovery and notification adapter. */
   readonly updates: DesktopUpdateAdapter
 
   /**

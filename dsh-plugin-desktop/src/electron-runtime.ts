@@ -44,14 +44,7 @@ import {
   desktopLocaleFromLanguageTag,
   desktopTrayLabel,
 } from './tray-locale.ts'
-import {
-  desktopUpdateFilename,
-  downloadDesktopUpdate,
-  pendingDesktopUpdateArtifact,
-  recordDesktopUpdateArtifact,
-  resolveDesktopUpdateArtifact,
-  type DesktopUpdateArtifact,
-} from './update-download.ts'
+import { DESKTOP_DOWNLOAD_PAGE } from './distribution.ts'
 import type { UpdateCheckResult } from './update-checker.ts'
 import {
   type WindowsVolumeQuery,
@@ -109,7 +102,6 @@ export class ElectronDesktopRuntime implements DesktopRuntime {
   private terminalSpec: DesktopTerminalSpec | undefined
   private diagnosticExport: Promise<void> | undefined
   private readonly workspaceAdmission: ElectronWorkspaceAdmission
-  private updateCleanupTask: Promise<void> | undefined
   private rendererHealthGate: DesktopRendererHealthGate | undefined
   private profileCreateWindow: ProfileCreateWindow | undefined
 
@@ -135,13 +127,10 @@ export class ElectronDesktopRuntime implements DesktopRuntime {
     })
     this.updates = {
       get isPackaged() { return app.isPackaged },
-      get canDownload() { return app.isPackaged && platformStrategy.updateDownloadPlatform !== undefined },
       get currentVersion() { return PRODUCT_VERSION },
       get statePath() { return join(app.getPath('userData'), 'updates', 'state.json') },
       request: (url, init) => net.fetch(url, init),
-      confirmDownload: version => this.confirmUpdateDownload(version),
       showManualCheckResult: result => this.showManualUpdateCheckResult(result),
-      downloadAndOpen: (version, signal) => this.downloadAndOpenUpdate(version, signal),
       notify: notification => { this.showNotification(notification) },
     }
   }
@@ -236,9 +225,6 @@ export class ElectronDesktopRuntime implements DesktopRuntime {
       this.generation = generation
       this.mountTask = generation.mount(beforeInteractive).then(() => {
         this.rendererHealthGate?.acceptNativeMount()
-        void this.offerUpdateArtifactCleanup().catch((cause: unknown) => {
-          this.logError(`dsh-plugin-desktop: failed to resolve update installer cleanup: ${cause instanceof Error ? cause.message : String(cause)}`)
-        })
       }).catch((cause: unknown) => {
         if (this.generation === generation) this.generation = undefined
         throw cause
@@ -501,198 +487,32 @@ export class ElectronDesktopRuntime implements DesktopRuntime {
     nativeNotification.show()
   }
 
-  /** Ask before making the fixed download endpoint's counted request. */
-  private async confirmUpdateDownload(version: string): Promise<boolean> {
-    const result = await dialog.showMessageBox({
-      type: 'info',
-      title: 'DSH Desktop Update Available',
-      message: `DSH Desktop ${version} is available.`,
-      detail: 'Download this update now?',
-      buttons: ['Download', 'Later'],
-      defaultId: 1,
-      cancelId: 1,
-      noLink: true,
-    })
-    return result.response === 0
-  }
-
-  /** Report one user-triggered check without exposing network or response details. */
+  /** A manual check only offers the distribution's fixed download page. */
   private async showManualUpdateCheckResult(result: UpdateCheckResult | null): Promise<void> {
-    if (result === null) {
-      await dialog.showMessageBox({
-        type: 'warning',
-        title: 'Unable to Check for Updates',
-        message: 'DSH Desktop could not check for updates.',
-        detail: 'Please try again later.',
-        buttons: ['OK'],
-        defaultId: 0,
-        noLink: true,
-      })
-      return
-    }
-
-    if (result.status === 'up-to-date') {
-      await dialog.showMessageBox({
-        type: 'info',
-        title: 'DSH Desktop Is Up to Date',
-        message: 'No newer version of DSH Desktop is available.',
-        detail: `Installed version: ${result.currentVersion}`,
-        buttons: ['OK'],
-        defaultId: 0,
-        noLink: true,
-      })
-      return
-    }
-
-    await dialog.showMessageBox({
-      type: 'info',
-      title: 'DSH Desktop Update Available',
-      message: `DSH Desktop ${result.latestVersion} is available.`,
-      detail: 'Installer downloads are unavailable in this build.',
-      buttons: ['OK'],
-      defaultId: 0,
-      noLink: true,
-    })
-  }
-
-  /** Download a confirmed installer and hand it to the native installation flow. */
-  private async downloadAndOpenUpdate(version: string, signal: AbortSignal): Promise<void> {
-    const platform = this.platformStrategy.updateDownloadPlatform
-    if (platform === undefined) {
-      throw new Error(`dsh-plugin-desktop: updates are unavailable on ${this.platform}`)
-    }
-    const destinationPath = await this.chooseUpdateDestination(version)
-    if (destinationPath === undefined) return
-    signal.throwIfAborted()
-    const artifactPath = await downloadDesktopUpdate({
-      platform,
-      version,
-      destinationPath,
-      request: (url, init) => net.fetch(url, init),
-      signal,
-    })
-    signal.throwIfAborted()
-    const artifact: DesktopUpdateArtifact = { platform, version, path: artifactPath }
-    try {
-      await recordDesktopUpdateArtifact(app.getPath('userData'), artifact)
-    } catch (cause) {
-      this.logError(`dsh-plugin-desktop: failed to remember update installer for cleanup: ${cause instanceof Error ? cause.message : String(cause)}`)
-    }
-
-    if (platform === 'darwin') {
-      const openError = await shell.openPath(artifactPath)
-      if (openError !== '') throw new Error(`dsh-plugin-desktop: failed to open update disk image: ${openError}`)
-      signal.throwIfAborted()
-      await dialog.showMessageBox({
-        type: 'info',
-        title: 'DSH Desktop Update Downloaded',
-        message: `DSH Desktop ${version} is ready to install.`,
-        detail: 'The disk image has opened. Replace DSH Desktop in Applications, then reopen it.',
-        buttons: ['OK'],
-        defaultId: 0,
-        noLink: true,
-      })
-      return
-    }
-
-    const result = await dialog.showMessageBox({
-      type: 'info',
-      title: 'DSH Desktop Update Downloaded',
-      message: `DSH Desktop ${version} is ready to install.`,
-      detail: 'Restart DSH Desktop and run the installer now?',
-      buttons: ['Restart and Install', 'Later'],
-      defaultId: 1,
-      cancelId: 1,
-      noLink: true,
-    })
-    if (result.response !== 0) return
-
-    const spec = this.scheduled
-    if (spec === undefined) throw new Error('dsh-plugin-desktop: no active shell can exit for update installation')
-    signal.throwIfAborted()
-    await this.launchWindowsUpdateInstaller(artifactPath)
-    this.quitting = true
-    spec.requestQuit(0)
-  }
-
-  private async chooseUpdateDestination(version: string): Promise<string | undefined> {
-    if (this.platform !== 'darwin' && this.platform !== 'win32') return undefined
     const zh = this.currentLocale === 'zh'
-    const filename = desktopUpdateFilename(this.platform, version)
-    const extension = this.platform === 'darwin' ? 'dmg' : 'exe'
-    const result = await dialog.showSaveDialog({
-      title: zh ? '保存更新安装包' : 'Save Update Installer',
-      defaultPath: join(app.getPath('downloads'), filename),
-      buttonLabel: zh ? '保存并下载' : 'Save and Download',
-      filters: [{
-        name: this.platform === 'darwin'
-          ? zh ? '磁盘映像' : 'Disk Image'
-          : zh ? 'Windows 安装程序' : 'Windows Installer',
-        extensions: [extension],
-      }],
-      properties: ['createDirectory', 'showOverwriteConfirmation', 'dontAddToRecent'],
+    const available = result?.status === 'update-available'
+    const outcome = await dialog.showMessageBox({
+      type: result === null ? 'warning' : 'info',
+      title: zh ? 'DSH Desktop 版本与更新' : 'DSH Desktop Updates',
+      message: result === null
+        ? zh ? '检查失败，请稍后重试。' : 'Unable to check for updates. Please retry.'
+        : available
+          ? zh ? `发现新版本 ${result.latestVersion}` : `Version ${result.latestVersion} is available.`
+          : result.status === 'no-release'
+            ? zh ? '当前渠道暂未提供更新版本。' : 'No release is published for this channel.'
+            : zh ? '当前版本无需升级。' : 'Your version is up to date.',
+      detail: zh ? '在下载页面选择适合电脑的安装包，安装后重新打开应用。'
+        : 'Choose an installer on the download page, install it, then reopen the application.',
+      buttons: zh ? ['前往下载页面', '关闭'] : ['Visit Download Page', 'Close'],
+      defaultId: available ? 0 : 1, cancelId: 1, noLink: true,
     })
-    return result.canceled ? undefined : result.filePath
-  }
-
-  private offerUpdateArtifactCleanup(): Promise<void> {
-    if (this.updateCleanupTask !== undefined) return this.updateCleanupTask
-    const task = this.performUpdateArtifactCleanup().finally(() => {
-      if (this.updateCleanupTask === task) this.updateCleanupTask = undefined
-    })
-    this.updateCleanupTask = task
-    return task
-  }
-
-  private async performUpdateArtifactCleanup(): Promise<void> {
-    if (this.platform !== 'darwin' && this.platform !== 'win32') return
-    const userDataPath = app.getPath('userData')
-    const artifact = await pendingDesktopUpdateArtifact(userDataPath, PRODUCT_VERSION, this.platform)
-    if (artifact === undefined) return
-    const zh = this.currentLocale === 'zh'
-    const result = await dialog.showMessageBox({
-      type: 'question',
-      title: zh ? '删除更新安装包' : 'Remove Update Installer',
-      message: zh
-        ? `DSH Desktop ${artifact.version} 已安装。`
-        : `DSH Desktop ${artifact.version} has been installed.`,
-      detail: zh
-        ? `是否删除下载的安装包以释放磁盘空间？\n\n${artifact.path}`
-        : `Delete the downloaded installer to free disk space?\n\n${artifact.path}`,
-      buttons: zh ? ['删除安装包', '保留安装包'] : ['Delete Installer', 'Keep Installer'],
-      defaultId: 1,
-      cancelId: 1,
-      noLink: true,
-    })
-    await resolveDesktopUpdateArtifact(userDataPath, artifact, result.response === 0)
-  }
-
-  /** Start the downloaded NSIS installer before releasing the current process. */
-  private async launchWindowsUpdateInstaller(installerPath: string): Promise<void> {
-    await new Promise<void>((resolve, reject) => {
-      let child: ReturnType<typeof spawn>
-      try {
-        child = spawn(installerPath, ['--updated', '--force-run'], {
-          detached: true,
-          stdio: 'ignore',
-          shell: false,
-          windowsHide: false,
-        })
-      } catch (cause) {
-        reject(cause)
-        return
-      }
-      const fail = (cause: Error): void => { reject(cause) }
-      child.once('error', fail)
-      child.once('spawn', () => {
-        child.off('error', fail)
-        child.once('error', cause => {
-          this.logError(`dsh-plugin-desktop: update installer failed after launch: ${cause.message}`)
-        })
-        child.unref()
-        resolve()
-      })
-    })
+    if (outcome.response !== 0) return
+    try { await shell.openExternal(DESKTOP_DOWNLOAD_PAGE) }
+    catch {
+      await dialog.showMessageBox({ type: 'warning', title: zh ? '无法打开下载页面' : 'Unable to Open Download Page',
+        message: zh ? '请复制此地址到浏览器打开。' : 'Open this address in your browser.',
+        detail: DESKTOP_DOWNLOAD_PAGE, buttons: ['OK'], noLink: true })
+    }
   }
 
   /** Keep native-terminal launch failures visible in a packaged GUI process. */

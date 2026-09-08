@@ -1,302 +1,163 @@
-/** Generation-scoped ownership for update polling, prompts, downloads, and disposal. */
-
+/** One generation owns shared release checks, lightweight notifications and disposal. */
 import { open } from 'node:fs/promises'
 import { writeFileAtomic } from '@deepseek-ai/dsh-atomic-write'
-import type {
-  DesktopLocale,
-  DesktopTrayItem,
-  DesktopTrayItemRegistration,
-  DesktopUpdateAdapter,
-} from './runtime.ts'
+import { checkForDesktopUpdate, parseSemVer, type UpdateCheckResult } from './update-checker.ts'
+import { DESKTOP_DISTRIBUTION_ID, DESKTOP_DOWNLOAD_PAGE, type DesktopDistribution, type DesktopDistributionSnapshot } from './distribution.ts'
 import { desktopTrayLabel } from './tray-locale.ts'
-import {
-  checkForStableUpdate,
-  parseSemVer,
-  type UpdateCheckResult,
-} from './update-checker.ts'
+import type { DesktopLocale, DesktopTrayItem, DesktopTrayItemRegistration, DesktopUpdateAdapter } from './runtime.ts'
+import type { Config } from './updates.ts'
 
-const MAX_STATE_BYTES = 4 * 1024
-
-/** Validated scheduling and request policy for one update lifecycle. */
-export interface DesktopUpdatePolicy {
-  readonly enabled: boolean
-  readonly initialDelayMs: number
-  readonly intervalMs: number
-  readonly requestTimeoutMs: number
+export interface DesktopUpdateLifecycle extends DesktopDistribution {
+  dispose(): Promise<void>
 }
-
-/** Native capabilities supplied when one Host generation mounts update handling. */
 export interface DesktopUpdateLifecycleOptions {
   readonly adapter: DesktopUpdateAdapter
-  readonly policy: DesktopUpdatePolicy
+  readonly policy: Config
   readonly locale: () => DesktopLocale
   readonly registerTrayItem: (item: DesktopTrayItem) => DesktopTrayItemRegistration
 }
-
-/** Lifecycle handle for one generation's update operations. */
-export interface DesktopUpdateLifecycle {
-  dispose(): Promise<void>
+export function startDesktopUpdateLifecycle(options: DesktopUpdateLifecycleOptions): DesktopUpdateLifecycle {
+  return new UpdateLifecycle(options)
 }
-
-interface UpdateStateV2 {
-  readonly version: 2
-  readonly lastPromptedVersion?: string
-}
-
-const EMPTY_STATE: UpdateStateV2 = { version: 2 }
-
-/** Start one update lifecycle whose mutable state and work are released together. */
-export function startDesktopUpdateLifecycle(
-  options: DesktopUpdateLifecycleOptions,
-): DesktopUpdateLifecycle {
-  return new DesktopUpdateLifecycleOwner(options)
-}
-
-class DesktopUpdateLifecycleOwner implements DesktopUpdateLifecycle {
-  private disposed = false
-  private disposeTask: Promise<void> | undefined
-  private checking = false
-  private availableVersion: string | undefined
-  private downloadingVersion: string | undefined
-  private state: UpdateStateV2 = EMPTY_STATE
-  private pollTimer: ReturnType<typeof setTimeout> | undefined
-  private requestTimer: ReturnType<typeof setTimeout> | undefined
-  private requestController: AbortController | undefined
-  private downloadController: AbortController | undefined
-  private checkTask: Promise<UpdateCheckResult | null> | undefined
-  private manualTask: Promise<void> | undefined
-  private downloadTask: Promise<void> | undefined
-  private readonly stateReady: Promise<void>
+class UpdateLifecycle implements DesktopUpdateLifecycle {
+  private snapshot: DesktopDistributionSnapshot
+  private readonly listeners = new Set<() => void>()
   private readonly registration: DesktopTrayItemRegistration
+  private readonly stateReady: Promise<void>
+  private lastPromptedVersion: string | undefined
+  private timer: ReturnType<typeof setTimeout> | undefined
+  private requestTimer: ReturnType<typeof setTimeout> | undefined
+  private controller: AbortController | undefined
+  private task: Promise<DesktopDistributionSnapshot> | undefined
+  private manualTask: Promise<void> | undefined
+  private disposed = false
 
   constructor(private readonly options: DesktopUpdateLifecycleOptions) {
-    this.stateReady = this.loadState()
+    this.snapshot = {
+      schemaVersion: 1, distributionId: DESKTOP_DISTRIBUTION_ID,
+      currentVersion: options.adapter.currentVersion,
+      channel: (parseSemVer(options.adapter.currentVersion)?.prerelease.length ?? 0) > 0 ? 'prerelease' : 'stable',
+      downloadPageUrl: DESKTOP_DOWNLOAD_PAGE, state: 'unchecked', updateAvailable: false, usedCache: false,
+    }
     this.registration = options.registerTrayItem({
-      group: 'status',
-      order: 10,
-      label: () => this.trayLabel(),
-      invoke: () => this.runManualCheck(),
+      group: 'tools', order: 10,
+      label: () => this.snapshot.state === 'checking'
+        ? desktopTrayLabel(options.locale(), 'checkingForUpdates')
+        : this.snapshot.updateAvailable
+          ? desktopTrayLabel(options.locale(), 'updateAvailable', this.snapshot.latestVersion!)
+          : desktopTrayLabel(options.locale(), 'checkForUpdates'),
+      invoke: () => this.manualCheck(),
     })
-    if (options.adapter.isPackaged && options.policy.enabled) {
-      this.scheduleBackgroundCheck(options.policy.initialDelayMs)
-    }
+    this.stateReady = this.loadPromptHistory()
+    if (options.adapter.isPackaged && options.policy.enabled) this.schedule(options.policy.initialDelayMs)
   }
-
-  dispose(): Promise<void> {
-    if (this.disposeTask !== undefined) return this.disposeTask
-    this.disposed = true
-    if (this.pollTimer !== undefined) clearTimeout(this.pollTimer)
-    if (this.requestTimer !== undefined) clearTimeout(this.requestTimer)
-    this.requestController?.abort()
-    this.downloadController?.abort()
-    this.registration.dispose()
-    // Native dialogs are not cancellable. Await only file state and the abortable version request.
-    const pending: Promise<unknown>[] = [this.stateReady]
-    if (this.checkTask !== undefined) pending.push(this.checkTask)
-    this.disposeTask = Promise.allSettled(pending).then(() => {})
-    return this.disposeTask
+  getSnapshot(): DesktopDistributionSnapshot { return this.snapshot }
+  subscribe(listener: () => void): () => void {
+    if (this.disposed) return () => {}
+    this.listeners.add(listener)
+    return () => { this.listeners.delete(listener) }
   }
-
-  private async loadState(): Promise<void> {
-    try {
-      this.state = parseState(await readState(this.options.adapter.statePath))
-    } catch (cause) {
-      if (isEnoent(cause)) return
-      this.state = EMPTY_STATE
-      if (!this.disposed) await this.persistState()
-    }
-  }
-
-  private async persistState(): Promise<void> {
-    try {
-      await writeFileAtomic(this.options.adapter.statePath, renderState(this.state), {
-        mode: 0o600,
-        dirMode: 0o700,
-      })
-    } catch {
-      // Update state is optional; failures must not affect application startup or user activity.
-    }
-  }
-
-  private async rememberPrompt(version: string): Promise<void> {
-    await this.stateReady
-    if (this.state.lastPromptedVersion === version) return
-    this.state = { version: 2, lastPromptedVersion: version }
-    await this.persistState()
-  }
-
-  private startCheck(): Promise<UpdateCheckResult | null> {
-    if (this.checkTask !== undefined) return this.checkTask
-    this.checking = true
+  private publish(snapshot: DesktopDistributionSnapshot): void {
+    if (this.disposed) return
+    this.snapshot = snapshot
     this.registration.refresh()
+    for (const listener of this.listeners) {
+      try { listener() } catch { /* A subscriber cannot interrupt distribution discovery. */ }
+    }
+  }
+  check(): Promise<DesktopDistributionSnapshot> {
+    if (this.disposed) return Promise.resolve(this.snapshot)
+    if (this.task !== undefined) return this.task
+    this.publish({ ...this.snapshot, state: 'checking' })
     const controller = new AbortController()
-    this.requestController = controller
-
-    const task = (async () => {
-      this.requestTimer = setTimeout(() => {
-        controller.abort()
-      }, this.options.policy.requestTimeoutMs)
-      try {
-        return await checkForStableUpdate({
-          currentVersion: this.options.adapter.currentVersion,
-          signal: controller.signal,
-          request: this.options.adapter.request,
-        })
-      } catch {
-        return null
-      }
+    this.controller = controller
+    const timeout = new Promise<null>(resolve => {
+      controller.signal.addEventListener('abort', () => { resolve(null) }, { once: true })
+      this.requestTimer = setTimeout(() => { controller.abort() }, this.options.policy.requestTimeoutMs)
+    })
+    this.task = (async () => {
+      const result = await Promise.race([
+        checkForDesktopUpdate({ currentVersion: this.snapshot.currentVersion, request: this.options.adapter.request, signal: controller.signal }).catch(() => null),
+        timeout,
+      ])
+      this.publish(result === null
+        ? { ...this.snapshot, state: 'failed', usedCache: this.snapshot.checkedAt !== undefined }
+        : { schemaVersion: 1, distributionId: DESKTOP_DISTRIBUTION_ID,
+          currentVersion: this.snapshot.currentVersion, channel: this.snapshot.channel,
+          downloadPageUrl: DESKTOP_DOWNLOAD_PAGE, state: 'ready', usedCache: false,
+          latestVersion: result.latestVersion, updateAvailable: result.status === 'update-available',
+          noRelease: result.status === 'no-release', checkedAt: new Date().toISOString(),
+          ...result.bundledVersions === undefined ? {} : { bundledVersions: result.bundledVersions } })
+      return this.snapshot
     })().finally(() => {
       if (this.requestTimer !== undefined) clearTimeout(this.requestTimer)
       this.requestTimer = undefined
-      if (this.requestController === controller) this.requestController = undefined
-      this.checkTask = undefined
-      this.checking = false
-      this.registration.refresh()
+      this.controller = undefined
+      this.task = undefined
     })
-    this.checkTask = task
-    return task
+    return this.task
   }
-
-  private observeResult(result: UpdateCheckResult | null): string | undefined {
-    if (this.disposed || result === null) return undefined
-    this.availableVersion = result.status === 'update-available' && this.options.adapter.canDownload
-      ? result.latestVersion
-      : undefined
-    this.registration.refresh()
-    return this.availableVersion
-  }
-
-  private startDownload(version: string): Promise<void> {
-    if (this.downloadTask !== undefined) return this.downloadTask
-    const task = (async () => {
-      let confirmed: boolean
-      try {
-        confirmed = await this.options.adapter.confirmDownload(version)
-      } catch {
-        return
-      }
-      if (!confirmed || this.disposed) return
-
-      const confirmedVersion = this.observeResult(await this.startCheck())
-      if (confirmedVersion !== version || this.disposed) return
-
-      const controller = new AbortController()
-      this.downloadController = controller
-      this.downloadingVersion = version
-      this.registration.refresh()
-      try {
-        await this.options.adapter.downloadAndOpen(version, controller.signal)
-      } catch {
-        // Network, filesystem, and installer-opening failures are deliberately silent.
-      } finally {
-        if (this.downloadController === controller) this.downloadController = undefined
-        this.downloadingVersion = undefined
-        this.registration.refresh()
-      }
-    })().finally(() => {
-      if (this.downloadTask === task) this.downloadTask = undefined
-    })
-    this.downloadTask = task
-    return task
-  }
-
-  private async offerDownload(version: string, automatic: boolean): Promise<void> {
-    if (this.disposed || !this.options.adapter.canDownload) return
-    await this.stateReady
-    if (this.disposed || (automatic && this.state.lastPromptedVersion === version)) return
-    await this.rememberPrompt(version)
-    if (!this.disposed) await this.startDownload(version)
-  }
-
-  private runManualCheck(): Promise<void> {
+  private manualCheck(): Promise<void> {
     this.manualTask ??= (async () => {
-      if (this.availableVersion !== undefined) {
-        await this.offerDownload(this.availableVersion, false)
-        return
-      }
-      const result = await this.startCheck()
+      const snapshot = await this.check()
       if (this.disposed) return
-      const version = this.observeResult(result)
-      if (version !== undefined) {
-        await this.offerDownload(version, false)
-        return
+      const result: UpdateCheckResult | null = snapshot.state === 'failed' ? null : {
+        status: snapshot.noRelease ? 'no-release' : snapshot.updateAvailable ? 'update-available' : 'up-to-date',
+        currentVersion: snapshot.currentVersion, latestVersion: snapshot.latestVersion ?? snapshot.currentVersion,
       }
       await this.options.adapter.showManualCheckResult(result)
-    })().catch(() => undefined).finally(() => {
-      this.manualTask = undefined
-    })
+    })().catch(() => {}).finally(() => { this.manualTask = undefined })
     return this.manualTask
   }
-
-  private async runBackgroundCheck(): Promise<void> {
-    if (this.checkTask !== undefined || this.disposed) return
-    try {
-      const version = this.observeResult(await this.startCheck())
-      if (version !== undefined) await this.offerDownload(version, true)
-    } catch {
-      // Scheduled checks never surface failures to the user or the application log.
-    }
-  }
-
-  private scheduleBackgroundCheck(delayMs: number): void {
-    this.pollTimer = setTimeout(() => {
-      this.pollTimer = undefined
-      void this.runBackgroundCheck().finally(() => {
-        if (!this.disposed) this.scheduleBackgroundCheck(this.options.policy.intervalMs)
+  private schedule(delay: number): void {
+    this.timer = setTimeout(() => {
+      void this.backgroundCheck().catch(() => {}).finally(() => {
+        if (!this.disposed) this.schedule(this.options.policy.intervalMs)
       })
-    }, delayMs)
+    }, delay)
   }
-
-  private trayLabel(): string {
-    if (this.downloadingVersion !== undefined) {
-      return desktopTrayLabel(this.options.locale(), 'downloadingUpdate', this.downloadingVersion)
-    }
-    if (this.availableVersion !== undefined) {
-      return desktopTrayLabel(this.options.locale(), 'updateAvailable', this.availableVersion)
-    }
-    return desktopTrayLabel(this.options.locale(), this.checking ? 'checkingForUpdates' : 'checkForUpdates')
+  private async backgroundCheck(): Promise<void> {
+    const snapshot = await this.check()
+    await this.stateReady
+    if (this.disposed || snapshot.state !== 'ready' || !snapshot.updateAvailable
+      || this.lastPromptedVersion === snapshot.latestVersion) return
+    this.lastPromptedVersion = snapshot.latestVersion
+    try {
+      await writeFileAtomic(this.options.adapter.statePath, JSON.stringify({ version: 3,
+        distributionId: DESKTOP_DISTRIBUTION_ID, channel: this.snapshot.channel,
+        lastPromptedVersion: this.lastPromptedVersion }) + '\n', { mode: 0o600, dirMode: 0o700 })
+    } catch { /* Prompt history is optional; version checks remain available. */ }
+    if (this.disposed) return
+    const zh = this.options.locale() === 'zh'
+    this.options.adapter.notify({ title: zh ? 'DSH Desktop 有新版本' : 'DSH Desktop update available',
+      body: zh ? '可在设置或托盘中查看版本并前往下载页面。' : 'Check Settings or the tray to visit the download page.' })
   }
-}
-
-function parseState(text: string): UpdateStateV2 {
-  const value: unknown = JSON.parse(text)
-  if (!isRecord(value)
-    || value.version !== 2
-    || (value.lastPromptedVersion !== undefined && !isStableVersion(value.lastPromptedVersion))
-    || Object.keys(value).some(key => !['version', 'lastPromptedVersion'].includes(key))) {
-    throw new Error('invalid v2 update state')
+  private async loadPromptHistory(): Promise<void> {
+    try {
+      const file = await open(this.options.adapter.statePath, 'r')
+      let content: string
+      try {
+        const stat = await file.stat()
+        if (!stat.isFile() || stat.size > 4096) return
+        const bytes = Buffer.alloc(4097)
+        const { bytesRead } = await file.read(bytes, 0, bytes.length, 0)
+        if (bytesRead > 4096) return
+        content = bytes.subarray(0, bytesRead).toString('utf8')
+      } finally { await file.close() }
+      const state = JSON.parse(content) as Record<string, unknown>
+      if (state.version === 3 && state.distributionId === DESKTOP_DISTRIBUTION_ID
+        && state.channel === this.snapshot.channel && typeof state.lastPromptedVersion === 'string'
+        && parseSemVer(state.lastPromptedVersion) !== null) this.lastPromptedVersion = state.lastPromptedVersion
+    } catch { /* No history is a normal first launch. */ }
   }
-  return value.lastPromptedVersion === undefined
-    ? EMPTY_STATE
-    : { version: 2, lastPromptedVersion: value.lastPromptedVersion as string }
-}
-
-async function readState(filename: string): Promise<string> {
-  const handle = await open(filename, 'r')
-  try {
-    const buffer = Buffer.alloc(MAX_STATE_BYTES + 1)
-    const { bytesRead } = await handle.read(buffer, 0, buffer.byteLength, 0)
-    if (bytesRead > MAX_STATE_BYTES) throw new Error(`update state exceeds ${MAX_STATE_BYTES} bytes`)
-    return new TextDecoder('utf-8', { fatal: true }).decode(buffer.subarray(0, bytesRead))
-  } finally {
-    await handle.close()
+  async dispose(): Promise<void> {
+    if (this.disposed) return
+    this.disposed = true
+    if (this.timer !== undefined) clearTimeout(this.timer)
+    this.controller?.abort()
+    if (this.requestTimer !== undefined) clearTimeout(this.requestTimer)
+    this.listeners.clear()
+    this.registration.dispose()
+    await Promise.allSettled([this.stateReady, this.task])
   }
-}
-
-function renderState(state: UpdateStateV2): string {
-  return `${JSON.stringify(state, null, 2)}\n`
-}
-
-function isStableVersion(value: unknown): value is string {
-  if (typeof value !== 'string') return false
-  const parsed = parseSemVer(value)
-  return parsed !== null && parsed.prerelease.length === 0 && parsed.version === value
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
-}
-
-function isEnoent(value: unknown): boolean {
-  return isRecord(value) && value.code === 'ENOENT'
 }

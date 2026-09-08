@@ -1,10 +1,10 @@
 /** Headless version checks against the public DSH Desktop release service. */
 
-/** Public endpoint returning the latest stable DSH Desktop version. */
-export const DESKTOP_VERSION_ENDPOINT = 'https://www.dshdesktop.cn/api/desktop/version'
+/** Public endpoint returning the AWiki DSH Desktop release manifest. */
+export const DESKTOP_VERSION_ENDPOINT = 'https://awiki.me/downloads/dsh-awiki/stable/desktop-release.json'
 
 /** Maximum response body bytes accepted from the version service. */
-export const MAX_VERSION_RESPONSE_BYTES = 4 * 1024
+export const MAX_VERSION_RESPONSE_BYTES = 64 * 1024
 
 /** Strictly parsed SemVer components. Numeric components remain strings to avoid overflow. */
 export interface ParsedSemVer {
@@ -25,9 +25,9 @@ export interface ParsedSemVer {
 /** Fetch-compatible request function used by the headless checker. */
 export type UpdateRequest = (url: string, init: RequestInit) => Promise<Response>
 
-/** Inputs for one stable version check. */
+/** Inputs for one Desktop release check. */
 export interface UpdateCheckOptions {
-  /** Installed application version, expressed as canonical stable SemVer. */
+  /** Installed application version, expressed as canonical SemVer. */
   readonly currentVersion: string
   /** Caller-owned cancellation signal; the checker does not create its own timeout. */
   readonly signal?: AbortSignal
@@ -35,14 +35,15 @@ export interface UpdateCheckOptions {
   readonly request?: UpdateRequest
 }
 
-/** Successful comparison returned by the stable version service. */
+/** Successful comparison with the selected Desktop distribution. */
 export type UpdateCheckResult = {
   /** Whether the service reports a version newer than the installed application. */
-  readonly status: 'up-to-date' | 'update-available'
-  /** Canonical installed stable version. */
+  readonly status: 'up-to-date' | 'update-available' | 'no-release'
+  /** Canonical installed Desktop version. */
   readonly currentVersion: string
-  /** Canonical latest stable version returned by the service. */
+  /** Canonical latest eligible version returned by the service. */
   readonly latestVersion: string
+  readonly bundledVersions?: Readonly<{ plugin: string; modelProxy?: string }>
 }
 
 const SEMVER_PATTERN =
@@ -85,14 +86,14 @@ export function compareSemVerVersions(left: string, right: string): number | nul
 }
 
 /**
- * Check the fixed DSH Desktop version endpoint for a newer stable release.
+ * Check the fixed DSH Desktop version endpoint for a newer release in the installed channel.
  * @param options - installed version, caller-owned signal, and optional request adapter.
  * @returns a successful comparison, or null when any request or validation step fails.
  */
-export async function checkForStableUpdate(
+export async function checkForDesktopUpdate(
   options: UpdateCheckOptions,
 ): Promise<UpdateCheckResult | null> {
-  const current = parseCanonicalStableVersion(options.currentVersion)
+  const current = parseCanonicalVersion(options.currentVersion)
   if (current === null) return null
 
   const init: RequestInit = {
@@ -110,7 +111,8 @@ export async function checkForStableUpdate(
   } catch {
     return null
   }
-  if (response.status !== 200) return null
+  if (response.status !== 200 || response.redirected
+    || (response.url !== '' && new URL(response.url).origin !== new URL(DESKTOP_VERSION_ENDPOINT).origin)) return null
 
   let body: string
   try {
@@ -119,12 +121,17 @@ export async function checkForStableUpdate(
     return null
   }
 
-  const latest = parseVersionResponse(body)
-  if (latest === null) return null
+  const release = parseVersionResponse(body)
+  if (release === null) return null
+  const latest = release.version
+  if (current.prerelease.length === 0 && latest.prerelease.length > 0) {
+    return { status: 'no-release', currentVersion: current.version, latestVersion: current.version }
+  }
   return {
     status: compareParsedSemVer(latest, current) > 0 ? 'update-available' : 'up-to-date',
     currentVersion: current.version,
     latestVersion: latest.version,
+    ...release.bundledVersions === undefined ? {} : { bundledVersions: release.bundledVersions },
   }
 }
 
@@ -162,22 +169,27 @@ async function readLimitedBody(response: Response): Promise<string> {
   }
 }
 
-function parseVersionResponse(body: string): ParsedSemVer | null {
+function parseVersionResponse(body: string): { version: ParsedSemVer; bundledVersions?: Readonly<{ plugin: string; modelProxy?: string }> } | null {
   let value: unknown
-  try {
-    value = JSON.parse(body)
-  } catch {
-    return null
-  }
-  if (!isRecord(value) || typeof value.version !== 'string') return null
-  return parseCanonicalStableVersion(value.version)
+  try { value = JSON.parse(body) } catch { return null }
+  if (!isRecord(value) || value.schema_version !== 1 || value.product !== 'dsh-desktop'
+    || (value.distribution_id !== undefined && value.distribution_id !== 'awiki-dsh-desktop')
+    || (value.channel !== 'stable' && value.channel !== 'prerelease')
+    || typeof value.version !== 'string') return null
+  const version = parseCanonicalVersion(value.version)
+  if (version === null || (value.channel === 'stable' && version.prerelease.length > 0)
+    || (value.channel === 'prerelease' && version.prerelease.length === 0)) return null
+  const bundled = value.bundled_versions
+  if (bundled === undefined) return { version } // Existing Shanghai release manifests.
+  if (!isRecord(bundled) || typeof bundled.plugin !== 'string' || parseCanonicalVersion(bundled.plugin) === null
+    || (bundled.model_proxy !== undefined && (typeof bundled.model_proxy !== 'string' || parseCanonicalVersion(bundled.model_proxy) === null))) return null
+  return { version, bundledVersions: { plugin: bundled.plugin,
+    ...typeof bundled.model_proxy === 'string' ? { modelProxy: bundled.model_proxy } : {} } }
 }
 
-function parseCanonicalStableVersion(input: string): ParsedSemVer | null {
+function parseCanonicalVersion(input: string): ParsedSemVer | null {
   const parsed = parseSemVer(input)
-  return parsed !== null && parsed.prerelease.length === 0 && parsed.version === input
-    ? parsed
-    : null
+  return parsed !== null && parsed.version === input ? parsed : null
 }
 
 function compareParsedSemVer(left: ParsedSemVer, right: ParsedSemVer): number {
