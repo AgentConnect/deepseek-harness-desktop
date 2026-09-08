@@ -2,8 +2,11 @@
 export interface DesktopLayoutSnapshot {
   /** Preferred sidebar width; zero means the compact rail. */
   sidebar: number
-  /** Preferred details width; zero means closed. */
-  details: number
+  /** Saved right Sidebar width; null uses the initial frame ratio. */
+  rightbar: number | null
+  rightbarShown: boolean
+  rightbarTrack: boolean
+  rightbarFullscreen: boolean
   /** Whether the current viewport is below the automatic-collapse breakpoint. */
   narrow: boolean
   /** Manual narrow-screen override that temporarily expands the rail. */
@@ -16,8 +19,8 @@ export interface DesktopColumns {
   sidebar: number
   /** Rendered center width. */
   center: number
-  /** Rendered details width. */
-  details: number
+  /** Rendered rightbar width. */
+  rightbar: number
 }
 
 /** Default compact rail used by the upstream sidebar. */
@@ -28,10 +31,10 @@ export const SIDEBAR_DEFAULT = 280
 export const SIDEBAR_MIN = 264
 export const SIDEBAR_MAX = 420
 export const SIDEBAR_AUTO_COLLAPSE = 1024
-export const DETAILS_DEFAULT = 360
-export const DETAILS_MIN = 300
-export const DETAILS_MAX = 520
-export const CENTER_MIN = 640
+export const RIGHTBAR_DEFAULT_RATIO = 0.45
+export const RIGHTBAR_MIN = 300
+export const RIGHTBAR_MAX_RATIO = 0.7
+export const CENTER_MIN = 400
 
 /** Keep the wider macOS rail private to enhanced mode; extended uses upstream geometry. */
 export function collapsedSidebarWidth(
@@ -44,28 +47,24 @@ export function collapsedSidebarWidth(
 }
 
 /**
- * Resolve three desktop columns without allowing details to squeeze the conversation below its floor.
+ * Resolve three desktop columns without allowing rightbar to squeeze the conversation below its floor.
  * @param viewport - available frame width.
  * @param sidebar - sidebar preference, where zero selects the compact rail.
- * @param details - details preference, where zero closes the panel.
+ * @param rightbar - rightbar preference, where zero closes the panel.
  * @returns rendered column widths.
  */
 export function computeDesktopColumns(
   viewport: number,
   sidebar: number,
-  details: number,
+  rightbar: number,
   collapsedWidth: number = SIDEBAR_COLLAPSED,
 ): DesktopColumns {
   const sidebarWidth = sidebar === 0 ? collapsedWidth : clamp(sidebar, SIDEBAR_MIN, SIDEBAR_MAX)
-  const preferredDetails = details === 0 ? 0 : clamp(details, DETAILS_MIN, DETAILS_MAX)
-  if (sidebarWidth + preferredDetails + CENTER_MIN <= viewport) {
-    return { sidebar: sidebarWidth, center: viewport - sidebarWidth - preferredDetails, details: preferredDetails }
-  }
-  const reducedDetails = preferredDetails === 0 ? 0 : Math.max(DETAILS_MIN, viewport - sidebarWidth - CENTER_MIN)
-  if (sidebarWidth + reducedDetails + CENTER_MIN <= viewport) {
-    return { sidebar: sidebarWidth, center: CENTER_MIN, details: reducedDetails }
-  }
-  return { sidebar: sidebarWidth, center: Math.max(0, viewport - sidebarWidth), details: 0 }
+  const available = viewport - sidebarWidth - CENTER_MIN
+  const resolvedRightbar = rightbar === 0 || available < RIGHTBAR_MIN
+    ? 0
+    : Math.min(available, clamp(rightbar, RIGHTBAR_MIN, viewport * RIGHTBAR_MAX_RATIO))
+  return { sidebar: sidebarWidth, center: Math.max(0, viewport - sidebarWidth - resolvedRightbar), rightbar: resolvedRightbar }
 }
 
 function clamp(value: number, min: number, max: number): number {
@@ -76,7 +75,10 @@ function clamp(value: number, min: number, max: number): number {
 export class DesktopLayoutState {
   private snapshot: DesktopLayoutSnapshot = Object.freeze({
     sidebar: SIDEBAR_DEFAULT,
-    details: 0,
+    rightbar: null,
+    rightbarShown: false,
+    rightbarTrack: false,
+    rightbarFullscreen: false,
     narrow: false,
     narrowExpanded: false,
   })
@@ -108,14 +110,19 @@ export class DesktopLayoutState {
     this.publish({ ...this.snapshot, narrow, narrowExpanded: false })
   }
 
-  /** Open details at its default width. */
-  openDetails(): void {
-    if (this.snapshot.details === 0) this.publish({ ...this.snapshot, details: DETAILS_DEFAULT })
+  /** Report the upstream panel presentation, preserving its saved width. */
+  openRightbar(track: boolean, fullscreen: boolean): void {
+    if (this.snapshot.rightbarShown && this.snapshot.rightbarTrack === track
+      && this.snapshot.rightbarFullscreen === fullscreen) return
+    this.publish({ ...this.snapshot, rightbarShown: true, rightbarTrack: track,
+      rightbarFullscreen: fullscreen,
+      narrowExpanded: this.snapshot.narrow ? false : this.snapshot.narrowExpanded })
   }
 
-  /** Close details while keeping its slot mounted. */
-  closeDetails(): void {
-    if (this.snapshot.details !== 0) this.publish({ ...this.snapshot, details: 0 })
+  /** Clear presentation when the upstream panel closes or unmounts. */
+  closeRightbar(): void {
+    if (!this.snapshot.rightbarShown) return
+    this.publish({ ...this.snapshot, rightbarShown: false, rightbarTrack: false, rightbarFullscreen: false })
   }
 
   /** @param width - requested sidebar width from a resize gesture. */
@@ -123,9 +130,9 @@ export class DesktopLayoutState {
     this.publish({ ...this.snapshot, sidebar: clamp(width, SIDEBAR_MIN, SIDEBAR_MAX) })
   }
 
-  /** @param width - requested details width from a resize gesture. */
-  setDetails(width: number): void {
-    this.publish({ ...this.snapshot, details: clamp(width, DETAILS_MIN, DETAILS_MAX) })
+  /** @param width - requested rightbar width from a resize gesture. */
+  setRightbar(width: number, viewport: number): void {
+    this.publish({ ...this.snapshot, rightbar: clamp(width, RIGHTBAR_MIN, Math.max(RIGHTBAR_MIN, viewport * RIGHTBAR_MAX_RATIO)) })
   }
 
   private publish(next: DesktopLayoutSnapshot): void {
