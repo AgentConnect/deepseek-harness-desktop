@@ -292,7 +292,7 @@ describe('published package surface', () => {
       expect(String(resolution)).toContain(runtimeVersion)
     }
     for (const [selector, resolution] of betaResolutions) {
-      expect(selector).toMatch(/@npm:\^?0\.1\.3-alpha\.\d+$/u)
+      expect(selector).toMatch(/@npm:\^?0\.1\.5-alpha\.1$/u)
       expect(String(resolution)).toContain(betaRuntimeVersion)
     }
   })
