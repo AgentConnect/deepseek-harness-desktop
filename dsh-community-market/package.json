@@ -254,6 +254,7 @@
     "@deepseek-ai/schemastery": "^3.18.2",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/react": "^16.3.2",
+    "@types/mdast": "^4.0.4",
     "@types/node": "^22.20.0",
     "@types/react": "^18",
     "@types/react-dom": "^18",
