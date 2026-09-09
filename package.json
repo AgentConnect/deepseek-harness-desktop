@@ -1054,6 +1054,7 @@
     }
   },
   "scripts": {
+    "prepare:agents-anywhere-release": "node scripts/prepare-agents-anywhere-release.mjs",
     "build": "yarn workspace dsh-community-market build && yarn workspace dsh-plugin-desktop build && yarn workspace dsh-plugin-desktop-beta build",
     "typecheck": "yarn workspace dsh-plugin-desktop typecheck && yarn workspace dsh-plugin-desktop-beta typecheck && yarn workspace dsh-community-market typecheck",
     "test": "yarn workspace dsh-plugin-desktop test && yarn workspace dsh-plugin-desktop-beta test && yarn workspace dsh-community-market test",
@@ -1068,10 +1069,10 @@
     "dev": "yarn workspace dsh-community-market build && yarn workspace dsh-plugin-desktop dev",
     "start": "yarn workspace dsh-plugin-desktop start",
     "package:dir": "yarn workspace dsh-community-market build && yarn workspace dsh-plugin-desktop package:dir",
-    "dist:mac": "yarn workspace dsh-community-market build && yarn workspace dsh-plugin-desktop dist:mac",
-    "dist:mac-smoke": "yarn workspace dsh-community-market build && yarn workspace dsh-plugin-desktop dist:mac-smoke",
-    "dist:win": "yarn workspace dsh-community-market build && yarn workspace dsh-plugin-desktop dist:win",
-    "dist:win-portable": "yarn workspace dsh-community-market build && yarn workspace dsh-plugin-desktop dist:win-portable",
+    "dist:mac": "yarn prepare:agents-anywhere-release && yarn workspace dsh-community-market build && yarn workspace dsh-plugin-desktop dist:mac",
+    "dist:mac-smoke": "yarn prepare:agents-anywhere-release && yarn workspace dsh-community-market build && yarn workspace dsh-plugin-desktop dist:mac-smoke",
+    "dist:win": "yarn prepare:agents-anywhere-release && yarn workspace dsh-community-market build && yarn workspace dsh-plugin-desktop dist:win",
+    "dist:win-portable": "yarn prepare:agents-anywhere-release && yarn workspace dsh-community-market build && yarn workspace dsh-plugin-desktop dist:win-portable",
     "upstream:version": "cd deepseek-harness && corepack pnpm --version",
     "upstream:install": "cd deepseek-harness && CI=true corepack pnpm install --frozen-lockfile",
     "upstream:build": "cd deepseek-harness && corepack pnpm run build",
@@ -1081,9 +1082,9 @@
     "dev:beta": "yarn workspace dsh-community-market build && yarn workspace dsh-plugin-desktop-beta dev",
     "start:beta": "yarn workspace dsh-plugin-desktop-beta start",
     "package:dir:beta": "yarn workspace dsh-community-market build && yarn workspace dsh-plugin-desktop-beta package:dir",
-    "dist:mac:beta": "yarn workspace dsh-community-market build && yarn workspace dsh-plugin-desktop-beta dist:mac",
-    "dist:mac-smoke:beta": "yarn workspace dsh-community-market build && yarn workspace dsh-plugin-desktop-beta dist:mac-smoke",
-    "dist:win:beta": "yarn workspace dsh-community-market build && yarn workspace dsh-plugin-desktop-beta dist:win",
-    "dist:win-portable:beta": "yarn workspace dsh-community-market build && yarn workspace dsh-plugin-desktop-beta dist:win-portable"
+    "dist:mac:beta": "yarn prepare:agents-anywhere-release && yarn workspace dsh-community-market build && yarn workspace dsh-plugin-desktop-beta dist:mac",
+    "dist:mac-smoke:beta": "yarn prepare:agents-anywhere-release && yarn workspace dsh-community-market build && yarn workspace dsh-plugin-desktop-beta dist:mac-smoke",
+    "dist:win:beta": "yarn prepare:agents-anywhere-release && yarn workspace dsh-community-market build && yarn workspace dsh-plugin-desktop-beta dist:win",
+    "dist:win-portable:beta": "yarn prepare:agents-anywhere-release && yarn workspace dsh-plugin-desktop-beta dist:win-portable"
   }
 }
