@@ -45,7 +45,7 @@ export function applyAdvancedShell(ctx: ClientContext, environment: DesktopClien
     children: {
       'sidebar': { kind: 'single', scope: 'root' },
       'conversation': { kind: 'single', scope: 'session-maybe' },
-      'rightbar': { kind: 'single', scope: 'session' },
+      'details': { kind: 'single', scope: 'session' },
       'shell.overlay': { kind: 'list', scope: 'root' },
     },
     inject: () => ({ layout: desktopLayout, platform: environment.platform }),
