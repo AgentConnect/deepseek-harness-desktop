@@ -25,7 +25,7 @@ export default defineConfig([
       'desktop-cli': 'src/desktop-cli.ts',
       terminal: 'src/terminal.ts',
       'update-checker': 'src/update-checker.ts',
-      'update-download': 'src/update-download.ts',
+      distribution: 'src/distribution.ts',
       updates: 'src/updates.ts',
       'windows-agent-presets': 'src/windows-agent-presets.ts',
       'windows-pwsh-sandbox': 'src/windows-pwsh-sandbox.ts',

@@ -1,5 +1,5 @@
 # Bilingual-pair consistency record: the git blob hash of each side as of the last
 # confirmed-consistent state. Both languages carry equal authority. Update both files
 # and re-record their hashes with git hash-object after editing either side.
-plugin-services.md: 806df449c7bbaaa0554ff4152bee7d752558d607
-plugin-services.zh.md: 1c180df559889f775f3e59b6aaae7b5b3907d953
+plugin-services.md: 53870e9fc65cebf3c59fe4fe06a6fa503b9d042d
+plugin-services.zh.md: 82c0f3ff33a48654fad66c2193842fc7c0a581de

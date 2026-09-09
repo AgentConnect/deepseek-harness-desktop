@@ -3,12 +3,13 @@
 import type { Context } from '@deepseek-ai/cordis'
 import z from '@deepseek-ai/schemastery'
 import type {} from './runtime.ts'
+import type {} from './distribution.ts'
 import { startDesktopUpdateLifecycle } from './update-lifecycle.ts'
 
 /** Stable Cordis plugin name. */
 export const name = 'desktop-updates'
 
-/** Native adapter required for network, tray, confirmation, and installer access. */
+/** Native adapter required for version discovery, tray, and result dialogs. */
 export const inject = ['desktopRuntime']
 
 const MAX_TIMER_DELAY_MS = 2_147_483_647
@@ -46,6 +47,7 @@ export function apply(ctx: Context, config: Config): void {
       locale: () => ctx.desktopRuntime.locale,
       registerTrayItem: item => ctx.desktopRuntime.registerTrayItem(item),
     })
-    return () => lifecycle.dispose()
-  }, 'dsh-plugin-desktop: update polling, confirmation, and installer handoff')
+    const removeService = ctx.provide('desktopDistribution', lifecycle)
+    return async () => { removeService(); await lifecycle.dispose() }
+  }, 'dsh-plugin-desktop: version checks and manual download-page guidance')
 }

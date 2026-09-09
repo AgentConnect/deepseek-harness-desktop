@@ -2,7 +2,7 @@
 
 [English](plugin-services.md) | 中文
 
-本文档是面向插件作者、受支持的 Host 侧集成 contract，覆盖 DSH Desktop 2.x 在兼容与高级两种呈现模式下导出的公开 `desktopProfiles` 与 `desktopPnpm` Cordis service。它不会授予第三方访问原始 Electron API、renderer 或 launcher bootstrap 状态的能力。
+本文档是面向插件作者、受支持的 Host 侧集成 contract，覆盖 DSH Desktop 2.x 在兼容与高级两种呈现模式下导出的公开 `desktopProfiles`、`desktopPnpm` 与 `desktopDistribution` Cordis service。它不会授予第三方访问原始 Electron API、renderer 或 launcher bootstrap 状态的能力。
 
 ## 分层与数据流
 
@@ -77,6 +77,17 @@ interface DesktopProfiles {
 - `select(name)` 是重启 operation，不是就地 mutation。它会先持久化被接受的目标，再请求有序 Cordis teardown 与 Electron relaunch。
 - 同一目标的并发调用会共享一个 operation。目标被提交为 pending 后，其它目标会在重启前被拒绝。持久化失败会释放选择 slot；重启失败则保留已提交目标，使同一个 restart 可以重试而不会覆盖状态。
 - Service dispose 后，通过保留 reference 发起的调用会失败。应从下一 generation 重新读取 `current`，不能全局缓存旧 service。
+
+
+### `desktopDistribution`
+
+类型从 `dsh-plugin-desktop/distribution` 导入。该可选服务由 `desktop-updates` Host 行提供，
+包含 `getSnapshot()`、`check()` 和 `subscribe(listener)`。快照标识为 `schemaVersion: 1`、
+`distributionId: 'awiki-dsh-desktop'`，提供当前安装版本、通道、固定 HTTPS 下载页面、查询状态、
+最新适用版本及可选内置组件版本。并发检查共享一次有时限的操作。服务不暴露安装器操作、
+原生句柄、本地路径、凭据或租户身份；消费者应验证发行版标识，并独立处理租户兼容检查。
+服务缺失表示此发行能力不可用，不通过 UA 或 Electron 运行时推断。生命周期限于当前 Host
+代次，订阅必须随消费者释放。
 
 ### `desktopPnpm`
 

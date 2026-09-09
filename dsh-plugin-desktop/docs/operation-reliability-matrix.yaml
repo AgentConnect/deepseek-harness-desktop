@@ -49,8 +49,8 @@ operations:
       - { id: plugin-install-recovery.restore.malformed, test: tests/install-recovery.spec.ts, title: validates every backup before replacing any profile file }
       - { id: plugin-install-recovery.claim.retry, test: tests/install-recovery.spec.ts, title: persists failed verification and consumes at most one retry in the next generation }
   - id: update-check
-    owner: checkForStableUpdate (src/update-checker.ts)
-    entrypoints: [checkForStableUpdate]
+    owner: checkForDesktopUpdate (src/update-checker.ts)
+    entrypoints: [checkForDesktopUpdate]
     deadline: { owner: caller, maximum: caller request deadline }
     cancellation: { owner: caller, behavior: abort signal is passed to request }
     exclusivity: caller-owned
@@ -62,20 +62,20 @@ operations:
     faultContracts:
       - { id: update-check.network.cancelled, test: tests/update-checker.spec.ts, title: silently ignores network failure and caller cancellation }
       - { id: update-check.response.oversized, test: tests/update-checker.spec.ts, title: silently ignores declared and streamed oversized responses }
-  - id: update-download-handoff
-    owner: downloadDesktopUpdate (src/update-download.ts)
-    entrypoints: [downloadDesktopUpdate, recordDesktopUpdateArtifact, resolveDesktopUpdateArtifact]
-    deadline: { owner: caller, maximum: caller request deadline }
-    cancellation: { owner: caller, behavior: abort removes partial artifact }
-    exclusivity: atomic destination replacement
-    idempotency: validated destination may replace only after complete download
-    persistedState: { owner: update-download.ts, atomic: true, corruption: typed failure, cleanup: download operation }
-    retry: { policy: caller-controlled, authority: caller after partial cleanup }
-    recovery: preserve existing installer until replacement validates; never hand off partial artifact
-    evidence: validated artifact and pending installer receipt
+  - id: desktop-distribution-check
+    owner: DesktopUpdateLifecycle (src/update-lifecycle.ts)
+    entrypoints: [check, dispose]
+    deadline: { owner: lifecycle, maximum: configured requestTimeoutMs }
+    cancellation: { owner: lifecycle, behavior: abort and settle even when the adapter ignores cancellation }
+    exclusivity: one shared check per Host generation
+    idempotency: version discovery is read-only; reminders are once per release
+    persistedState: { owner: lifecycle, atomic: true, corruption: ignore reminder history, cleanup: generation disposal }
+    retry: { policy: manual or scheduled, authority: user or timer }
+    recovery: preserve last successful result and fixed download page
+    evidence: public distribution snapshot and manual result dialog
     faultContracts:
-      - { id: update-download-handoff.network.cancelled, test: tests/update-download.spec.ts, title: passes the caller signal and removes a partial file when aborted during streaming }
-      - { id: update-download-handoff.artifact.validation, test: tests/update-download.spec.ts, title: keeps an existing destination until its validated replacement is ready }
+      - { id: desktop-distribution-check.network.timeout, test: tests/updates.spec.ts, title: bounds a stalled adapter and cancels promptly during disposal }
+      - { id: desktop-distribution-check.network.failure, test: tests/updates.spec.ts, title: preserves the last successful result and page on failure }
   - id: diagnostics-export
     owner: exportDiagnosticsZip (src/diagnostic-export.ts)
     entrypoints: [exportDiagnosticsZip, exportDesktopDiagnostics]

@@ -2,7 +2,7 @@
 
 English | [中文](plugin-services.zh.md)
 
-This document is the supported Host-side integration contract for plugin authors. It covers the public `desktopProfiles` and `desktopPnpm` Cordis services exported by DSH Desktop 2.x in both compatibility and advanced presentation modes. It does not grant third-party access to raw Electron APIs, the renderer, or launcher bootstrap state.
+This document is the supported Host-side integration contract for plugin authors. It covers the public `desktopProfiles`, `desktopPnpm` and `desktopDistribution` Cordis services exported by DSH Desktop 2.x in both compatibility and advanced presentation modes. It does not grant third-party access to raw Electron APIs, the renderer, or launcher bootstrap state.
 
 ## Layers and data flow
 
@@ -77,6 +77,19 @@ interface DesktopProfiles {
 - `select(name)` is a restart operation, not an in-place mutation. It persists an accepted target before requesting orderly Cordis teardown and Electron relaunch.
 - Concurrent calls for the same target share one operation. After a target has been committed as pending, a different target is rejected until restart. A persistence failure releases the selection slot; a restart failure retains the committed target so the same restart can be retried without overwriting state.
 - Calls through a retained reference fail after service disposal. Read `current` again from the next generation instead of caching the old service globally.
+
+
+### `desktopDistribution`
+
+Import types from `dsh-plugin-desktop/distribution`. This optional service is provided by the
+`desktop-updates` Host row and has `getSnapshot()`, `check()` and `subscribe(listener)` methods.
+The snapshot identifies `schemaVersion: 1`, `distributionId: 'awiki-dsh-desktop'`, installed version,
+channel, fixed HTTPS download page, query state, latest eligible version and optional bundled
+component versions. Concurrent checks share one bounded operation. The service never exposes
+installer operations, native handles, local paths, credentials or tenant identity. Consumers must
+check the distribution ID and keep tenant compatibility checks separate. A missing service means
+this distribution is unavailable; do not infer it from a user agent or Electron runtime.
+The service lifetime is one Host generation, and subscriptions must be released on disposal.
 
 ### `desktopPnpm`
 
@@ -331,4 +344,4 @@ There is a separate redistribution gate. The `1.2.3` manifest and README say MIT
 
 ## Stability boundary
 
-The supported plugin-author surface is the `desktopProfiles` and `desktopPnpm` service contract described here and exported by `dsh-plugin-desktop/profile-service` and `dsh-plugin-desktop/pnpm`. Launcher bootstrap values, native adapters, generated shims, state-file formats, Loader row ordering, and Electron implementation details may change without becoming third-party APIs. Keep fallbacks explicit, lifecycle-scoped, and headless-safe.
+The supported plugin-author surface is the `desktopProfiles`, `desktopPnpm` and `desktopDistribution` service contract described here and exported by `dsh-plugin-desktop/profile-service` and `dsh-plugin-desktop/pnpm`. Launcher bootstrap values, native adapters, generated shims, state-file formats, Loader row ordering, and Electron implementation details may change without becoming third-party APIs. Keep fallbacks explicit, lifecycle-scoped, and headless-safe.
