@@ -1,3 +1,5 @@
+import type { ILayout, MainPanelId, PanelInfo } from '@deepseek-ai/dsh-client-ui-layout/client'
+
 /** Advanced-shell panel state shared by the root slot and layout-service adapter. */
 export interface DesktopLayoutSnapshot {
   /** Preferred sidebar width; zero means the compact rail. */
@@ -72,7 +74,42 @@ function clamp(value: number, min: number, max: number): number {
 }
 
 /** Small observable panel controller used by the advanced root registration. */
-export class DesktopLayoutState {
+export class DesktopLayoutState implements ILayout {
+  private panelInfo: PanelInfo = Object.freeze({ activePanelId: null })
+  private navigation = new AbortController()
+
+  constructor(private readonly hasMainPanel: (id: MainPanelId) => boolean = () => false) {}
+
+  /** Root selection remains independent of the active Session and column geometry. */
+  getPanelInfo(): PanelInfo { return this.panelInfo }
+
+  /** Select a registered global panel, or return to the Conversation. */
+  selectPanel(panelId: MainPanelId | null): void {
+    if (panelId !== null && !this.hasMainPanel(panelId)) {
+      throw new Error(`layout.selectPanel: main panel "${panelId}" is not registered`)
+    }
+    this.navigation.abort()
+    if (this.panelInfo.activePanelId === panelId) return
+    this.panelInfo = Object.freeze({ activePanelId: panelId })
+    for (const listener of this.listeners) listener()
+  }
+
+  /** Return to the Conversation when the selected plugin panel is unloaded. */
+  retainMainPanels(): void {
+    const id = this.panelInfo.activePanelId
+    if (id !== null && !this.hasMainPanel(id)) this.selectPanel(null)
+  }
+
+  /** Supersede pending asynchronous navigation. */
+  beginNavigation(): AbortSignal {
+    this.navigation.abort()
+    this.navigation = new AbortController()
+    return this.navigation.signal
+  }
+
+  /** Invalidate pending work when the owning layout unloads. */
+  dispose(): void { this.navigation.abort() }
+
   private snapshot: DesktopLayoutSnapshot = Object.freeze({
     sidebar: SIDEBAR_DEFAULT,
     rightbar: null,

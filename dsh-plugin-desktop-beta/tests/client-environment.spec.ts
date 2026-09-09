@@ -3,6 +3,7 @@ import { createElement, type ReactNode } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it, vi } from 'vitest'
 import type { Context as ClientContext } from '@deepseek-ai/cordis'
+import type { MainPanelId, PanelInfo } from '@deepseek-ai/dsh-client-ui-layout/client'
 import { apply } from '../src/client/index.ts'
 import { AdvancedFrame, type AdvancedFrameProps } from '../src/client/AdvancedFrame.tsx'
 import { applyAdvancedShell } from '../src/client/advanced-shell.ts'
@@ -95,6 +96,7 @@ describe('advanced desktop layout', () => {
       const renderSlot = vi.fn((name: string) => createElement('span', { 'data-slot': name }))
       const props = {
         layout, platform: 'darwin', renderSlot,
+        usePanelInfo: (select: (info: PanelInfo) => unknown) => select(layout.getPanelInfo()),
         SessionProvider: ({ children }: { children: ReactNode }) => children,
       } as unknown as AdvancedFrameProps
       try {
@@ -119,23 +121,30 @@ describe('advanced desktop layout', () => {
   it.each([
     ['advanced', AdvancedFrame],
     ['extended', ExtendedFrame],
-  ] as const)('binds the strict rightbar slot through SessionProvider in %s mode', (_mode, Frame) => {
+  ] as const)('renders global main and rightbar panels without a Session in %s mode', (_mode, Frame) => {
     vi.stubGlobal('window', { innerWidth: 1440 })
+    const layout = new DesktopLayoutState(id => id === 'files')
+    const renderSlot = vi.fn((name: string) => createElement('span', { 'data-slot': name }))
     const props = {
-      layout: new DesktopLayoutState(),
+      layout,
       platform: 'darwin',
-      useSessions: (select: (state: { current?: string; byId: Record<string, { blank: boolean }> }) => unknown) =>
-        select({ byId: {} }),
-      renderSlot: (name: string) => createElement('span', { 'data-slot': name }),
+      usePanelInfo: (select: (info: PanelInfo) => unknown) => select(layout.getPanelInfo()),
+      renderSlot,
       SessionProvider: ({ children }: { children: ReactNode }) =>
         createElement('section', { 'data-session-provider': '' }, children),
     } as unknown as AdvancedFrameProps
 
     try {
       const markup = renderToStaticMarkup(createElement(Frame, props))
-      expect(markup).toContain(
-        '<section data-session-provider=""><span data-slot="rightbar"></span></section>',
-      )
+      expect(markup).toContain('<span data-slot="rightbar"></span>')
+      expect(markup).not.toContain('data-session-provider')
+      expect(renderSlot).toHaveBeenCalledWith('main', {}, { entryKey: 'conversation' })
+      layout.selectPanel('files' as MainPanelId)
+      renderToStaticMarkup(createElement(Frame, props))
+      expect(renderSlot).toHaveBeenLastCalledWith('main', {}, { entryKey: 'files' })
+      layout.selectPanel(null)
+      renderToStaticMarkup(createElement(Frame, props))
+      expect(renderSlot).toHaveBeenLastCalledWith('main', {}, { entryKey: 'conversation' })
     } finally {
       vi.unstubAllGlobals()
     }
@@ -225,6 +234,7 @@ describe('advanced desktop layout', () => {
     let disposed = false
     let uninstall: unknown
     const ctx = {
+      slots: { provideRoot: () => () => {}, subscribe: () => () => {} },
       reflect: {
         get: () => undefined,
         provide: (name: string, value: unknown) => {
@@ -238,11 +248,41 @@ describe('advanced desktop layout', () => {
       effect: (factory: () => unknown) => { uninstall = factory() },
     } as unknown as ClientContext
 
-    installDesktopLayout(ctx, new DesktopLayoutState())
+    const layout = new DesktopLayoutState()
+    installDesktopLayout(ctx, layout)
+    const navigation = layout.beginNavigation()
     expect(disposed).toBe(false)
     expect(typeof uninstall).toBe('function')
     ;(uninstall as () => void)()
     expect(disposed).toBe(true)
+    expect(navigation.aborted).toBe(true)
+  })
+
+  it('cancels superseded navigation and falls back when a selected panel unloads', () => {
+    const registered = new Set(['files', 'settings'])
+    const layout = new DesktopLayoutState(id => registered.has(id))
+    const changed = vi.fn()
+    const off = layout.subscribe(changed)
+    const first = layout.beginNavigation()
+    const second = layout.beginNavigation()
+    expect(first.aborted).toBe(true)
+    expect(second.aborted).toBe(false)
+    layout.selectPanel('files' as MainPanelId)
+    expect(second.aborted).toBe(true)
+    const geometry = layout.getSnapshot()
+    const pending = layout.beginNavigation()
+    expect(() => layout.selectPanel('missing' as MainPanelId)).toThrow('not registered')
+    expect(layout.getPanelInfo().activePanelId).toBe('files')
+    expect(pending.aborted).toBe(false)
+    registered.delete('files')
+    layout.retainMainPanels()
+    expect(layout.getPanelInfo().activePanelId).toBeNull()
+    expect(layout.getSnapshot()).toBe(geometry)
+    expect(pending.aborted).toBe(true)
+    expect(changed).toHaveBeenCalledTimes(2)
+    off()
+    layout.selectPanel('settings' as MainPanelId)
+    expect(changed).toHaveBeenCalledTimes(2)
   })
 
   it('keeps the enhanced root registration independent from the extended frame', () => {
@@ -281,6 +321,8 @@ describe('advanced desktop layout', () => {
       },
       on: vi.fn(() => () => {}),
       slots: {
+        provideRoot: vi.fn(() => () => {}),
+        subscribe: vi.fn(() => () => {}),
         register: vi.fn((options: Record<string, unknown>, occupant: unknown) => {
           registrations.push(options)
           occupants.push(occupant)
@@ -535,6 +577,8 @@ describe('independent Desktop frame', () => {
       },
       on: vi.fn(() => () => {}),
       slots: {
+        provideRoot: vi.fn(() => () => {}),
+        subscribe: vi.fn(() => () => {}),
         inject: vi.fn((_name: string, mount: () => unknown) => mount()),
         register: vi.fn((options: Record<string, unknown>, occupant: unknown) => {
           registrations.push(options)
@@ -556,8 +600,8 @@ describe('independent Desktop frame', () => {
         name: 'root',
         children: {
           sidebar: { kind: 'single', scope: 'root' },
-          conversation: { kind: 'single', scope: 'session-maybe' },
-          rightbar: { kind: 'single', scope: 'session' },
+          main: { kind: 'keyed', scope: 'root' },
+          rightbar: { kind: 'single', scope: 'root' },
           'shell.overlay': { kind: 'list', scope: 'root' },
         },
       })

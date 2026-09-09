@@ -29,6 +29,7 @@ const allowedDifferences = new Set([
   // Beta v0.1.5 replaces Detail with the upstream right Sidebar contract.
   'client/contracts.ts',
   'client/layout-state.ts',
+  'client/layout-service.ts', // Beta alpha.2 adds root panel selection and navigation cancellation.
   'client/advanced-shell.ts',
   'client/extended-shell.ts',
   'client/styles.ts',

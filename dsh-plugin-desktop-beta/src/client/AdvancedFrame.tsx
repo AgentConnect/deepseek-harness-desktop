@@ -18,7 +18,7 @@ export interface AdvancedFrameInjected {
 
 /** Full enhanced-mode root slot props. */
 export type AdvancedFrameProps = PropsRuntime<'root'>
-  & PropsRenderSlots<'sidebar' | 'conversation' | 'rightbar' | 'shell.overlay'>
+  & PropsRenderSlots<'sidebar' | 'main' | 'rightbar' | 'shell.overlay'>
   & AdvancedFrameInjected
 
 /** Enhanced-mode owner preserving the original Desktop layout contract. */
@@ -32,7 +32,7 @@ export function DesktopOwnedFrame({
   mode,
   platform,
   renderSlot,
-  SessionProvider,
+  usePanelInfo,
 }: AdvancedFrameProps & {
   readonly mode: 'extended' | 'advanced'
 }) {
@@ -121,9 +121,9 @@ export function DesktopOwnedFrame({
           {renderSlot('sidebar', { collapsed, width: sidebarOwnerWidth })}
         </div>
       </aside>
-      <main className="dshDesktopConversationSurface">{renderSlot('conversation', {})}</main>
+      <main className="dshDesktopConversationSurface"><MainPanel usePanelInfo={usePanelInfo} renderSlot={renderSlot} /></main>
       <aside className="dshDesktopRightbarSurface" data-rightbar-col>
-        <SessionProvider>{renderSlot('rightbar', { width: normal.rightbar, viewportWidth: viewport, canShow: normal.rightbar > 0 })}</SessionProvider>
+        {renderSlot('rightbar', { width: normal.rightbar, viewportWidth: viewport, canShow: normal.rightbar > 0 })}
       </aside>
       {/* Electron resolves app regions in DOM order; Desktop overlays must remain later. */}
       {mode === 'advanced' && platform === 'win32' && <div className="dshDesktopWindowsCaptionRow" aria-hidden="true" />}
@@ -139,10 +139,10 @@ export function DesktopOwnedFrame({
           onEnd={onDragEnd}
         />
       )}
-      {columns.rightbar > 0 && !panels.rightbarFullscreen && (
+      {panels.rightbarShown && normal.rightbar > 0 && !panels.rightbarFullscreen && (
         <ResizeHandle
           side="rightbar"
-          left={viewport - columns.rightbar}
+          left={viewport - normal.rightbar}
           onStart={onRightbarStart}
           onDrag={onRightbarDrag}
           onEnd={onDragEnd}
@@ -150,6 +150,11 @@ export function DesktopOwnedFrame({
       )}
     </div>
   )
+}
+
+function MainPanel({ usePanelInfo, renderSlot }: Pick<PropsRuntime<'root'>, 'usePanelInfo'> & PropsRenderSlots<'main'>) {
+  const panelId = usePanelInfo(info => info.activePanelId)
+  return renderSlot('main', {}, { entryKey: panelId ?? 'conversation' })
 }
 
 function ResizeHandle(props: {
