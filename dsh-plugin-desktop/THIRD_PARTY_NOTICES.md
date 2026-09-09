@@ -7,25 +7,25 @@ The following exact package set is authorized for target-specific DSH Desktop di
 Each installer contains only the platform packages relevant to that target. The complete grant is shipped as AWIKI-COMMERCIAL-LICENSE.md.
 | Package | Authorized version | Upstream license |
 | --- | --- | --- |
-| @awiki/im-core-node | 0.2.3 | AGPL-3.0-only |
-| @awiki/im-core-node-darwin-arm64 | 0.2.3 | AGPL-3.0-only |
-| @awiki/im-core-node-darwin-x64 | 0.2.3 | AGPL-3.0-only |
-| @awiki/im-core-node-linux-arm64-gnu | 0.2.3 | AGPL-3.0-only |
-| @awiki/im-core-node-linux-x64-gnu | 0.2.3 | AGPL-3.0-only |
-| @awiki/im-core-node-win32-x64-msvc | 0.2.3 | AGPL-3.0-only |
+| @awiki/im-core-node | 0.2.4 | AGPL-3.0-only |
+| @awiki/im-core-node-darwin-arm64 | 0.2.4 | AGPL-3.0-only |
+| @awiki/im-core-node-darwin-x64 | 0.2.4 | AGPL-3.0-only |
+| @awiki/im-core-node-linux-arm64-gnu | 0.2.4 | AGPL-3.0-only |
+| @awiki/im-core-node-linux-x64-gnu | 0.2.4 | AGPL-3.0-only |
+| @awiki/im-core-node-win32-x64-msvc | 0.2.4 | AGPL-3.0-only |
 ## Installed dependency inventory
 | Package | Version | License |
 | --- | --- | --- |
-| @agent-network-protocol/anp-identity | 0.2.0 | Apache-2.0 |
-| @agent-network-protocol/anp-identity-darwin-arm64 | 0.2.0 | Apache-2.0 |
-| @agent-network-protocol/anp-identity-darwin-x64 | 0.2.0 | Apache-2.0 |
-| @agent-network-protocol/dsh-anp-identity | 0.1.0 | Apache-2.0 |
+| @agent-network-protocol/anp-identity | 0.2.1 | Apache-2.0 |
+| @agent-network-protocol/anp-identity-darwin-arm64 | 0.2.1 | Apache-2.0 |
+| @agent-network-protocol/anp-identity-darwin-x64 | 0.2.1 | Apache-2.0 |
+| @agent-network-protocol/dsh-anp-identity | 0.1.1 | Apache-2.0 |
 | @anthropic-ai/sdk | 0.91.1 | MIT |
-| @awiki/dsh-model-proxy | 0.1.5 | MIT |
-| @awiki/dsh-plugin | 0.3.9 | MIT |
-| @awiki/im-core-node | 0.2.3 | AWiki Commercial License (AWIKI-DSH-DESKTOP-2026-08-24; upstream AGPL-3.0-only) |
-| @awiki/im-core-node-darwin-arm64 | 0.2.3 | AWiki Commercial License (AWIKI-DSH-DESKTOP-2026-08-24; upstream AGPL-3.0-only) |
-| @awiki/im-core-node-darwin-x64 | 0.2.3 | AWiki Commercial License (AWIKI-DSH-DESKTOP-2026-08-24; upstream AGPL-3.0-only) |
+| @awiki/dsh-model-proxy | 0.1.6 | MIT |
+| @awiki/dsh-plugin | 0.3.10 | MIT |
+| @awiki/im-core-node | 0.2.4 | AWiki Commercial License (AWIKI-DSH-DESKTOP-2026-08-24; upstream AGPL-3.0-only) |
+| @awiki/im-core-node-darwin-arm64 | 0.2.4 | AWiki Commercial License (AWIKI-DSH-DESKTOP-2026-08-24; upstream AGPL-3.0-only) |
+| @awiki/im-core-node-darwin-x64 | 0.2.4 | AWiki Commercial License (AWIKI-DSH-DESKTOP-2026-08-24; upstream AGPL-3.0-only) |
 | @aws-crypto/sha256-browser | 5.2.0 | Apache-2.0 |
 | @aws-crypto/sha256-js | 5.2.0 | Apache-2.0 |
 | @aws-crypto/supports-web-crypto | 5.2.0 | Apache-2.0 |

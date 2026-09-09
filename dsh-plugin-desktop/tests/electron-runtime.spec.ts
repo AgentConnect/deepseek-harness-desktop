@@ -1103,7 +1103,7 @@ describe('Electron desktop runtime', () => {
         appExecutable: process.execPath,
         electronVersion: '43.4.0',
         profileName: 'desktop',
-        productVersion: '2.1.0-rc.7',
+        productVersion: '2.1.0-rc.8',
         profileDir: expect.stringMatching(/profiles[\\/]+desktop$/u),
         homeDir: expect.stringContaining('dsh-desktop-user-data'),
         installRecoveryStatePath: expect.stringMatching(/[\\/]plugin-install-recovery[\\/]state\.json$/u),
@@ -1140,7 +1140,7 @@ describe('Electron desktop runtime', () => {
     expect(diagnostics.export).toHaveBeenCalledWith(
       expect.stringContaining('dsh-desktop-user-data'),
       expect.objectContaining({
-        appVersion: '2.1.0-rc.7',
+        appVersion: '2.1.0-rc.8',
         crashDumpsDir: expect.stringMatching(/[\\/]Crashpad$/u),
       }),
     )
@@ -1359,7 +1359,7 @@ describe('Electron desktop runtime', () => {
     vi.spyOn(process, 'platform', 'get').mockReturnValue('darwin')
     const { ElectronDesktopRuntime } = await import('../src/electron-runtime.ts')
     const runtime = new ElectronDesktopRuntime(async () => {})
-    const result = { status: 'update-available' as const, currentVersion: '2.1.0-rc.7', latestVersion: '2.1.0' }
+    const result = { status: 'update-available' as const, currentVersion: '2.1.0-rc.8', latestVersion: '2.1.0' }
     electron.dialog.showMessageBox.mockResolvedValueOnce({ response: 1, checkboxChecked: false })
     await runtime.updates.showManualCheckResult(result)
     expect(electron.shell.openExternal).not.toHaveBeenCalled()

@@ -52,3 +52,21 @@ including the Shanghai production release prepared on September 7, 2026:
 All original terms and coverage for version 0.1.7 remain unchanged. This
 addendum does not authorize separate redistribution outside DSH Desktop or
 change any third-party license.
+
+## Written addendum — September 9, 2026
+
+Effective date: September 9, 2026
+
+The Licensor extends Grant `AWIKI-DSH-DESKTOP-2026-08-24` to these additional
+exact package versions for official DSH Desktop distributions:
+
+- `@awiki/im-core-node@0.2.4`
+- `@awiki/im-core-node-darwin-arm64@0.2.4`
+- `@awiki/im-core-node-darwin-x64@0.2.4`
+- `@awiki/im-core-node-linux-arm64-gnu@0.2.4`
+- `@awiki/im-core-node-linux-x64-gnu@0.2.4`
+- `@awiki/im-core-node-win32-x64-msvc@0.2.4`
+
+All original terms and previous version coverage remain unchanged. This
+addendum does not authorize separate redistribution outside DSH Desktop or
+change any third-party license.

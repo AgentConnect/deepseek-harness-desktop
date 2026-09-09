@@ -78,12 +78,12 @@ const profileBootVerifier = readFileSync(new URL('scripts/verify-profile-boot.mj
 
 describe('published package surface', () => {
   it('ships the stable AWiki DSH rc2-compatible packages in a pre-release Desktop build', () => {
-    expect(workspaceManifest.version).toBe('2.1.0-rc.7')
-    expect(manifest.version).toBe('2.1.0-rc.7')
+    expect(workspaceManifest.version).toBe('2.1.0-rc.8')
+    expect(manifest.version).toBe('2.1.0-rc.8')
     expect(manifest.dependencies).toMatchObject({
-      '@agent-network-protocol/dsh-anp-identity': '0.1.0',
-      '@awiki/dsh-plugin': '0.3.9',
-      '@awiki/dsh-model-proxy': '0.1.5',
+      '@agent-network-protocol/dsh-anp-identity': '0.1.1',
+      '@awiki/dsh-plugin': '0.3.10',
+      '@awiki/dsh-model-proxy': '0.1.6',
       '@deepseek-ai/dsh-llm-deepseek': '0.1.1-rc.2',
     })
     expect(manifest.files).toEqual(expect.arrayContaining([
