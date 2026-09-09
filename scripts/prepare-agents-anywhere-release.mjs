@@ -104,7 +104,7 @@ function prepare() {
 
     const peerRanges = runtimePeerRanges()
     const { sourceVersion } = patchManifest(packageRoot, peerRanges)
-    run('corepack', ['yarn', 'install', '--mode=skip-builds'], packageRoot)
+    run('corepack', ['yarn', 'install', '--mode=skip-build'], packageRoot)
     run('corepack', ['yarn', 'build'], packageRoot)
     run('npm', ['pack', '--ignore-scripts', '--pack-destination', packRoot], packageRoot)
 
@@ -128,7 +128,7 @@ function prepare() {
       sourceChanges: [],
     }
     writeFileSync(provenancePath, `${JSON.stringify(provenance, null, 2)}\n`)
-    run('corepack', ['yarn', 'install', '--mode=skip-builds'], root)
+    run('corepack', ['yarn', 'install', '--mode=skip-build'], root)
     console.log(`Agents Anywhere release package prepared from ${commit} (${targetArtifact})`)
   } finally {
     rmSync(stagingRoot, { recursive: true, force: true })
