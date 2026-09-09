@@ -10,8 +10,13 @@ explicit peers for both Desktop runtime versions (including the emitted
 
 ## Updating
 
-1. Check out the selected AA commit in a separate checkout.
-2. In `dsh-bridge-next`, run `corepack yarn install`, `corepack yarn check`.
+1. Run a root release command such as `corepack yarn dist:mac` or
+   `corepack yarn dist:win`. The release preflight clones the selected AA `v2`
+   ref into a temporary directory, copies `dsh-bridge-next` and its sibling
+   `connector` into a staging tree, then builds and packs from that copy.
+2. The staging package runs `corepack yarn install` and `corepack yarn build`.
+   The preflight then refreshes the root file dependency and installs the
+   freshly packed artifact before Desktop packaging starts.
    Its integration tests also use `connector`, `contracts`, `desktop-workbench`,
    `web-next`, and `server` from that same checkout, plus uv/Python. Initialize
    Python dependencies before running the integration suite.
