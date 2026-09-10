@@ -12,7 +12,7 @@ explicit peers for both Desktop runtime versions (including the emitted
 
 Root `dev`, `dev:beta`, `dist:*` and `package:dir*` commands first run
 `yarn aa:prepare-release`.
-This resolves the latest GitHub `v2` commit once, fetches that exact commit into
+This resolves the latest GitHub `main` commit once, fetches that exact commit into
 an isolated temporary checkout, and builds `dsh-bridge-next` with the Connector
 sources from the same commit. It never changes an adjacent AA checkout.
 Each development launch checks GitHub once before starting Desktop; it does
@@ -21,7 +21,7 @@ installed pin; PR CI continues to validate the committed pin without querying
 AA's moving branch.
 
 ```sh
-# Read-only comparison with the current remote v2 head
+# Read-only comparison with the current remote main head
 corepack yarn aa:check
 # Prepare the latest AA package without packaging Electron
 corepack yarn aa:prepare-release
