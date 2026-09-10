@@ -168,6 +168,7 @@ export function DesktopFrameTitlebarView({ api, environment, setMode, t }: Deskt
     <header
       className="dshDesktopFrameTitlebar"
       data-dsh-desktop-frame="titlebar"
+      data-mode={environment.mode}
       data-platform={environment.platform}
       data-material={environment.material}
     >
