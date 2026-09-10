@@ -51,6 +51,11 @@ export class CompatibilityShell {
       // compositor is separate from the native window and transparent chrome.
       ...(platform === 'win32' ? { backgroundThrottling: false } : {}),
     } })
+    // Let the native window material show through the extended sidebar.
+    // CSS transparency alone cannot cross an opaque WebContentsView surface.
+    if (spec.mode === 'extended' && spec.material !== 'off') {
+      this.content.setBackgroundColor('#00000000')
+    }
     window.contentView.addChildView(this.content)
     window.contentView.addChildView(this.chromeView)
     window.on('resize', this.resize)
