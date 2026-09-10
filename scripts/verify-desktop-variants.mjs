@@ -6,7 +6,14 @@ const stableRoot = join(root, 'dsh-plugin-desktop', 'src')
 const betaRoot = join(root, 'dsh-plugin-desktop-beta', 'src')
 // PR #868's isolated compatibility chrome is beta-only. Stable retains the
 // single-document frame; both variants retain renderer crash recovery (#869).
-const betaOnlyCompatibilityPaths = new Set([
+const betaOnlyPaths = new Set([
+  // Opt-in Host process experiment remains Beta-only until validated.
+  'host-bootstrap.ts',
+  'host-launch-environment.ts',
+  'host-process.ts',
+  'host-process-entry.ts',
+  'host-rpc.ts',
+  'host-runtime-bridge.ts',
   'client/DesktopFrameTitlebarView.tsx',
   'compatibility-chrome-contract.ts',
   'compatibility-preload.ts',
@@ -59,7 +66,7 @@ function files(directory, base = directory) {
   return result
 }
 
-const sharedPaths = new Set([...files(stableRoot), ...files(betaRoot), ...betaOnlyCompatibilityPaths])
+const sharedPaths = new Set([...files(stableRoot), ...files(betaRoot), ...betaOnlyPaths])
 const differences = []
 for (const path of [...sharedPaths].sort()) {
   if (allowedDifferences.has(path)) continue
@@ -67,7 +74,7 @@ for (const path of [...sharedPaths].sort()) {
   let beta
   try { stable = readFileSync(join(stableRoot, path)) } catch { stable = undefined }
   try { beta = readFileSync(join(betaRoot, path)) } catch { beta = undefined }
-  if (betaOnlyCompatibilityPaths.has(path)) {
+  if (betaOnlyPaths.has(path)) {
     if (stable !== undefined || beta === undefined) differences.push(`${path} (must exist only in beta)`)
     continue
   }
@@ -78,4 +85,4 @@ if (differences.length > 0) {
   throw new Error(`Desktop variant source drift is not declared:\n${differences.map(path => `- src/${path}`).join('\n')}`)
 }
 
-process.stdout.write(`verify-desktop-variants: ${String(sharedPaths.size - allowedDifferences.size - betaOnlyCompatibilityPaths.size)} shared source files are aligned; beta-only compatibility chrome is isolated\n`)
+process.stdout.write(`verify-desktop-variants: ${String(sharedPaths.size - allowedDifferences.size - betaOnlyPaths.size)} shared source files are aligned; beta-only compatibility chrome and Host experiment are isolated\n`)
