@@ -92,7 +92,7 @@ export class CompatibilityShell {
   }
 
   private state(): CompatibilityChromeState {
-    return { locale: this.actions.locale(), version: this.actions.version, platform: this.platform, material: this.spec.material }
+    return { mode: this.spec.mode === 'extended' ? 'extended' : 'compatibility', locale: this.actions.locale(), version: this.actions.version, platform: this.platform, material: this.spec.material }
   }
 
   private readonly resize = (): void => {
@@ -133,6 +133,7 @@ export class CompatibilityShell {
       case 'collapse': this.collapse(); return
       case 'terminal': this.actions.openTerminal(); return
       case 'check-for-updates': return this.actions.checkForUpdates()
+      case 'mode-compatibility': return this.spec.requestModeChange('compatibility')
       case 'mode-extended': return this.spec.requestModeChange('extended')
       case 'mode-advanced': return this.spec.requestModeChange('advanced')
       case 'restart': return this.actions.restart()

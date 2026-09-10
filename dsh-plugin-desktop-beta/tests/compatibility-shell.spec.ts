@@ -27,7 +27,7 @@ vi.mock('electron', () => ({
   },
 }))
 
-function fixture(platform: 'darwin' | 'win32' = 'darwin') {
+function fixture(platform: 'darwin' | 'win32' = 'darwin', mode: 'compatibility' | 'extended' = 'compatibility') {
   const ipc = { handle: vi.fn(), removeHandler: vi.fn() }
   const webContents = Object.assign(new EventEmitter(), {
     ipc,
@@ -53,7 +53,7 @@ function fixture(platform: 'darwin' | 'win32' = 'darwin') {
     reload: vi.fn(), developerTools: vi.fn(),
     checkForUpdates: vi.fn(async () => {}),
   }
-  const spec = { material: 'off', requestModeChange: vi.fn(async () => {}) } as unknown as DesktopShellSpec
+  const spec = { mode, material: 'off', requestModeChange: vi.fn(async () => {}) } as unknown as DesktopShellSpec
   const shell = new CompatibilityShell(window as unknown as BrowserWindow, spec, platform, '/desktop/preload.cjs', actions)
   const handler = ipc.handle.mock.calls[0]?.[1] as (event: unknown, command: unknown) => unknown
   const event = () => ({ sender: webContents, senderFrame: webContents.mainFrame })
@@ -65,9 +65,10 @@ describe('isolated compatibility shell', () => {
     vi.clearAllMocks()
   })
 
-  it('loads only the packaged chrome and reserves native bounds outside the content document', async () => {
-    const { shell, window, webContents } = fixture()
+  it.each(['compatibility', 'extended'] as const)('isolates %s chrome with native bounds outside the content document', async mode => {
+    const { shell, window, webContents, handler, event } = fixture('darwin', mode)
     await shell.load()
+    expect(handler(event(), 'state')).toMatchObject({ mode })
     expect(webContents.loadFile).toHaveBeenCalledWith(expect.stringMatching(/native-ui\/compatibility-chrome\.html$/))
     expect(window.contentView.addChildView).toHaveBeenCalledWith(shell.content)
     expect(shell.content).toMatchObject({ options: { webPreferences: {
@@ -87,7 +88,7 @@ describe('isolated compatibility shell', () => {
   it('rejects other renderers, child frames, navigated chrome, and arbitrary commands', async () => {
     const { shell, handler, event, webContents, actions } = fixture()
     await shell.load()
-    expect(handler(event(), 'state')).toEqual({ locale: 'en', platform: 'darwin', version: '2.0.3', material: 'off' })
+    expect(handler(event(), 'state')).toEqual({ mode: 'compatibility', locale: 'en', platform: 'darwin', version: '2.0.3', material: 'off' })
     expect(() => handler({ ...event(), sender: electron.content }, 'terminal')).toThrow('untrusted')
     expect(() => handler({ ...event(), senderFrame: { url: webContents.mainFrame.url } }, 'terminal')).toThrow('untrusted')
     expect(() => handler(event(), { command: 'terminal' })).toThrow('unsupported')
@@ -140,6 +141,8 @@ describe('isolated compatibility shell', () => {
     await shell.load()
     await handler(event(), 'terminal')
     await handler(event(), 'check-for-updates')
+    await handler(event(), 'mode-compatibility')
+    expect(spec.requestModeChange).toHaveBeenCalledWith('compatibility')
     await handler(event(), 'mode-extended')
     expect(spec.requestModeChange).toHaveBeenCalledWith('extended')
     expect(actions.restart).not.toHaveBeenCalled()
