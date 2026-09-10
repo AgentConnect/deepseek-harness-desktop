@@ -101,8 +101,9 @@ export function releaseMac(options: MacReleaseOptions = defaultReleaseOptions())
   options.run('yarn', ['run', 'check'], resolve(options.desktopRoot, '..'), buildEnvironment)
   options.resetOutput()
   options.prepareRuntime()
+  // The release workflow owns publication after both platform artifacts pass.
   options.run('yarn', [
-    'exec', 'electron-builder', '--mac', 'dmg', '--universal',
+    'exec', 'electron-builder', '--mac', 'dmg', '--universal', '--publish', 'never',
     '--config.forceCodeSigning=true', '--config.mac.notarize=true',
     '--config.npmRebuild=false',
     `--config.directories.output=${options.outputDir}`,

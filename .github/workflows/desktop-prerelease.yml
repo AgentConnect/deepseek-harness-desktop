@@ -59,7 +59,7 @@ jobs:
           echo "tag=v$desktop_version" >> "$GITHUB_OUTPUT"
 
   macos-universal-signed:
-    name: Signed and notarized macOS universal DMG
+    name: macOS universal DMG with signed and notarized app
     needs: validate
     runs-on: macos-latest
     timeout-minutes: 90
@@ -96,7 +96,7 @@ jobs:
           key_path="$RUNNER_TEMP/AuthKey.p8"
           printf '%s' "$APPLE_API_KEY_P8_BASE64" | openssl base64 -d -A > "$key_path"
           echo "APPLE_API_KEY=$key_path" >> "$GITHUB_ENV"
-      - name: Build, sign, notarize, staple, and verify universal DMG
+      - name: Build universal DMG and verify signed, notarized, stapled app
         env:
           MAC_CERT_P12_BASE64: ${{ secrets.MAC_CERT_P12_BASE64 }}
           CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
@@ -226,4 +226,4 @@ jobs:
             --title "DSH Desktop $RELEASE_VERSION" \
             --prerelease \
             --generate-notes \
-            --notes "Built from exact Desktop source $RELEASE_SOURCE_COMMIT with its verified Desktop runtime archive and immutable Yarn dependency lock. The default profile includes the native ANP Identity provider and the tenant-aware AWiki plugin pair. The macOS universal DMG is Developer ID signed, notarized, stapled, and verified for Apple Silicon and Intel. The Windows x64 installer and portable archive are currently unsigned pre-release artifacts."
+            --notes "Built from exact Desktop source $RELEASE_SOURCE_COMMIT with its verified Desktop runtime archive and immutable Yarn dependency lock. The default profile includes the native ANP Identity provider and the tenant-aware AWiki plugin pair. The macOS universal DMG contains a Developer ID signed, notarized, stapled application verified for Apple Silicon and Intel. DMG container signing and stapling are not claimed. The Windows x64 installer and portable archive are currently unsigned pre-release artifacts."
