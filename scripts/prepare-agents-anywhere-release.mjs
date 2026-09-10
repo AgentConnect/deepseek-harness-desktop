@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const sourceRepository = process.env.DSH_AA_SOURCE_REPOSITORY ?? 'https://github.com/anywhere-labs/Agents-Anywhere.git'
-const sourceRef = process.env.DSH_AA_SOURCE_REF ?? 'v2'
+const sourceRef = process.env.DSH_AA_SOURCE_REF ?? 'main'
 const vendorRoot = resolve(root, 'vendor/agents-anywhere')
 const provenancePath = join(vendorRoot, 'provenance.json')
 const currentProvenance = existsSync(provenancePath) ? JSON.parse(readFileSync(provenancePath, 'utf8')) : {}
@@ -170,7 +170,7 @@ function prepare() {
     }
     const provenance = {
       repository: sourceRepository,
-      branch: /^[0-9a-f]{40}$/iu.test(sourceRef) ? (process.env.DSH_AA_SOURCE_BRANCH ?? 'v2') : sourceRef,
+      branch: /^[0-9a-f]{40}$/iu.test(sourceRef) ? (process.env.DSH_AA_SOURCE_BRANCH ?? 'main') : sourceRef,
       commit,
       packageDirectory: 'dsh-bridge-next',
       sourceVersion,
