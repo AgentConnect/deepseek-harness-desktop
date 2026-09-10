@@ -2,10 +2,10 @@ import { createHash } from 'node:crypto'
 import { execFileSync } from 'node:child_process'
 import {
   copyFileSync,
+  existsSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
-  readdirSync,
   rmSync,
   writeFileSync,
 } from 'node:fs'
@@ -95,8 +95,8 @@ describe('published package surface', () => {
     expect(main).toContain('if (safeModePaths !== undefined) {\n      homeDir = safeModePaths.homeDir')
     expect(main).toContain('process.env.DSH_HOME = homeDir')
     expect(main).toContain('const desktopLaunchEnvironment = withDesktopDshHome(environment, homeDir)')
-    expect(main).toContain('hostCtx.provide(DSH_LAUNCH_ENVIRONMENT_KEY, desktopLaunchEnvironment)')
-    expect(main).toContain('prepareDesktopSafeModeEnvironment(desktopUserDataDir)')
+    expect(main).toContain('createDesktopWebProfile(paths.homeDir, DESKTOP_SAFE_MODE_PROFILE_NAME)')
+    expect(main).toContain("join(paths.userDataDir, 'profile-selection', 'state.json')")
     expect(main).toContain('selectDesktopProfile(')
     expect(main).toContain('cleanupDesktopSafeModeEnvironment(desktopUserDataDir)')
     expect(main).toContain('if (safeModeRequested) {')
@@ -403,8 +403,8 @@ describe('published package surface', () => {
     expect(config).toContain("diagnostics: 'src/diagnostics.ts'")
     expect(config).toContain("notifications: 'src/notifications.ts'")
     expect(config).toContain("'diagnostic-export-worker': 'src/diagnostic-export-worker.ts'")
-    expect(config).toContain("entry: { preload: 'src/preload.ts' }")
-    expect(config).toContain("entryFileNames: 'preload.cjs'")
+    expect(config).toContain("preload: 'src/preload.ts', 'compatibility-preload': 'src/compatibility-preload.ts'")
+    expect(config).toContain("entryFileNames: '[name].cjs'")
     expect(config).toContain("terminal: 'src/terminal.ts'")
     expect(config).toContain("'update-download': 'src/update-download.ts'")
     expect(config).toContain("updates: 'src/updates.ts'")
@@ -418,13 +418,10 @@ describe('published package surface', () => {
     expect(client).not.toMatch(/\bprocess(?:\.|\[)/u)
   })
 
-  it('excludes beta-only isolated compatibility chrome from stable build inputs and output', () => {
-    const config = readFileSync(new URL('tsdown.config.ts', packageRoot), 'utf8')
-    const nativeConfig = readFileSync(new URL('vite.native-ui.config.ts', packageRoot), 'utf8')
-    expect(config).not.toContain('compatibility-preload')
-    expect(nativeConfig).not.toContain('compatibility-chrome')
-    expect(readdirSync(new URL('lib/', packageRoot))).not.toContain('compatibility-preload.cjs')
-    expect(readdirSync(new URL('lib/native-ui/', packageRoot))).not.toContain('compatibility-chrome.html')
+  it('ships isolated Host and chrome build outputs in stable', () => {
+    for (const path of ['lib/host-process-entry.js', 'lib/compatibility-preload.cjs', 'lib/native-ui/compatibility-chrome.html']) {
+      expect(existsSync(new URL(path, packageRoot))).toBe(true)
+    }
   })
 
   it('installs Host command PATHs after the launch snapshot and before profile boot', () => {
@@ -440,7 +437,6 @@ describe('published package surface', () => {
     const materialize = main.indexOf('await materializeProfile({', prepare)
     const reprepare = main.indexOf('prepared = prepareDesktopProfile(', materialize)
     const pnpmBootstrap = main.indexOf('const desktopPnpmBootstrap: DesktopPnpmBootstrap = {')
-    const healFallback = main.indexOf('await healDesktopProfileModuleFallback(homeDir, prepared.profile)')
     const boot = main.indexOf('const ctx = await boot')
 
     expect(recover).toBeGreaterThanOrEqual(0)
@@ -454,8 +450,6 @@ describe('published package surface', () => {
     expect(materialize).toBeGreaterThan(prepare)
     expect(reprepare).toBeGreaterThan(materialize)
     expect(pnpmBootstrap).toBeGreaterThan(reprepare)
-    expect(healFallback).toBeGreaterThan(reprepare)
-    expect(healFallback).toBeLessThan(boot)
     expect(boot).toBeGreaterThan(prepare)
     expect(boot).toBeGreaterThan(installDsh)
     expect(main).toContain("'dsh-plugin-desktop: packaged pnpm runtime PATH'")
@@ -466,7 +460,6 @@ describe('published package surface', () => {
     expect(readFileSync(new URL('src/profile.ts', packageRoot), 'utf8'))
       .toContain('const webserverConfig = { host: desktopWebServerHost(networkExposure), port }')
     expect(main).not.toContain("'--port', '0'")
-    expect(main.match(/await healDesktopProfileModuleFallback\(/gu)).toHaveLength(1)
     expect(main).toContain("import { DesktopStartupGeneration } from './startup-generation.ts'")
     expect(main).toContain('async () => { await generation.release() }')
     expect(main).not.toContain('disposePnpmRuntime')
@@ -621,11 +614,9 @@ describe('published package surface', () => {
     const materialMigration = main.indexOf('migrateDesktopWindowMaterialSettings(', browserMigration)
     const lazyImport = main.indexOf('profilePreferences = await writeDesktopProfilePreferences(', materialMigration)
     const existingState = main.indexOf('} else {', lazyImport)
-    const mirrorSettings = main.indexOf('const profileSettingsChanged = await mirrorDesktopProfilePreferences(', existingState)
+    const mirrorSettings = main.indexOf('mirrorDesktopProfilePreferences(prepared.settingsDocument, profilePreferences)', existingState)
     const retryMaterialMigration = main.indexOf('migrateDesktopWindowMaterialSettings(', mirrorSettings)
     const mirrorMarket = main.indexOf('selectDesktopMarketProvider(marketUserDataDir, profilePreferences.market)', retryMaterialMigration)
-    const conditionalReprepare = main.indexOf('if (profileSettingsChanged || windowMaterialMigrated)', mirrorMarket)
-    const existingStateEnd = main.indexOf('// Safe Mode must reach the working surface', conditionalReprepare)
     const runtimeQueue = main.indexOf('const enqueueProfilePreferencesWrite = (')
     const flushEffect = main.indexOf("'dsh-plugin-desktop: flush Profile preference writes'", runtimeQueue)
     const marketController = main.indexOf('selectMarket: async provider => {', flushEffect)
@@ -657,9 +648,6 @@ describe('published package surface', () => {
     expect(mirrorSettings).toBeGreaterThan(existingState)
     expect(retryMaterialMigration).toBeGreaterThan(mirrorSettings)
     expect(mirrorMarket).toBeGreaterThan(retryMaterialMigration)
-    expect(conditionalReprepare).toBeGreaterThan(mirrorMarket)
-    expect(existingStateEnd).toBeGreaterThan(conditionalReprepare)
-    expect(main.slice(conditionalReprepare, existingStateEnd)).toContain('prepared = prepareDesktopProfile(')
     expect(runtimeQueue).toBeGreaterThan(mirrorMarket)
     expect(flushEffect).toBeGreaterThan(runtimeQueue)
     expect(marketStateWrite).toBeGreaterThan(marketController)

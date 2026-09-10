@@ -9,6 +9,7 @@ import {
 import { desktopSetupWizardCopy } from '../src/setup-wizard-copy.ts'
 
 const input: DesktopSetupWizardInput = {
+  appVersion: '2.0.6-beta.1',
   profileName: 'work',
   platform: 'win32',
   micaSupported: true,
@@ -129,6 +130,8 @@ describe('Desktop Setup Wizard copy and contract', () => {
     expect(isDesktopSetupWizardInput(input)).toBe(true)
     expect(isDesktopSetupWizardInput({ ...input, unexpected: true })).toBe(false)
     expect(isDesktopSetupWizardInput({ ...input, notifications: { enabled: true } })).toBe(false)
+    expect(isDesktopSetupWizardInput({ ...input, appVersion: '' })).toBe(false)
+    expect(isDesktopSetupWizardInput({ ...input, appVersion: '<script>' })).toBe(false)
     expect(isDesktopSetupWizardInput({ ...input, profileName: '../escape' })).toBe(false)
     expect(isDesktopSetupWizardInput({ ...input, profileName: 'CON' })).toBe(false)
     expect(desktopSetupWizardSelectionIsAvailable(input, input)).toBe(true)
