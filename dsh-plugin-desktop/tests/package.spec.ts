@@ -275,7 +275,7 @@ describe('published package surface', () => {
     )
   })
 
-  it('keeps the Stable and Beta DSH runtime families side by side', () => {
+  it('resolves both release channels through their recorded runtime families', () => {
     const dshResolutions = Object.entries(workspaceManifest.resolutions ?? {})
       .filter(([selector]) => /^@deepseek-ai\/dsh(?:@|-)/u.test(selector))
     const stableResolutions = dshResolutions.filter(([selector]) =>
@@ -287,13 +287,14 @@ describe('published package surface', () => {
 
     expect(stableResolutions.length).toBeGreaterThan(0)
     expect(betaResolutions.length).toBeGreaterThan(0)
-    expect(stableResolutions.length + betaResolutions.length).toBe(dshResolutions.length)
+    expect(new Set([...stableResolutions, ...betaResolutions].map(([selector]) => selector)).size)
+      .toBe(dshResolutions.length)
     for (const [selector, resolution] of stableResolutions) {
       expect(selector).toMatch(/@npm:\^?0\.1\.5-rc\.1$/u)
       expect(String(resolution)).toContain(runtimeVersion)
     }
     for (const [selector, resolution] of betaResolutions) {
-      expect(selector).toMatch(/@npm:\^?0\.1\.5-alpha\.2$/u)
+      expect(selector).toMatch(/@npm:\^?0\.1\.5-rc\.1$/u)
       expect(String(resolution)).toContain(betaRuntimeVersion)
     }
   })
