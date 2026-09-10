@@ -5,50 +5,50 @@ __metadata:
   version: 10
   cacheKey: 10c0
 
-"@agent-network-protocol/anp-identity-darwin-arm64@file:./.build/runtime-inputs/agent-network-protocol-anp-identity-darwin-arm64-0.2.0.tgz::locator=deepseek-harness-desktop%40workspace%3A.":
-  version: 0.2.0
-  resolution: "@agent-network-protocol/anp-identity-darwin-arm64@file:./.build/runtime-inputs/agent-network-protocol-anp-identity-darwin-arm64-0.2.0.tgz#./.build/runtime-inputs/agent-network-protocol-anp-identity-darwin-arm64-0.2.0.tgz::hash=350a31&locator=deepseek-harness-desktop%40workspace%3A."
+"@agent-network-protocol/anp-identity-darwin-arm64@file:./.build/runtime-inputs/agent-network-protocol-anp-identity-darwin-arm64-0.2.1.tgz::locator=deepseek-harness-desktop%40workspace%3A.":
+  version: 0.2.1
+  resolution: "@agent-network-protocol/anp-identity-darwin-arm64@file:./.build/runtime-inputs/agent-network-protocol-anp-identity-darwin-arm64-0.2.1.tgz#./.build/runtime-inputs/agent-network-protocol-anp-identity-darwin-arm64-0.2.1.tgz::hash=40f679&locator=deepseek-harness-desktop%40workspace%3A."
   conditions: os=darwin & cpu=arm64
   languageName: node
   linkType: hard
 
-"@agent-network-protocol/anp-identity-darwin-x64@file:./.build/runtime-inputs/agent-network-protocol-anp-identity-darwin-x64-0.2.0.tgz::locator=deepseek-harness-desktop%40workspace%3A.":
-  version: 0.2.0
-  resolution: "@agent-network-protocol/anp-identity-darwin-x64@file:./.build/runtime-inputs/agent-network-protocol-anp-identity-darwin-x64-0.2.0.tgz#./.build/runtime-inputs/agent-network-protocol-anp-identity-darwin-x64-0.2.0.tgz::hash=239498&locator=deepseek-harness-desktop%40workspace%3A."
+"@agent-network-protocol/anp-identity-darwin-x64@file:./.build/runtime-inputs/agent-network-protocol-anp-identity-darwin-x64-0.2.1.tgz::locator=deepseek-harness-desktop%40workspace%3A.":
+  version: 0.2.1
+  resolution: "@agent-network-protocol/anp-identity-darwin-x64@file:./.build/runtime-inputs/agent-network-protocol-anp-identity-darwin-x64-0.2.1.tgz#./.build/runtime-inputs/agent-network-protocol-anp-identity-darwin-x64-0.2.1.tgz::hash=7c60ca&locator=deepseek-harness-desktop%40workspace%3A."
   conditions: os=darwin & cpu=x64
   languageName: node
   linkType: hard
 
-"@agent-network-protocol/anp-identity-linux-arm64-gnu@file:./.build/runtime-inputs/agent-network-protocol-anp-identity-linux-arm64-gnu-0.2.0.tgz::locator=deepseek-harness-desktop%40workspace%3A.":
-  version: 0.2.0
-  resolution: "@agent-network-protocol/anp-identity-linux-arm64-gnu@file:./.build/runtime-inputs/agent-network-protocol-anp-identity-linux-arm64-gnu-0.2.0.tgz#./.build/runtime-inputs/agent-network-protocol-anp-identity-linux-arm64-gnu-0.2.0.tgz::hash=433aa2&locator=deepseek-harness-desktop%40workspace%3A."
+"@agent-network-protocol/anp-identity-linux-arm64-gnu@file:./.build/runtime-inputs/agent-network-protocol-anp-identity-linux-arm64-gnu-0.2.1.tgz::locator=deepseek-harness-desktop%40workspace%3A.":
+  version: 0.2.1
+  resolution: "@agent-network-protocol/anp-identity-linux-arm64-gnu@file:./.build/runtime-inputs/agent-network-protocol-anp-identity-linux-arm64-gnu-0.2.1.tgz#./.build/runtime-inputs/agent-network-protocol-anp-identity-linux-arm64-gnu-0.2.1.tgz::hash=74b39c&locator=deepseek-harness-desktop%40workspace%3A."
   conditions: os=linux & cpu=arm64 & libc=glibc
   languageName: node
   linkType: hard
 
-"@agent-network-protocol/anp-identity-linux-x64-gnu@file:./.build/runtime-inputs/agent-network-protocol-anp-identity-linux-x64-gnu-0.2.0.tgz::locator=deepseek-harness-desktop%40workspace%3A.":
-  version: 0.2.0
-  resolution: "@agent-network-protocol/anp-identity-linux-x64-gnu@file:./.build/runtime-inputs/agent-network-protocol-anp-identity-linux-x64-gnu-0.2.0.tgz#./.build/runtime-inputs/agent-network-protocol-anp-identity-linux-x64-gnu-0.2.0.tgz::hash=0e4c33&locator=deepseek-harness-desktop%40workspace%3A."
+"@agent-network-protocol/anp-identity-linux-x64-gnu@file:./.build/runtime-inputs/agent-network-protocol-anp-identity-linux-x64-gnu-0.2.1.tgz::locator=deepseek-harness-desktop%40workspace%3A.":
+  version: 0.2.1
+  resolution: "@agent-network-protocol/anp-identity-linux-x64-gnu@file:./.build/runtime-inputs/agent-network-protocol-anp-identity-linux-x64-gnu-0.2.1.tgz#./.build/runtime-inputs/agent-network-protocol-anp-identity-linux-x64-gnu-0.2.1.tgz::hash=5c69f0&locator=deepseek-harness-desktop%40workspace%3A."
   conditions: os=linux & cpu=x64 & libc=glibc
   languageName: node
   linkType: hard
 
-"@agent-network-protocol/anp-identity-win32-x64-msvc@file:./.build/runtime-inputs/agent-network-protocol-anp-identity-win32-x64-msvc-0.2.0.tgz::locator=deepseek-harness-desktop%40workspace%3A.":
-  version: 0.2.0
-  resolution: "@agent-network-protocol/anp-identity-win32-x64-msvc@file:./.build/runtime-inputs/agent-network-protocol-anp-identity-win32-x64-msvc-0.2.0.tgz#./.build/runtime-inputs/agent-network-protocol-anp-identity-win32-x64-msvc-0.2.0.tgz::hash=93deb4&locator=deepseek-harness-desktop%40workspace%3A."
+"@agent-network-protocol/anp-identity-win32-x64-msvc@file:./.build/runtime-inputs/agent-network-protocol-anp-identity-win32-x64-msvc-0.2.1.tgz::locator=deepseek-harness-desktop%40workspace%3A.":
+  version: 0.2.1
+  resolution: "@agent-network-protocol/anp-identity-win32-x64-msvc@file:./.build/runtime-inputs/agent-network-protocol-anp-identity-win32-x64-msvc-0.2.1.tgz#./.build/runtime-inputs/agent-network-protocol-anp-identity-win32-x64-msvc-0.2.1.tgz::hash=30b388&locator=deepseek-harness-desktop%40workspace%3A."
   conditions: os=win32 & cpu=x64
   languageName: node
   linkType: hard
 
-"@agent-network-protocol/anp-identity@file:./.build/runtime-inputs/agent-network-protocol-anp-identity-0.2.0.tgz::locator=deepseek-harness-desktop%40workspace%3A.":
-  version: 0.2.0
-  resolution: "@agent-network-protocol/anp-identity@file:./.build/runtime-inputs/agent-network-protocol-anp-identity-0.2.0.tgz#./.build/runtime-inputs/agent-network-protocol-anp-identity-0.2.0.tgz::hash=f38ca2&locator=deepseek-harness-desktop%40workspace%3A."
+"@agent-network-protocol/anp-identity@file:./.build/runtime-inputs/agent-network-protocol-anp-identity-0.2.1.tgz::locator=deepseek-harness-desktop%40workspace%3A.":
+  version: 0.2.1
+  resolution: "@agent-network-protocol/anp-identity@file:./.build/runtime-inputs/agent-network-protocol-anp-identity-0.2.1.tgz#./.build/runtime-inputs/agent-network-protocol-anp-identity-0.2.1.tgz::hash=0e894d&locator=deepseek-harness-desktop%40workspace%3A."
   dependencies:
-    "@agent-network-protocol/anp-identity-darwin-arm64": "npm:0.2.0"
-    "@agent-network-protocol/anp-identity-darwin-x64": "npm:0.2.0"
-    "@agent-network-protocol/anp-identity-linux-arm64-gnu": "npm:0.2.0"
-    "@agent-network-protocol/anp-identity-linux-x64-gnu": "npm:0.2.0"
-    "@agent-network-protocol/anp-identity-win32-x64-msvc": "npm:0.2.0"
+    "@agent-network-protocol/anp-identity-darwin-arm64": "npm:0.2.1"
+    "@agent-network-protocol/anp-identity-darwin-x64": "npm:0.2.1"
+    "@agent-network-protocol/anp-identity-linux-arm64-gnu": "npm:0.2.1"
+    "@agent-network-protocol/anp-identity-linux-x64-gnu": "npm:0.2.1"
+    "@agent-network-protocol/anp-identity-win32-x64-msvc": "npm:0.2.1"
   dependenciesMeta:
     "@agent-network-protocol/anp-identity-darwin-arm64":
       optional: true
@@ -60,20 +60,20 @@ __metadata:
       optional: true
     "@agent-network-protocol/anp-identity-win32-x64-msvc":
       optional: true
-  checksum: 10c0/831d4468118a0dc54b7d7a80e3d3e55387216009ddb45ca6d858bbf03412e456bd8a75ecc8e33a12d72d6d4c18f82a62a2da5ebe51efb1db0c846ea9f6fd241b
+  checksum: 10c0/702291fade84a94ba39647dd3a68a2b5643a796808a20644d778ffdb5afcdc4be145387607efc1d013866446789b82d25789044213abed9618203bcd628cf7c8
   languageName: node
   linkType: hard
 
-"@agent-network-protocol/dsh-anp-identity@file:./.build/runtime-inputs/agent-network-protocol-dsh-anp-identity-0.1.0.tgz::locator=deepseek-harness-desktop%40workspace%3A.":
-  version: 0.1.0
-  resolution: "@agent-network-protocol/dsh-anp-identity@file:./.build/runtime-inputs/agent-network-protocol-dsh-anp-identity-0.1.0.tgz#./.build/runtime-inputs/agent-network-protocol-dsh-anp-identity-0.1.0.tgz::hash=f7ac00&locator=deepseek-harness-desktop%40workspace%3A."
+"@agent-network-protocol/dsh-anp-identity@file:./.build/runtime-inputs/agent-network-protocol-dsh-anp-identity-0.1.1.tgz::locator=deepseek-harness-desktop%40workspace%3A.":
+  version: 0.1.1
+  resolution: "@agent-network-protocol/dsh-anp-identity@file:./.build/runtime-inputs/agent-network-protocol-dsh-anp-identity-0.1.1.tgz#./.build/runtime-inputs/agent-network-protocol-dsh-anp-identity-0.1.1.tgz::hash=1b84aa&locator=deepseek-harness-desktop%40workspace%3A."
   dependencies:
-    "@agent-network-protocol/anp-identity": "npm:0.2.0"
+    "@agent-network-protocol/anp-identity": "npm:0.2.1"
     "@deepseek-ai/schemastery": "npm:^3.18.1"
     proper-lockfile: "npm:^4.1.2"
   peerDependencies:
     "@deepseek-ai/cordis": ^4.0.1
-  checksum: 10c0/c055340159f88a06207981dc4c644c7e8850906e31705e6de8c7461b641eb464a91d6c8809b2f16af72d072a1db8aaba2e2a422468442ed573c1922bc72704ee
+  checksum: 10c0/313f73ce4cff2154cbaa52e45bc3f192120348bde6fcc7ac7bd808fb9fb7773b94ac7aa72acc22912ba26d9796876b1448277c7b9a4fbb59abbd7660608da2a0
   languageName: node
   linkType: hard
 
@@ -144,13 +144,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@awiki/dsh-model-proxy@file:./.build/runtime-inputs/awiki-dsh-model-proxy-0.1.5.tgz::locator=deepseek-harness-desktop%40workspace%3A.":
-  version: 0.1.5
-  resolution: "@awiki/dsh-model-proxy@file:./.build/runtime-inputs/awiki-dsh-model-proxy-0.1.5.tgz#./.build/runtime-inputs/awiki-dsh-model-proxy-0.1.5.tgz::hash=658436&locator=deepseek-harness-desktop%40workspace%3A."
+"@awiki/dsh-model-proxy@file:./.build/runtime-inputs/awiki-dsh-model-proxy-0.1.6.tgz::locator=deepseek-harness-desktop%40workspace%3A.":
+  version: 0.1.6
+  resolution: "@awiki/dsh-model-proxy@file:./.build/runtime-inputs/awiki-dsh-model-proxy-0.1.6.tgz#./.build/runtime-inputs/awiki-dsh-model-proxy-0.1.6.tgz::hash=1aa8cf&locator=deepseek-harness-desktop%40workspace%3A."
   dependencies:
     "@deepseek-ai/schemastery": "npm:^3.18.1"
   peerDependencies:
-    "@awiki/dsh-plugin": ^0.3.9
+    "@awiki/dsh-plugin": ^0.3.10
     "@deepseek-ai/cordis": ^4.0.1
     "@deepseek-ai/dsh-agent-default-model": 0.1.1-rc.2
     "@deepseek-ai/dsh-anonymous-user-id": 0.1.1-rc.2
@@ -165,19 +165,20 @@ __metadata:
     "@deepseek-ai/dsh-llm-deepseek": 0.1.1-rc.2
     "@deepseek-ai/dsh-settings": 0.1.1-rc.2
     react: ^18.2.0
-  checksum: 10c0/be6fcf8eec8dab6c6c12becfcb34d989d840289ce16ba3403bc487363aae44918a53e2c28b53b9145b2f70fdfe49ad5e990a9f064770b9d6940a478e93be9b1a
+  checksum: 10c0/ea3586376499c8132d67ecf8cc38d79577c28abfef34dec1d987f96ac3b3499446f69e5f367341d6f1178e96aa15b8a3799739674d725ffcad2d294f28e409b3
   languageName: node
   linkType: hard
 
-"@awiki/dsh-plugin@file:./.build/runtime-inputs/awiki-dsh-plugin-0.3.9.tgz::locator=deepseek-harness-desktop%40workspace%3A.":
-  version: 0.3.9
-  resolution: "@awiki/dsh-plugin@file:./.build/runtime-inputs/awiki-dsh-plugin-0.3.9.tgz#./.build/runtime-inputs/awiki-dsh-plugin-0.3.9.tgz::hash=05725c&locator=deepseek-harness-desktop%40workspace%3A."
+"@awiki/dsh-plugin@file:./.build/runtime-inputs/awiki-dsh-plugin-0.3.10.tgz::locator=deepseek-harness-desktop%40workspace%3A.":
+  version: 0.3.10
+  resolution: "@awiki/dsh-plugin@file:./.build/runtime-inputs/awiki-dsh-plugin-0.3.10.tgz#./.build/runtime-inputs/awiki-dsh-plugin-0.3.10.tgz::hash=3a3a78&locator=deepseek-harness-desktop%40workspace%3A."
   dependencies:
-    "@awiki/im-core-node": "npm:0.2.3"
+    "@awiki/im-core-node": "npm:0.2.4"
     "@deepseek-ai/schemastery": "npm:^3.18.1"
+    semver: "npm:7.8.5"
     zod: "npm:^4.4.3"
   peerDependencies:
-    "@agent-network-protocol/dsh-anp-identity": ^0.1.0
+    "@agent-network-protocol/dsh-anp-identity": ^0.1.1
     "@deepseek-ai/cordis": ^4.0.1
     "@deepseek-ai/dsh-agent": 0.1.1-rc.2
     "@deepseek-ai/dsh-agent-default-model": 0.1.1-rc.2
@@ -201,54 +202,54 @@ __metadata:
   peerDependenciesMeta:
     "@deepseek-ai/dsh-workspace":
       optional: true
-  checksum: 10c0/de40878301731d5655c5c8584612246d53755bf25667337b256697b127e92e1d7294aee6de9a17ecf0d050bb16693775f97a5ab3d0e3bb8c1facc117c7bc0763
+  checksum: 10c0/c3c0d023938e6ad2c0f807fddb356d739bc481338861d81867afea2a9b990a75fbbd710d7e1091d7e7ec87fc229335c8dc1c9e6d404e1529bcf875002932a16c
   languageName: node
   linkType: hard
 
-"@awiki/im-core-node-darwin-arm64@npm:0.2.3":
-  version: 0.2.3
-  resolution: "@awiki/im-core-node-darwin-arm64@npm:0.2.3"
+"@awiki/im-core-node-darwin-arm64@npm:0.2.4":
+  version: 0.2.4
+  resolution: "@awiki/im-core-node-darwin-arm64@npm:0.2.4"
   conditions: os=darwin & cpu=arm64
   languageName: node
   linkType: hard
 
-"@awiki/im-core-node-darwin-x64@npm:0.2.3":
-  version: 0.2.3
-  resolution: "@awiki/im-core-node-darwin-x64@npm:0.2.3"
+"@awiki/im-core-node-darwin-x64@npm:0.2.4":
+  version: 0.2.4
+  resolution: "@awiki/im-core-node-darwin-x64@npm:0.2.4"
   conditions: os=darwin & cpu=x64
   languageName: node
   linkType: hard
 
-"@awiki/im-core-node-linux-arm64-gnu@npm:0.2.3":
-  version: 0.2.3
-  resolution: "@awiki/im-core-node-linux-arm64-gnu@npm:0.2.3"
+"@awiki/im-core-node-linux-arm64-gnu@npm:0.2.4":
+  version: 0.2.4
+  resolution: "@awiki/im-core-node-linux-arm64-gnu@npm:0.2.4"
   conditions: os=linux & cpu=arm64 & libc=glibc
   languageName: node
   linkType: hard
 
-"@awiki/im-core-node-linux-x64-gnu@npm:0.2.3":
-  version: 0.2.3
-  resolution: "@awiki/im-core-node-linux-x64-gnu@npm:0.2.3"
+"@awiki/im-core-node-linux-x64-gnu@npm:0.2.4":
+  version: 0.2.4
+  resolution: "@awiki/im-core-node-linux-x64-gnu@npm:0.2.4"
   conditions: os=linux & cpu=x64 & libc=glibc
   languageName: node
   linkType: hard
 
-"@awiki/im-core-node-win32-x64-msvc@npm:0.2.3":
-  version: 0.2.3
-  resolution: "@awiki/im-core-node-win32-x64-msvc@npm:0.2.3"
+"@awiki/im-core-node-win32-x64-msvc@npm:0.2.4":
+  version: 0.2.4
+  resolution: "@awiki/im-core-node-win32-x64-msvc@npm:0.2.4"
   conditions: os=win32 & cpu=x64
   languageName: node
   linkType: hard
 
-"@awiki/im-core-node@npm:0.2.3":
-  version: 0.2.3
-  resolution: "@awiki/im-core-node@npm:0.2.3"
+"@awiki/im-core-node@npm:0.2.4":
+  version: 0.2.4
+  resolution: "@awiki/im-core-node@npm:0.2.4"
   dependencies:
-    "@awiki/im-core-node-darwin-arm64": "npm:0.2.3"
-    "@awiki/im-core-node-darwin-x64": "npm:0.2.3"
-    "@awiki/im-core-node-linux-arm64-gnu": "npm:0.2.3"
-    "@awiki/im-core-node-linux-x64-gnu": "npm:0.2.3"
-    "@awiki/im-core-node-win32-x64-msvc": "npm:0.2.3"
+    "@awiki/im-core-node-darwin-arm64": "npm:0.2.4"
+    "@awiki/im-core-node-darwin-x64": "npm:0.2.4"
+    "@awiki/im-core-node-linux-arm64-gnu": "npm:0.2.4"
+    "@awiki/im-core-node-linux-x64-gnu": "npm:0.2.4"
+    "@awiki/im-core-node-win32-x64-msvc": "npm:0.2.4"
   dependenciesMeta:
     "@awiki/im-core-node-darwin-arm64":
       optional: true
@@ -260,7 +261,7 @@ __metadata:
       optional: true
     "@awiki/im-core-node-win32-x64-msvc":
       optional: true
-  checksum: 10c0/1a89345b5affe29ac561c801e0693aecb5e3e5164105ada90bb14a253156fd7c739900009b6682f89e2eef5cec27155b9f08c2ad34fbe90c03113b5b58ce00eb
+  checksum: 10c0/c2232db855b5816b29f36aba10db1840f1216023fe90cbab8c631ec093d0914ea4c4e9a840488ad662fadefc907a94bb43619a00bd3ed34936818ad95ef526ae
   languageName: node
   linkType: hard
 
@@ -8415,9 +8416,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "dsh-plugin-desktop@workspace:dsh-plugin-desktop"
   dependencies:
-    "@agent-network-protocol/dsh-anp-identity": "npm:0.1.0"
-    "@awiki/dsh-model-proxy": "npm:0.1.5"
-    "@awiki/dsh-plugin": "npm:0.3.9"
+    "@agent-network-protocol/dsh-anp-identity": "npm:0.1.1"
+    "@awiki/dsh-model-proxy": "npm:0.1.6"
+    "@awiki/dsh-plugin": "npm:0.3.10"
     "@base-ui/react": "npm:^1.7.0"
     "@deepseek-ai/cordis": "npm:4.0.1"
     "@deepseek-ai/cordis-plugin-group": "npm:1.0.1"
@@ -12731,6 +12732,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"semver@npm:7.8.5, semver@npm:^7.3.2, semver@npm:^7.3.5, semver@npm:^7.5.3, semver@npm:^7.6.3, semver@npm:^7.7.3, semver@npm:^7.8.1, semver@npm:^7.8.5":
+  version: 7.8.5
+  resolution: "semver@npm:7.8.5"
+  bin:
+    semver: bin/semver.js
+  checksum: 10c0/b1f3127a5be8125a94f37188b361c212466c292c6910adce3ec106cff5dc211ccaedc4739c11bb70fda59d6fc1f040a9bca289f4e093451521a2372e5231fe0c
+  languageName: node
+  linkType: hard
+
 "semver@npm:^5.5.0":
   version: 5.7.2
   resolution: "semver@npm:5.7.2"
@@ -12746,15 +12756,6 @@ __metadata:
   bin:
     semver: bin/semver.js
   checksum: 10c0/e3d79b609071caa78bcb6ce2ad81c7966a46a7431d9d58b8800cfa9cb6a63699b3899a0e4bcce36167a284578212d9ae6942b6929ba4aa5015c079a67751d42d
-  languageName: node
-  linkType: hard
-
-"semver@npm:^7.3.2, semver@npm:^7.3.5, semver@npm:^7.5.3, semver@npm:^7.6.3, semver@npm:^7.7.3, semver@npm:^7.8.1, semver@npm:^7.8.5":
-  version: 7.8.5
-  resolution: "semver@npm:7.8.5"
-  bin:
-    semver: bin/semver.js
-  checksum: 10c0/b1f3127a5be8125a94f37188b361c212466c292c6910adce3ec106cff5dc211ccaedc4739c11bb70fda59d6fc1f040a9bca289f4e093451521a2372e5231fe0c
   languageName: node
   linkType: hard
 
