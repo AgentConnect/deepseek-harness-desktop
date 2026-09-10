@@ -72,7 +72,6 @@ it.each([false, true])('boots a separate Web Host with client plugins (AA enable
         dshBootstrapPath: fileURLToPath(new URL('../lib/desktop-cli.js', import.meta.url)) },
       logDirectory: join(home, 'logs'),
     }, runtimeSnapshot(runtime), token])
-    expect(result.services).toEqual({ aaRuntime: aaEnabled, aaOnboarding: aaEnabled })
     expect(result.pid).toBe(child.pid)
     expect(result.pid).not.toBe(process.pid)
     expect(shell).toBeDefined()
@@ -97,6 +96,8 @@ it.each([false, true])('boots a separate Web Host with client plugins (AA enable
     expect(bundle.status).toBe(200)
     expect(await bundle.text()).toContain('isolatedClientFixture')
     expect(html).toContain('dsh-plugin-desktop-beta')
+    await expect.poll(async () => (await rpc!.call<{ services: { aaRuntime: boolean; aaOnboarding: boolean } }>('status')).services, { timeout: 3000 })
+      .toEqual({ aaRuntime: aaEnabled, aaOnboarding: aaEnabled })
     await rpc.call('stop')
     await expect(fetch(spec.url, { headers })).rejects.toThrow()
   } catch (error) {
