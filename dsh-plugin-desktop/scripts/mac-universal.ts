@@ -9,6 +9,22 @@ export type MacUniversalArch = 'arm64' | 'x86_64'
 export const MACOS_UNIVERSAL_NATIVE_ENTRIES = [
   {
     arch: 'arm64',
+    path: 'node_modules/@awiki/im-core-node-darwin-arm64/awiki-im-core-node.darwin-arm64.node',
+  },
+  {
+    arch: 'arm64',
+    path: 'node_modules/@agent-network-protocol/anp-identity-darwin-arm64/anp-identity.darwin-arm64.node',
+  },
+  {
+    arch: 'x86_64',
+    path: 'node_modules/@awiki/im-core-node-darwin-x64/awiki-im-core-node.darwin-x64.node',
+  },
+  {
+    arch: 'x86_64',
+    path: 'node_modules/@agent-network-protocol/anp-identity-darwin-x64/anp-identity.darwin-x64.node',
+  },
+  {
+    arch: 'arm64',
     path: 'node_modules/@deepseek-ai/node-addon-system-darwin-arm64/bin/system.node',
   },
   {

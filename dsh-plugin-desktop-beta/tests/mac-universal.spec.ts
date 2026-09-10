@@ -6,6 +6,20 @@ import {
 } from '../scripts/mac-universal.ts'
 
 describe('universal macOS native runtime preparation', () => {
+  it.each([
+    'node_modules/@awiki/im-core-node-darwin-arm64/awiki-im-core-node.darwin-arm64.node',
+    'node_modules/@awiki/im-core-node-darwin-x64/awiki-im-core-node.darwin-x64.node',
+    'node_modules/@agent-network-protocol/anp-identity-darwin-arm64/anp-identity.darwin-arm64.node',
+    'node_modules/@agent-network-protocol/anp-identity-darwin-x64/anp-identity.darwin-x64.node',
+  ])('rejects an incomplete AWiki or Identity architecture: %s', (missing) => {
+    const desktopRoot = resolve('/desktop')
+    expect(() => prepareMacUniversalRuntime({
+      desktopRoot,
+      exists: path => path !== join(desktopRoot, missing),
+      chmod: vi.fn(),
+    })).toThrow(join(desktopRoot, missing))
+  })
+
   it('tracks the Electron 43 fs-ext binding for both CPU architectures', () => {
     expect(MACOS_UNIVERSAL_NATIVE_ENTRIES).toEqual(expect.arrayContaining([
       {
