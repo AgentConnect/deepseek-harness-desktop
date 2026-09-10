@@ -27,7 +27,7 @@ vi.mock('electron', () => ({
   },
 }))
 
-function fixture(platform: 'darwin' | 'win32' = 'darwin', mode: 'compatibility' | 'extended' = 'compatibility') {
+function fixture(platform: 'darwin' | 'win32' = 'darwin', mode: 'compatibility' | 'extended' = 'compatibility', material: DesktopShellSpec['material'] = 'off') {
   const ipc = { handle: vi.fn(), removeHandler: vi.fn() }
   const webContents = Object.assign(new EventEmitter(), {
     ipc,
@@ -53,7 +53,7 @@ function fixture(platform: 'darwin' | 'win32' = 'darwin', mode: 'compatibility' 
     reload: vi.fn(), developerTools: vi.fn(),
     checkForUpdates: vi.fn(async () => {}),
   }
-  const spec = { mode, material: 'off', requestModeChange: vi.fn(async () => {}) } as unknown as DesktopShellSpec
+  const spec = { mode, material, requestModeChange: vi.fn(async () => {}) } as unknown as DesktopShellSpec
   const shell = new CompatibilityShell(window as unknown as BrowserWindow, spec, platform, '/desktop/preload.cjs', actions)
   const handler = ipc.handle.mock.calls[0]?.[1] as (event: unknown, command: unknown) => unknown
   const event = () => ({ sender: webContents, senderFrame: webContents.mainFrame })
@@ -63,6 +63,18 @@ function fixture(platform: 'darwin' | 'win32' = 'darwin', mode: 'compatibility' 
 describe('isolated compatibility shell', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+  })
+
+  it.each([
+    ['darwin', 'extended', 'transparent', true],
+    ['win32', 'extended', 'mica', true],
+    ['darwin', 'extended', 'off', false],
+    ['darwin', 'compatibility', 'transparent', false],
+  ] as const)('preserves the content material boundary for %s %s %s', (platform, mode, material, transparent) => {
+    const { shell } = fixture(platform, mode, material)
+    if (transparent) expect(shell.content.setBackgroundColor).toHaveBeenCalledExactlyOnceWith('#00000000')
+    else expect(shell.content.setBackgroundColor).not.toHaveBeenCalled()
+    shell.dispose()
   })
 
   it.each(['compatibility', 'extended'] as const)('isolates %s chrome with native bounds outside the content document', async mode => {
