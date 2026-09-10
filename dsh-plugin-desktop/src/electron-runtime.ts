@@ -242,6 +242,20 @@ export class ElectronDesktopRuntime implements DesktopRuntime {
         rendererRecoveryCopy: () => rendererRecoveryCopy[this.currentLocale],
         logError: message => { this.logError(message) },
         mainWindowState: this.mainWindowState,
+        chromeActions: {
+          locale: () => this.locale,
+          version: PRODUCT_VERSION,
+          openTerminal: () => { this.openTerminal() },
+          restart: () => this.requestRestart(),
+          restartToRecovery: () => this.requestRecoveryRestart(),
+          reload: () => { this.reloadRenderer() },
+          developerTools: () => { this.toggleDeveloperTools() },
+          checkForUpdates: async () => {
+            const command = [...this.trayItems.values()].find(item => item.id === 'check-for-updates')
+            if (command === undefined || command.enabled?.() === false) throw new Error('Desktop update check is unavailable')
+            await command.invoke()
+          },
+        },
       })
       this.generation = generation
       this.mountTask = generation.mount(beforeInteractive).then(() => {
