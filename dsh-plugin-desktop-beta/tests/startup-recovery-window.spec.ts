@@ -338,6 +338,7 @@ describe('Desktop startup recovery confirmations', () => {
 
     expect(desktopDialog.show).toHaveBeenCalledWith(expect.objectContaining({
       title: '更改数据目录？',
+      detail: '建议不要使用中文路径。\n\n目标文件夹如果为空，则DSH Desktop 会创建一个全新的环境；旧数据目录不会被删除。',
       buttons: ['继续', '取消'],
       defaultId: 1,
       cancelId: 1,
@@ -545,6 +546,8 @@ describe('Desktop startup recovery confirmations', () => {
     expect(resetDirectory).toHaveBeenCalledOnce()
     expect(finish).toHaveBeenCalledWith('restart')
   })
+
+
 })
 
 describe('Desktop startup recovery diagnostics export', () => {

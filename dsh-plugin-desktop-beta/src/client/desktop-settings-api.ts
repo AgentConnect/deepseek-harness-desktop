@@ -4,6 +4,7 @@ const SETTINGS_PATH = '/api/desktop/settings'
 const PROFILE_CREATE_PATH = '/api/desktop/profiles/create'
 const PROFILE_SELECT_PATH = '/api/desktop/profiles/select'
 const PROFILE_DELETE_PATH = '/api/desktop/profiles/delete'
+const AA_SELECT_PATH = '/api/desktop/aa/select'
 const MARKET_SELECT_PATH = '/api/desktop/market/select'
 const TERMINAL_OPEN_PATH = '/api/desktop/terminal/open'
 const RESTART_PATH = '/api/desktop/restart'
@@ -12,6 +13,8 @@ const RENDERER_RELOAD_PATH = '/api/desktop/developer/reload'
 const DEVELOPER_TOOLS_TOGGLE_PATH = '/api/desktop/developer/devtools'
 const UPDATE_CHECK_PATH = '/api/desktop/updates/check'
 const DIAGNOSTICS_EXPORT_PATH = '/api/desktop/diagnostics/export'
+const AWIKI_UPDATE_CHECK_PATH = '/api/desktop/awiki/check-update'
+const AWIKI_UPDATE_APPLY_PATH = '/api/desktop/awiki/apply-update'
 const MAX_PROFILES = 256
 const MAX_PROFILE_NAME_LENGTH = 255
 const MAX_LAN_URLS = 32
@@ -57,6 +60,7 @@ export interface DesktopWebView {
 export interface DesktopSettingsView {
   readonly current: string
   readonly profiles: readonly DesktopProfileView[]
+  readonly aa?: { readonly requested: boolean; readonly effective: boolean }
   readonly market: DesktopMarketView
   readonly web: DesktopWebView
 }
@@ -67,12 +71,37 @@ export interface DesktopRestartAcceptance {
   readonly restartRequired: boolean
 }
 
+export interface DesktopAwikiVersionsView {
+  readonly pluginVersion?: string
+  readonly modelProxyVersion?: string
+}
+
+export type DesktopAwikiUpdateView =
+  | {
+      readonly status: 'up-to-date'
+      readonly current: DesktopAwikiVersionsView
+      readonly target: Required<DesktopAwikiVersionsView>
+    }
+  | {
+      readonly status: 'available'
+      readonly current: DesktopAwikiVersionsView
+      readonly target: Required<DesktopAwikiVersionsView>
+      readonly previewId: string
+    }
+  | {
+      readonly status: 'cooling-down'
+      readonly current: DesktopAwikiVersionsView
+      readonly target: Required<DesktopAwikiVersionsView>
+      readonly availableAt: string
+    }
+
 /** Browser operations consumed by the Desktop settings section. */
 export interface DesktopSettingsApi {
   read(): Promise<DesktopSettingsView>
   createProfile(name: string): Promise<DesktopSettingsView>
   selectProfile(name: string): Promise<DesktopRestartAcceptance>
   deleteProfile(name: string): Promise<DesktopSettingsView>
+  selectAa?(enabled: boolean): Promise<DesktopRestartAcceptance>
   selectMarket(provider: DesktopMarketProvider): Promise<DesktopRestartAcceptance>
   openTerminal(): Promise<void>
   restart(): Promise<void>
@@ -81,6 +110,8 @@ export interface DesktopSettingsApi {
   toggleDeveloperTools(): Promise<void>
   checkForUpdates(): Promise<void>
   exportDiagnostics(): Promise<void>
+  checkAwikiUpdate(): Promise<DesktopAwikiUpdateView>
+  applyAwikiUpdate(previewId: string): Promise<DesktopRestartAcceptance & { readonly restartRequired: true }>
 }
 
 type FetchLike = (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>
@@ -202,6 +233,7 @@ export function parseDesktopSettingsView(value: unknown): DesktopSettingsView {
     || value.current.length > MAX_PROFILE_NAME_LENGTH
     || !Array.isArray(value.profiles)
     || value.profiles.length > MAX_PROFILES
+    || (value.aa !== undefined && (!isObject(value.aa) || typeof value.aa.requested !== 'boolean' || typeof value.aa.effective !== 'boolean'))
     || !isObject(value.market)
     || !isMarketProvider(value.market.requested)
     || !isMarketProvider(value.market.effective)
@@ -243,6 +275,7 @@ export function parseDesktopSettingsView(value: unknown): DesktopSettingsView {
   return Object.freeze({
     current: value.current,
     profiles: Object.freeze(profiles),
+    aa: Object.freeze(isObject(value.aa) ? { requested: value.aa.requested as boolean, effective: value.aa.effective as boolean } : { requested: false, effective: false }),
     market: Object.freeze({
       requested: value.market.requested,
       effective: value.market.effective,
@@ -274,6 +307,44 @@ export function parseDesktopActionAcceptance(value: unknown): void {
     || value.accepted !== true) {
     throw new Error('dsh-plugin-desktop: invalid Desktop action response')
   }
+}
+
+function parseAwikiVersions(value: unknown, required: boolean): DesktopAwikiVersionsView {
+  if (!isObject(value)) throw new Error('dsh-plugin-desktop: invalid AWiki update response')
+  const pluginVersion = value.pluginVersion
+  const modelProxyVersion = value.modelProxyVersion
+  if ((pluginVersion !== undefined && typeof pluginVersion !== 'string')
+    || (modelProxyVersion !== undefined && typeof modelProxyVersion !== 'string')
+    || (required && (typeof pluginVersion !== 'string' || typeof modelProxyVersion !== 'string'))) {
+    throw new Error('dsh-plugin-desktop: invalid AWiki update response')
+  }
+  return Object.freeze({
+    ...(typeof pluginVersion === 'string' ? { pluginVersion } : {}),
+    ...(typeof modelProxyVersion === 'string' ? { modelProxyVersion } : {}),
+  })
+}
+
+/** Validate a bounded update result before it reaches the settings UI. */
+export function parseDesktopAwikiUpdateView(value: unknown): DesktopAwikiUpdateView {
+  if (!isObject(value)
+    || (value.status !== 'up-to-date' && value.status !== 'available' && value.status !== 'cooling-down')) {
+    throw new Error('dsh-plugin-desktop: invalid AWiki update response')
+  }
+  const current = parseAwikiVersions(value.current, false)
+  const target = parseAwikiVersions(value.target, true) as Required<DesktopAwikiVersionsView>
+  if (value.status === 'available') {
+    if (typeof value.previewId !== 'string' || !/^[A-Za-z0-9_-]{43}$/u.test(value.previewId)) {
+      throw new Error('dsh-plugin-desktop: invalid AWiki update response')
+    }
+    return Object.freeze({ status: value.status, current, target, previewId: value.previewId })
+  }
+  if (value.status === 'cooling-down') {
+    if (typeof value.availableAt !== 'string' || !Number.isFinite(Date.parse(value.availableAt))) {
+      throw new Error('dsh-plugin-desktop: invalid AWiki update response')
+    }
+    return Object.freeze({ status: value.status, current, target, availableAt: value.availableAt })
+  }
+  return Object.freeze({ status: value.status, current, target })
 }
 
 async function readResponse(response: Response): Promise<unknown> {
@@ -322,6 +393,9 @@ export function createDesktopSettingsApi(fetcher: FetchLike = globalThis.fetch.b
     async deleteProfile(name: string) {
       return parseDesktopSettingsView(await readResponse(await post(fetcher, PROFILE_DELETE_PATH, { name })))
     },
+    async selectAa(enabled: boolean) {
+      return parseDesktopRestartAcceptance(await readResponse(await post(fetcher, AA_SELECT_PATH, { enabled })))
+    },
     async selectMarket(provider: DesktopMarketProvider) {
       return parseDesktopRestartAcceptance(await readResponse(await post(fetcher, MARKET_SELECT_PATH, { provider })))
     },
@@ -346,6 +420,18 @@ export function createDesktopSettingsApi(fetcher: FetchLike = globalThis.fetch.b
     async exportDiagnostics() {
       parseDesktopActionAcceptance(await readResponse(await post(fetcher, DIAGNOSTICS_EXPORT_PATH, {})))
     },
+    async checkAwikiUpdate() {
+      return parseDesktopAwikiUpdateView(await readResponse(await post(fetcher, AWIKI_UPDATE_CHECK_PATH, {})))
+    },
+    async applyAwikiUpdate(previewId: string) {
+      const acceptance = parseDesktopRestartAcceptance(
+        await readResponse(await post(fetcher, AWIKI_UPDATE_APPLY_PATH, { previewId })),
+      )
+      if (!acceptance.restartRequired) {
+        throw new Error('dsh-plugin-desktop: invalid AWiki update restart response')
+      }
+      return Object.freeze({ accepted: true as const, restartRequired: true as const })
+    },
   })
 }
 
@@ -362,4 +448,6 @@ export const desktopSettingsPaths = Object.freeze({
   developerToolsToggle: DEVELOPER_TOOLS_TOGGLE_PATH,
   updateCheck: UPDATE_CHECK_PATH,
   diagnosticsExport: DIAGNOSTICS_EXPORT_PATH,
+  awikiUpdateCheck: AWIKI_UPDATE_CHECK_PATH,
+  awikiUpdateApply: AWIKI_UPDATE_APPLY_PATH,
 })

@@ -30,23 +30,11 @@ export function desktopWindowService(environment: DesktopClientEnvironment): Des
         : ['off'] as const
       : ['off'] as const)
   if (environment.mode === 'compatibility') {
-    if (environment.platform === 'linux') {
-      return Object.freeze({
-        ...environment,
-        availableMaterials,
-        safeAreaInsets: frozenInsets(0),
-        dragRegion: frozenDragRegion(0, 0, 0),
-      })
-    }
     return Object.freeze({
       ...environment,
       availableMaterials,
-      safeAreaInsets: frozenInsets(DESKTOP_FRAME_HEIGHT),
-      dragRegion: frozenDragRegion(
-        DESKTOP_FRAME_HEIGHT,
-        environment.platform === 'darwin' ? MACOS_TRAFFIC_LIGHT_SAFE_WIDTH : 0,
-        environment.platform === 'win32' ? WINDOWS_CAPTION_CONTROLS_WIDTH : 0,
-      ),
+      safeAreaInsets: frozenInsets(0),
+      dragRegion: frozenDragRegion(0, 0, 0),
     })
   }
   if (environment.mode === 'extended') {

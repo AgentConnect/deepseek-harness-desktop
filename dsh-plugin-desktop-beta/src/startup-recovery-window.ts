@@ -19,6 +19,7 @@ import {
   type DesktopRecoveryTab,
   type DesktopStartupFailureStage,
 } from './recovery-copy.ts'
+import type { DesktopAwikiCompatibilityIssue } from './awiki-package-compatibility.ts'
 import {
   DesktopStartupRecoveryController,
   DesktopStartupRecoveryControllerError,
@@ -60,6 +61,8 @@ export interface DesktopStartupRecoveryWindowOptions {
   readonly failureDetail: string
   /** True when the user intentionally entered recovery before Host boot. */
   readonly requested?: boolean
+  /** Structured, renderer-safe AWiki conflict details. */
+  readonly awikiCompatibilityIssue?: DesktopAwikiCompatibilityIssue
   readonly exportDiagnostics: (signal: AbortSignal) => Promise<string>
   /** Open the launcher-owned terminal even when the Host did not start. */
   readonly openTerminal?: () => void | Promise<void>
@@ -204,6 +207,7 @@ export interface DesktopStartupRecoveryViewModel {
   readonly profileActionToken?: string
   readonly terminalAvailable?: boolean
   readonly profileCreatorAvailable?: boolean
+  readonly awikiCompatibilityIssue?: DesktopAwikiCompatibilityIssue
   readonly safeModeAvailable?: boolean
   readonly safeModeActive?: boolean
 }
@@ -794,6 +798,9 @@ export class DesktopStartupRecoveryWindow {
       failureStage: this.options.failureStage,
       failureDetail: this.options.failureDetail,
       ...(this.options.requested === true ? { requested: true } : {}),
+      ...(this.options.awikiCompatibilityIssue === undefined
+        ? {}
+        : { awikiCompatibilityIssue: this.options.awikiCompatibilityIssue }),
       ...(this.snapshot === undefined ? {} : { snapshot: this.snapshot }),
       ...(this.snapshotError === undefined ? {} : { snapshotError: this.snapshotError }),
       diagnostics: this.diagnostics,

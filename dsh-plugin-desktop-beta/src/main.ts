@@ -1,6 +1,6 @@
 /** DSH Desktop executable: minimal Electron bootstrap around the Host Cordis root. */
 
-import { app, crashReporter, safeStorage, shell } from 'electron'
+import { app, dialog, net, crashReporter, safeStorage, shell } from 'electron'
 import { randomUUID } from 'node:crypto'
 import { existsSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
@@ -57,11 +57,7 @@ import {
   desktopLoopbackBrowserUrl,
 } from './desktop-network.ts'
 import { desktopLanAddresses } from './lan-addresses.ts'
-import {
-  createLanHttpsCertificate,
-  DesktopLanHttpsCertificateError,
-  type DesktopLanHttpsPrivateKeyProtector,
-} from './lan-https-certificate.ts'
+import type { DesktopLanHttpsPrivateKeyProtector } from './lan-https-certificate.ts'
 import {
   DESKTOP_LAN_HTTPS_CA_PATH,
   DesktopLanHttpsRuntime,
@@ -101,6 +97,7 @@ import { acquireDesktopDataOperationLock } from './desktop-data-operation-lock.t
 import { resetDesktopDataDirectory } from './desktop-factory-reset.ts'
 import {
   clearDesktopProfilePreferences,
+  desktopProfilePreferencesFromSettings,
   readDesktopProfilePreferences,
   writeDesktopProfilePreferences,
   type DesktopProfilePreferences,
@@ -148,6 +145,7 @@ import { showDesktopDialog } from './desktop-dialog-window.ts'
 import {
   clearDesktopProfileUsageHistory,
   desktopReleaseUserDataLocations,
+  hasDesktopProfileUsageHistory,
   inspectDesktopProfileChannelAdmission,
 } from './profile-channel-admission.ts'
 import {
@@ -206,6 +204,18 @@ import {
   DESKTOP_RELEASE_CHANNEL,
 } from './product-identity.ts'
 import { desktopRecoveryCopy } from './recovery-copy.ts'
+import {
+  DesktopAwikiCompatibilityError,
+  type DesktopAwikiCompatibilityFallback,
+  type DesktopAwikiCompatibilityIssue,
+} from './awiki-package-compatibility.ts'
+import {
+  readDesktopAwikiProfileVersions,
+  upgradeDesktopAwikiProfile,
+  type DesktopAwikiProfileVersions,
+} from './awiki-profile-upgrade.ts'
+import { discoverDesktopAwikiUpdate } from './awiki-update-discovery.ts'
+import { executeDesktopAwikiUpdate } from './awiki-update-execution.ts'
 
 const BIN_NAME = DESKTOP_PACKAGE_NAME
 const PRODUCT_NAME = DESKTOP_PRODUCT_NAME
@@ -261,6 +271,156 @@ function lifecycleStartupFailureReason(
 ): DesktopLifecycleFailureReason {
   if (cause instanceof RendererStartupFailure) return cause.reason
   return runtime.rendererBootFailureReason ?? 'startup-failed'
+}
+
+/** Explain the safe automatic AWiki fallback after the UI is healthy. */
+async function showAwikiCompatibilityFallbackNotice(
+  fallback: DesktopAwikiCompatibilityFallback,
+  locale: 'en' | 'zh',
+  logger: DesktopLogger,
+): Promise<void> {
+  const builtIn = fallback.source === 'install'
+  const copy = locale === 'zh'
+    ? {
+        title: '已自动处理 AWiki 插件版本冲突',
+        message: builtIn
+          ? '当前 Profile 中的 AWiki 插件版本不兼容，DSH Desktop 已安全使用 App 内置版本。'
+          : 'App 内置的 AWiki 插件组合不兼容，DSH Desktop 已安全使用 Profile 版本。',
+        detail: `本次运行使用 @awiki/dsh-plugin ${fallback.pluginVersion} 和 @awiki/dsh-model-proxy ${fallback.modelProxyVersion}，没有删除或覆盖 Profile。建议之后在 DSH Terminal 中同时升级这两个插件。`,
+        confirm: '知道了',
+      }
+    : {
+        title: 'AWiki plugin conflict handled safely',
+        message: builtIn
+          ? 'The AWiki versions in this Profile are incompatible. DSH Desktop is safely using the built-in pair.'
+          : 'The built-in AWiki pair is incompatible. DSH Desktop is safely using the Profile pair.',
+        detail: `This run uses @awiki/dsh-plugin ${fallback.pluginVersion} and @awiki/dsh-model-proxy ${fallback.modelProxyVersion}. The Profile was not deleted or overwritten. Upgrade both plugins together later from DSH Terminal.`,
+        confirm: 'OK',
+      }
+  try {
+    await dialog.showMessageBox({
+      type: 'warning',
+      title: copy.title,
+      message: copy.message,
+      detail: copy.detail,
+      buttons: [copy.confirm],
+      defaultId: 0,
+      cancelId: 0,
+      noLink: true,
+    })
+  } catch (cause) {
+    logger.error(`${BIN_NAME}: failed to show AWiki compatibility notice: ${cause instanceof Error ? cause.message : String(cause)}`)
+  }
+}
+
+async function requestAwikiProfileUpgrade(
+  fallback: DesktopAwikiCompatibilityFallback,
+  profileVersions: Awaited<ReturnType<typeof readDesktopAwikiProfileVersions>>,
+  locale: 'en' | 'zh',
+  logger: DesktopLogger,
+): Promise<'upgrade' | 'exit'> {
+  const currentPlugin = profileVersions.pluginVersion ?? '未安装'
+  const currentProxy = profileVersions.modelProxyVersion ?? '未安装'
+  const copy = locale === 'zh'
+    ? {
+        title: '需要升级 AWiki 插件',
+        message: '当前 Profile 中的 AWiki 插件版本不兼容，继续启动可能导致功能异常。',
+        detail: [
+          `当前：@awiki/dsh-plugin ${currentPlugin}`,
+          `当前：@awiki/dsh-model-proxy ${currentProxy}`,
+          '',
+          `将升级为：@awiki/dsh-plugin ${fallback.pluginVersion}`,
+          `将升级为：@awiki/dsh-model-proxy ${fallback.modelProxyVersion}`,
+          '',
+          '两个插件会一起升级。升级失败时会自动恢复原 Profile。',
+        ].join('\n'),
+        upgrade: '升级插件并重启',
+        exit: '暂不升级并退出',
+      }
+    : {
+        title: 'AWiki plugins need an upgrade',
+        message: 'The AWiki versions in this Profile are incompatible. Continuing could cause features to fail.',
+        detail: [
+          `Current: @awiki/dsh-plugin ${currentPlugin}`,
+          `Current: @awiki/dsh-model-proxy ${currentProxy}`,
+          '',
+          `Upgrade to: @awiki/dsh-plugin ${fallback.pluginVersion}`,
+          `Upgrade to: @awiki/dsh-model-proxy ${fallback.modelProxyVersion}`,
+          '',
+          'Both plugins are upgraded together. The original Profile is restored if the upgrade fails.',
+        ].join('\n'),
+        upgrade: 'Upgrade and Restart',
+        exit: 'Exit Without Upgrading',
+      }
+  try {
+    const result = await dialog.showMessageBox({
+      type: 'warning',
+      title: copy.title,
+      message: copy.message,
+      detail: copy.detail,
+      buttons: [copy.upgrade, copy.exit],
+      defaultId: 0,
+      cancelId: 1,
+      noLink: true,
+    })
+    return result.response === 0 ? 'upgrade' : 'exit'
+  } catch (cause) {
+    logger.error(`${BIN_NAME}: failed to show AWiki upgrade choice: ${cause instanceof Error ? cause.message : String(cause)}`)
+    return 'exit'
+  }
+}
+
+async function requestAwikiUpgradeFailureAction(
+  detail: string,
+  rollback: 'restored' | 'manual-recovery-required' | 'failed',
+  locale: 'en' | 'zh',
+  logger: DesktopLogger,
+): Promise<'retry' | 'terminal' | 'exit'> {
+  const retryAvailable = rollback === 'restored'
+  const copy = locale === 'zh'
+    ? {
+        title: 'AWiki 插件升级失败',
+        message: rollback === 'restored'
+          ? '升级未完成，原 Profile 已自动恢复。'
+          : '升级未完成，Profile 需要手动检查。',
+        detail,
+        retry: '重试升级',
+        terminal: '打开 DSH Terminal',
+        exit: '退出应用',
+      }
+    : {
+        title: 'AWiki plugin upgrade failed',
+        message: rollback === 'restored'
+          ? 'The upgrade did not complete. The original Profile was restored.'
+          : 'The upgrade did not complete. The Profile needs manual inspection.',
+        detail,
+        retry: 'Retry Upgrade',
+        terminal: 'Open DSH Terminal',
+        exit: 'Exit',
+      }
+  const buttons = retryAvailable
+    ? [copy.retry, copy.terminal, copy.exit]
+    : [copy.terminal, copy.exit]
+  try {
+    const result = await dialog.showMessageBox({
+      type: 'error',
+      title: copy.title,
+      message: copy.message,
+      detail: copy.detail,
+      buttons,
+      defaultId: 0,
+      cancelId: buttons.length - 1,
+      noLink: true,
+    })
+    if (retryAvailable) {
+      if (result.response === 0) return 'retry'
+      return result.response === 1 ? 'terminal' : 'exit'
+    }
+    return result.response === 0 ? 'terminal' : 'exit'
+  } catch (cause) {
+    logger.error(`${BIN_NAME}: failed to show AWiki upgrade failure: ${cause instanceof Error ? cause.message : String(cause)}`)
+    return 'exit'
+  }
 }
 
 /** Report optional user UI plugins skipped to keep startup recoverable. */
@@ -354,21 +514,6 @@ function desktopProfileMarketSnapshot(market: DesktopMarketProvider): DesktopMar
   })
 }
 
-/** Project exactly the first-stage Profile fields from an effective settings view. */
-function desktopProfilePreferencesFromSettings(
-  desktop: Pick<DesktopSettings, 'mode' | 'openBrowser' | 'networkExposure'>,
-  notifications: Readonly<DesktopNotificationSettings>,
-  market: DesktopMarketProvider,
-): DesktopProfilePreferences {
-  return Object.freeze({
-    mode: desktop.mode,
-    openBrowser: desktop.openBrowser,
-    networkExposure: desktop.networkExposure,
-    notifications: Object.freeze({ ...notifications }),
-    market,
-  })
-}
-
 /** Preserve device-shared Wizard fields while mirroring one Profile's leaves. */
 function setupSettingsWithProfilePreferences(
   current: DesktopSetupWizardSettings,
@@ -428,6 +573,7 @@ async function start(): Promise<void> {
     | Extract<SessionProjectionCacheRecoveryResult, { status: 'quarantined' }>
     | undefined
   let recoveryTerminalAvailable = false
+  let awikiUpgradePrepared = false
   let startupStage: DesktopStartupFailureStage = 'electron-ready'
   const desktopUserDataDir = app.getPath('userData')
   const appVersion = desktopProductVersion()
@@ -581,6 +727,7 @@ async function start(): Promise<void> {
     failureDetail: string,
     controller: DesktopStartupRecoveryController | undefined,
     requested = false,
+    awikiCompatibilityIssue?: DesktopAwikiCompatibilityIssue,
   ): Promise<RecoveryWindowResult | 'unavailable'> => {
     if (!app.isReady()) return 'unavailable'
     try {
@@ -593,6 +740,7 @@ async function start(): Promise<void> {
         failureStage: startupStage,
         failureDetail: maskSecrets(failureDetail),
         ...(requested ? { requested: true } : {}),
+        ...(awikiCompatibilityIssue === undefined ? {} : { awikiCompatibilityIssue }),
         exportDiagnostics: async signal => await exportDesktopDiagnostics(app.getPath('userData'), {
           appVersion,
           crashDumpsDir: app.getPath('crashDumps'),
@@ -1007,6 +1155,7 @@ async function start(): Promise<void> {
           try {
             await resetDesktopDataDirectory({
               homeDir: recoveryDataLocation.homeDir,
+              userDataDir: marketUserDataDir,
               protectedPaths: [
                 app.getPath('home'),
                 app.getPath('appData'),
@@ -1015,6 +1164,7 @@ async function start(): Promise<void> {
                 process.cwd(),
               ],
               trashItem: async path => { await shell.trashItem(path) },
+              clearProfileUsageHistory: profileDir => { clearDesktopProfileUsageHistory(releaseUserDataLocations, profileDir) },
             })
           } finally {
             lease.release()
@@ -1115,6 +1265,7 @@ async function start(): Promise<void> {
       ? legacyMarketSelection
       : desktopProfileMarketSnapshot(profilePreferences.market)
     const preparationHooks = {
+      get aaEnabled() { return safeModePaths === undefined && profilePreferences?.aaEnabled === true },
       lanAddresses,
       onSettingsDocumentResolved: (settingsDocument: string) => {
         if (startupRecoveryConfigurationPaths === undefined) return
@@ -1146,6 +1297,7 @@ async function start(): Promise<void> {
           safeModeDefaults.settings,
           safeModeDefaults.settings.notifications,
           safeModeDefaults.market,
+          safeModeDefaults.aaEnabled,
         ),
       )
       prepared = prepareDesktopProfile(
@@ -1222,7 +1374,8 @@ async function start(): Promise<void> {
     const setupWizardState = safeModePaths === undefined
       ? readDesktopSetupWizardState(marketUserDataDir, prepared.profile.dir)
       : undefined
-    if (safeModePaths === undefined && desktopSetupWizardRequired(setupWizardState, setupWizardVersions)) {
+    if (safeModePaths === undefined && desktopSetupWizardRequired(setupWizardState, setupWizardVersions)
+      && !hasDesktopProfileUsageHistory(releaseUserDataLocations, prepared.profile.dir, activeProfileName)) {
       const setupSettings = readDesktopSetupWizardSettings(prepared.settingsDocument)
       setupWizardWindow = new DesktopSetupWizardWindow({
         locale: desktopLocaleFromLanguageTag(app.getLocale()),
@@ -1233,6 +1386,7 @@ async function start(): Promise<void> {
           micaSupported: process.platform === 'win32' && windowsSupportsMica(runtime.windowsBuild),
           ...setupSettings,
           market: marketSelection.requested,
+          aaEnabled: profilePreferences?.aaEnabled === true,
         },
       })
       let setupResult: DesktopSetupWizardResult
@@ -1248,6 +1402,12 @@ async function start(): Promise<void> {
         return
       }
       if (setupResult.action === 'skip') {
+        profilePreferences = await writeDesktopProfilePreferences(marketUserDataDir, prepared.profile.dir, {
+          ...desktopProfilePreferencesFromSettings(setupSettings, setupSettings.notifications, marketSelection.requested),
+          aaEnabled: false,
+        })
+        prepared = prepareDesktopProfile(process.env.DSH_TELEMETRY_DISABLED, homeDir, process.platform,
+          activeProfileName, pluginManagementStatePath, marketSelection, preparationHooks)
         await completeOrSkipDesktopSetupWizard(
           marketUserDataDir,
           prepared.profile.dir,
@@ -1262,6 +1422,7 @@ async function start(): Promise<void> {
             setupResult.selection,
             setupResult.selection.notifications,
             setupResult.selection.market,
+            setupResult.selection.aaEnabled === true,
           ),
         )
         await updateDesktopSetupWizardSettings(prepared.settingsDocument, {
@@ -1357,35 +1518,111 @@ async function start(): Promise<void> {
         throw new Error(`${BIN_NAME}: Profile dependency migration failed: ${maskSecrets(detail)}`)
       }
     }
+    const awikiFallback = prepared.awikiCompatibilityFallback
+    if (awikiFallback?.source === 'install') {
+      startupStage = 'profile-composition'
+      lifecycleRecorder.transitionStartupStage(startupStage)
+      const locale = desktopLocaleFromLanguageTag(app.getLocale())
+      const profileVersions = await readDesktopAwikiProfileVersions(prepared.profile.dir)
+      const choice = await requestAwikiProfileUpgrade(
+        awikiFallback,
+        profileVersions,
+        locale,
+        electronLogger,
+      )
+      if (choice === 'exit') {
+        await shutdown.request(0)
+        return
+      }
+      for (;;) {
+        const result = await upgradeDesktopAwikiProfile({
+          profileDir: prepared.profile.dir,
+          target: {
+            pluginVersion: awikiFallback.pluginVersion,
+            modelProxyVersion: awikiFallback.modelProxyVersion,
+          },
+          checkpoint: profileCheckpoint,
+          materialize: async updateLockfile => {
+            await materializeProfile({
+              appExecutable: process.execPath,
+              clearEnvironmentPath: pnpmRuntime.clearEnvironmentPath,
+              pnpmBinPath,
+              nodeBinDir: pnpmRuntime.nodeBinDir,
+              nodeShimPath: pnpmRuntime.nodeShimPath,
+              homeDir,
+              profileDir: prepared.profile.dir,
+              electronVersion,
+              updateLockfile,
+            })
+          },
+          verify: () => prepareDesktopProfile(
+            process.env.DSH_TELEMETRY_DISABLED,
+            homeDir,
+            process.platform,
+            activeProfileName,
+            pluginManagementStatePath,
+            marketSelection,
+            preparationHooks,
+          ).awikiCompatibilityFallback,
+        })
+        if (result.status === 'upgraded') {
+          nativeExit.requestRelaunch()
+          await shutdown.request(0)
+          return
+        }
+        const installDetail = result.cause instanceof ProfileMaterializationError
+          ? result.cause.result?.stderr || result.cause.message
+          : result.cause instanceof Error ? result.cause.message : String(result.cause)
+        const rollbackDetail = result.rollbackCause === undefined
+          ? ''
+          : result.rollbackCause instanceof ProfileMaterializationError
+            ? result.rollbackCause.result?.stderr || result.rollbackCause.message
+            : result.rollbackCause instanceof Error ? result.rollbackCause.message : String(result.rollbackCause)
+        const detail = maskSecrets([
+          installDetail,
+          ...(rollbackDetail.length === 0 ? [] : [`Rollback: ${rollbackDetail}`]),
+        ].join('\n'))
+        electronLogger.error(`${BIN_NAME}: AWiki Profile upgrade failed: ${detail}`)
+        const failureAction = await requestAwikiUpgradeFailureAction(
+          detail,
+          result.rollback,
+          locale,
+          electronLogger,
+        )
+        if (failureAction === 'retry') continue
+        if (failureAction === 'terminal') runtime.openTerminal()
+        await shutdown.request(failureAction === 'terminal' ? 0 : 1)
+        return
+      }
+    }
+    if (prepared.aaFailure !== undefined) {
+      electronLogger.error(`${BIN_NAME}: requested AA bundle was disabled for this generation: ${maskSecrets(prepared.aaFailure)}`)
+    }
     if (prepared.marketFailure !== undefined) {
       electronLogger.error(
         `${BIN_NAME}: requested Market provider ${prepared.market.requested} was disabled for this generation: ${prepared.marketFailure}`,
       )
     }
-    let lanHttpsCertificate: Awaited<ReturnType<typeof createLanHttpsCertificate>> | undefined
-    let lanHttpsFailureCode: string | undefined
-    if (prepared.lanAddresses.length === 0) {
-      lanHttpsFailureCode = 'no-address'
-    } else {
-      try {
-        lanHttpsCertificate = await createLanHttpsCertificate(
-          marketUserDataDir,
-          prepared.lanAddresses,
-          desktopLanHttpsPrivateKeyProtector(),
-        )
-      } catch (cause) {
-        lanHttpsFailureCode = cause instanceof DesktopLanHttpsCertificateError
-          ? cause.code
-          : 'certificate-state'
-        electronLogger.error(
-          `${BIN_NAME}: LAN HTTPS certificate setup is unavailable: ${cause instanceof Error ? cause.message : String(cause)}`,
-        )
-      }
-    }
     const lanHttps = new DesktopLanHttpsRuntime({
       addresses: prepared.lanAddresses,
-      ...(lanHttpsCertificate === undefined ? {} : { certificate: lanHttpsCertificate }),
-      ...(lanHttpsFailureCode === undefined ? {} : { failureCode: lanHttpsFailureCode }),
+      prepareCertificate: async () => {
+        if (prepared.lanAddresses.length === 0) return { failureCode: 'no-address' }
+        const { createLanHttpsCertificate, DesktopLanHttpsCertificateError } = await import('./lan-https-certificate.ts')
+        try {
+          const certificate = await createLanHttpsCertificate(
+            marketUserDataDir,
+            prepared.lanAddresses,
+            desktopLanHttpsPrivateKeyProtector(),
+          )
+          return { certificate }
+        } catch (cause) {
+          const failureCode = cause instanceof DesktopLanHttpsCertificateError ? cause.code : 'certificate-state'
+          electronLogger.error(
+            `${BIN_NAME}: LAN HTTPS certificate setup is unavailable: ${cause instanceof Error ? cause.message : String(cause)}`,
+          )
+          return { failureCode }
+        }
+      },
       requestedPort: 0,
     })
     const browserAccess = createDesktopBrowserAccess(
@@ -1435,7 +1672,10 @@ async function start(): Promise<void> {
     }
     startupStage = 'host-boot'
     lifecycleRecorder.transitionStartupStage(startupStage)
-    const releasePackageResolver = installProfilePackageResolver(prepared.bareModuleBaseUrl)
+    const releasePackageResolver = installProfilePackageResolver(
+      prepared.bareModuleBaseUrl,
+      prepared.packageSourceOverrides,
+    )
     const ctx = await boot(
       BIN_NAME,
       prepared.rootConfig,
@@ -1537,9 +1777,117 @@ async function start(): Promise<void> {
           desktopProfileMarketSnapshot(currentProfilePreferences.market),
           prepared.market.effective,
         )
+        const prepareAwikiUpgrade = (
+          expectedCurrent: Partial<DesktopAwikiProfileVersions>,
+          target: DesktopAwikiProfileVersions,
+        ) => {
+          if (awikiUpgradePrepared) {
+            throw new Error(`${BIN_NAME}: an AWiki plugin update is already pending`)
+          }
+          if (profileCheckpoint === undefined) {
+            throw new Error(`${BIN_NAME}: AWiki plugin update recovery is unavailable`)
+          }
+          awikiUpgradePrepared = true
+          return Object.freeze({
+            response: Object.freeze({
+              accepted: true as const,
+              restartRequired: true as const,
+            }),
+            afterResponse: () => {
+              void (async () => {
+                const selection = readDesktopProfileState(selectionStatePath)
+                if (selection.active !== activeProfileName) {
+                  throw new Error(`${BIN_NAME}: active Profile changed before AWiki update`)
+                }
+                const locale = desktopLocaleFromLanguageTag(app.getLocale())
+                const performUpgrade = () => upgradeDesktopAwikiProfile({
+                  profileDir: prepared.profile.dir,
+                  target,
+                  checkpoint: profileCheckpoint,
+                  materialize: async updateLockfile => {
+                    await materializeProfile({
+                      appExecutable: process.execPath,
+                      clearEnvironmentPath: pnpmRuntime.clearEnvironmentPath,
+                      pnpmBinPath,
+                      nodeBinDir: pnpmRuntime.nodeBinDir,
+                      nodeShimPath: pnpmRuntime.nodeShimPath,
+                      homeDir,
+                      profileDir: prepared.profile.dir,
+                      electronVersion,
+                      updateLockfile,
+                    })
+                  },
+                  verify: () => prepareDesktopProfile(
+                    process.env.DSH_TELEMETRY_DISABLED,
+                    homeDir,
+                    process.platform,
+                    activeProfileName,
+                    pluginManagementStatePath,
+                    marketSelection,
+                            preparationHooks,
+                  ).awikiCompatibilityFallback,
+                })
+                let result = await executeDesktopAwikiUpdate({
+                  expectedCurrent,
+                  quiesceHost: () => generation.quiesceForRecovery(),
+                  readCurrent: () => readDesktopAwikiProfileVersions(prepared.profile.dir),
+                  upgrade: performUpgrade,
+                })
+                for (;;) {
+                  if (result.status === 'upgraded') {
+                    nativeExit.requestRelaunch()
+                    await shutdown?.request(0)
+                    return
+                  }
+                  const installDetail = result.cause instanceof ProfileMaterializationError
+                    ? result.cause.result?.stderr || result.cause.message
+                    : result.cause instanceof Error ? result.cause.message : String(result.cause)
+                  const rollbackDetail = result.rollbackCause === undefined
+                    ? ''
+                    : result.rollbackCause instanceof ProfileMaterializationError
+                      ? result.rollbackCause.result?.stderr || result.rollbackCause.message
+                      : result.rollbackCause instanceof Error ? result.rollbackCause.message : String(result.rollbackCause)
+                  const detail = maskSecrets([
+                    installDetail,
+                    ...(rollbackDetail.length === 0 ? [] : [`Rollback: ${rollbackDetail}`]),
+                  ].join('\n'))
+                  electronLogger.error(`${BIN_NAME}: settings AWiki Profile update failed: ${detail}`)
+                  const action = await requestAwikiUpgradeFailureAction(detail, result.rollback, locale, electronLogger)
+                  if (action === 'retry') {
+                    result = await performUpgrade()
+                    continue
+                  }
+                  if (action === 'terminal') runtime.openTerminal()
+                  await shutdown?.request(action === 'terminal' ? 0 : 1)
+                  return
+                }
+              })().catch(async (cause: unknown) => {
+                const detail = maskSecrets(cause instanceof Error ? cause.message : String(cause))
+                electronLogger.error(`${BIN_NAME}: failed to start settings AWiki Profile update: ${detail}`)
+                const action = await requestAwikiUpgradeFailureAction(
+                  detail,
+                  'failed',
+                  desktopLocaleFromLanguageTag(app.getLocale()),
+                  electronLogger,
+                )
+                if (action === 'terminal') runtime.openTerminal()
+                await shutdown?.request(action === 'terminal' ? 0 : 1)
+              })
+            },
+          })
+        }
         hostCtx.provide('desktopSettingsController', new DesktopSettingsController({
           profiles: hostCtx.desktopProfiles,
           readMarket,
+          readAa: () => ({ requested: currentProfilePreferences.aaEnabled === true, effective: prepared.aaEnabled }),
+          selectAa: async enabled => {
+            await enqueueProfilePreferencesWrite(current => desktopProfilePreferencesFromSettings(
+              current,
+              current.notifications,
+              current.market,
+              enabled,
+            ))
+          },
           readWeb: () => {
             const lan = lanHttps.snapshot()
             const lanOrigins = lan.state === 'ready' && lan.actualPort !== null
@@ -1563,6 +1911,7 @@ async function start(): Promise<void> {
               current,
               current.notifications,
               provider,
+              current.aaEnabled === true,
             ))
             return desktopMarketSnapshotWithEffective(
               await selectDesktopMarketProvider(marketUserDataDir, provider),
@@ -1581,6 +1930,11 @@ async function start(): Promise<void> {
           reloadRenderer: () => { runtime.reloadRenderer() },
           toggleDeveloperTools: () => { runtime.toggleDeveloperTools() },
           exportDiagnostics: () => runtime.exportDiagnostics(),
+          checkAwikiUpdate: () => discoverDesktopAwikiUpdate({
+            profileDir: prepared.profile.dir,
+            request: (url, init) => net.fetch(url, { ...init, redirect: 'error' }),
+          }),
+          prepareAwikiUpgrade,
         }))
         provideCmdline(hostCtx, {
           args: [
@@ -1611,6 +1965,7 @@ async function start(): Promise<void> {
           ? next as DesktopNotificationSettings
           : ctx.settings.get(DESKTOP_NOTIFICATIONS_SETTINGS_NAMESPACE) as DesktopNotificationSettings,
         current.market,
+        current.aaEnabled === true,
       ))
       void write.catch((cause: unknown) => {
         ctx.logger.error(
@@ -1649,6 +2004,13 @@ async function start(): Promise<void> {
     lifecycleRecorder.completeStartup(startupStage, rendererReport)
     notifySkippedOptionalEntries(runtime, electronLogger, prepared.skippedOptionalEntries)
     notifyWindowsVolumeConcerns(runtime, electronLogger, windowsVolumeConcerns)
+    if (prepared.awikiCompatibilityFallback !== undefined) {
+      await showAwikiCompatibilityFallbackNotice(
+        prepared.awikiCompatibilityFallback,
+        desktopLocaleFromLanguageTag(app.getLocale()),
+        electronLogger,
+      )
+    }
     if (safeModePaths !== undefined && DESKTOP_SAFE_MODE_DEFAULTS.settings.notifications.enabled) {
       notifyDesktopSafeModeActive(runtime, electronLogger)
     }
@@ -1671,6 +2033,8 @@ async function start(): Promise<void> {
       const recoveryResult = await openStartupRecoveryWindow(
         detail,
         recoveryActionsSafe ? startupRecoveryController : undefined,
+        false,
+        cause instanceof DesktopAwikiCompatibilityError ? cause.issue : undefined,
       )
       if (recoveryResult === 'restart') {
         nativeExit.requestRelaunch()

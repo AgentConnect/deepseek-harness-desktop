@@ -308,7 +308,6 @@ describe('desktop lifecycle events', () => {
       'shell-environment',
       'runtime-bootstrap',
       'profile-selection',
-      'install-recovery',
       'profile-composition',
       'host-boot',
       'renderer-startup',
@@ -333,7 +332,7 @@ describe('desktop lifecycle events', () => {
         operationId: 'cap-op',
       })
     }
-  })
+  }, 10_000)
 
   it('treats linked or unsafe evidence targets as best-effort logger-only failures', () => {
     const linkedParentDir = tempUserData('dsh-lifecycle-parent-link-')

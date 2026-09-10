@@ -197,7 +197,9 @@ describe('packaged desktop runtime verification', () => {
 
   it('tracks every generated DSH CLI chunk without pinning one release hash', () => {
     expect(REQUIRED_DSH_CLI_RUNTIME_ENTRIES).toContain('node_modules/@deepseek-ai/dsh/lib/bin.js')
-    expect(REQUIRED_DSH_CLI_RUNTIME_ENTRIES).toContain('node_modules/@deepseek-ai/dsh/lib/plugin-F7ZVfRyo.js')
+    expect(REQUIRED_DSH_CLI_RUNTIME_ENTRIES).toEqual(expect.arrayContaining([
+      expect.stringMatching(/^node_modules\/@deepseek-ai\/dsh\/lib\/plugin-[^/]+\.js$/u),
+    ]))
     expect(REQUIRED_DSH_CLI_RUNTIME_ENTRIES).not.toContain('node_modules/@deepseek-ai/dsh/lib/plugin-9h8shc4d.js')
   })
 
@@ -209,7 +211,7 @@ describe('packaged desktop runtime verification', () => {
     expect(DESKTOP_RUNTIME_ENTRIES).toContain('lib/native-ui/setup-wizard.html')
   })
 
-  it('keeps the PTC compatibility source present and integrity-protected in app.asar', () => {
+  it('keeps the shipped PTC preset present and integrity-protected in app.asar', () => {
     expect(REQUIRED_AGENT_PRESET_RUNTIME_ENTRIES).toEqual([
       'node_modules/@deepseek-ai/dsh-agent-presets/presets/ptc/agent.cordis.yml',
       'node_modules/@deepseek-ai/dsh-agent-presets/presets/ptc/preset.yml',
@@ -468,6 +470,15 @@ describe('packaged desktop runtime verification', () => {
       )).toThrow(`mirrors ordinary archived modules: ${forbidden}`)
     },
   )
+
+  it('unpacks AA Python sources while keeping its JavaScript runtime archived', () => {
+    const source = 'node_modules/@agents-anywhere/dsh-bridge-next/lib/bundled-connector/connector/cli.py'
+    expect(() => verifySelectiveUnpackedRuntime(asarIndex([source]), '/build/resources/app.asar.unpacked',
+      [{ path: source, bytes: 100 }])).not.toThrow()
+    const host = 'node_modules/@agents-anywhere/dsh-bridge-next/lib/index.js'
+    expect(() => verifySelectiveUnpackedRuntime(asarIndex([host]), '/build/resources/app.asar.unpacked',
+      [{ path: host, bytes: 100 }])).toThrow('non-allowlisted package roots')
+  })
 
   it('rejects a new smart-unpacked package until its native root is reviewed', () => {
     const path = 'node_modules/unexpected-native/binding.node'

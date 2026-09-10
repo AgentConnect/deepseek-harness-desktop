@@ -48,12 +48,14 @@ describe('electronPlatformStrategy', () => {
 
     strategy.configureApplication(icon, 'DSH Desktop')
     strategy.configureWindow(window as never)
-    strategy.refreshThemeMaterial(window as never)
+    strategy.refreshThemeMaterial(window as never, 'mica')
 
     expect(electron.app.dock.setIcon).not.toHaveBeenCalled()
     expect(electron.Menu.setApplicationMenu).not.toHaveBeenCalled()
     expect(window.removeMenu).toHaveBeenCalledTimes(1)
-    expect(window.setBackgroundMaterial).toHaveBeenCalledWith('mica')
+    expect(window.setBackgroundMaterial.mock.calls).toEqual([
+      ['mica'],
+    ])
   })
 
   it('selects the macOS adapter and configures its native application chrome', () => {
@@ -68,7 +70,7 @@ describe('electronPlatformStrategy', () => {
 
     strategy.configureApplication(icon, 'DSH Desktop')
     strategy.configureWindow(window as never)
-    strategy.refreshThemeMaterial(window as never)
+    strategy.refreshThemeMaterial(window as never, 'transparent')
 
     expect(electron.app.dock.setIcon).toHaveBeenCalledWith(icon)
     expect(electron.Menu.buildFromTemplate).toHaveBeenCalledTimes(1)
@@ -88,7 +90,7 @@ describe('electronPlatformStrategy', () => {
 
     strategy.configureApplication({} as never, 'DSH Desktop')
     strategy.configureWindow(window as never)
-    strategy.refreshThemeMaterial(window as never)
+    strategy.refreshThemeMaterial(window as never, 'off')
 
     expect(electron.app.dock.setIcon).not.toHaveBeenCalled()
     expect(electron.Menu.setApplicationMenu).not.toHaveBeenCalled()

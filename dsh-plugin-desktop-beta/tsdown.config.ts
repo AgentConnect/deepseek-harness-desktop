@@ -91,7 +91,7 @@ export default defineConfig([
   },
   {
     name: `${PACKAGE_NAME}/preload`,
-    entry: { preload: 'src/preload.ts' },
+    entry: { preload: 'src/preload.ts', 'compatibility-preload': 'src/compatibility-preload.ts' },
     outDir: 'lib',
     format: 'cjs',
     platform: 'node',
@@ -102,7 +102,7 @@ export default defineConfig([
     sourcemap: true,
     external: ['electron'],
     outputOptions: {
-      entryFileNames: 'preload.cjs',
+      entryFileNames: '[name].cjs',
     },
   },
 ])

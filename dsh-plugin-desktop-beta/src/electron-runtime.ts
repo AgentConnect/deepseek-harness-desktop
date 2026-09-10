@@ -44,6 +44,7 @@ import {
   desktopLocaleFromLanguageTag,
   desktopRestartConfirmationCopy,
   desktopTrayLabel,
+  rendererRecoveryCopy,
 } from './tray-locale.ts'
 import {
   desktopUpdateFilename,
@@ -68,20 +69,6 @@ import {
   FileMainWindowStateStore,
   type MainWindowStateStore,
 } from './main-window-state.ts'
-
-/** Return the presentation mode opposite the active generation. */
-export function nextDesktopShellMode(mode: DesktopShellSpec['mode']): DesktopShellSpec['mode'] {
-  if (mode === 'compatibility') return 'extended'
-  if (mode === 'extended') return 'advanced'
-  return 'compatibility'
-}
-
-/** Return the tray command describing the mode that will be activated. */
-export function modeToggleLabel(mode: DesktopShellSpec['mode'], locale: DesktopLocale = 'en'): string {
-  if (mode === 'compatibility') return desktopTrayLabel(locale, 'switchToExtended')
-  if (mode === 'extended') return desktopTrayLabel(locale, 'switchToAdvanced')
-  return desktopTrayLabel(locale, 'switchToCompatibility')
-}
 
 /**
  * Read the desktop package version instead of Electron's development-app version.
@@ -124,6 +111,7 @@ export class ElectronDesktopRuntime implements DesktopRuntime {
   private readonly workspaceAdmission: ElectronWorkspaceAdmission
   private updateCleanupTask: Promise<void> | undefined
   private rendererHealthGate: DesktopRendererHealthGate | undefined
+  private rendererBootHealthy = false
   private profileCreateWindow: ProfileCreateWindow | undefined
   private restartRequest: Promise<void> | undefined
 
@@ -250,8 +238,24 @@ export class ElectronDesktopRuntime implements DesktopRuntime {
         stopRendererBootMonitoring: () => { this.stopRendererBootMonitoring() },
         abortRendererBootMonitoring: cause => { this.rendererHealthGate?.stop(cause) },
         failRendererBoot: error => { this.failRendererBoot('renderer-failed', error) },
+        canRecoverRenderer: () => this.rendererBootHealthy,
+        rendererRecoveryCopy: () => rendererRecoveryCopy[this.currentLocale],
         logError: message => { this.logError(message) },
         mainWindowState: this.mainWindowState,
+        chromeActions: {
+          locale: () => this.locale,
+          version: PRODUCT_VERSION,
+          openTerminal: () => { this.openTerminal() },
+          restart: () => this.requestRestart(),
+          restartToRecovery: () => this.requestRecoveryRestart(),
+          reload: () => { this.reloadRenderer() },
+          developerTools: () => { this.toggleDeveloperTools() },
+          checkForUpdates: async () => {
+            const command = [...this.trayItems.values()].find(item => item.id === 'check-for-updates')
+            if (command === undefined || command.enabled?.() === false) throw new Error('Desktop update check is unavailable')
+            await command.invoke()
+          },
+        },
       })
       this.generation = generation
       this.mountTask = generation.mount(beforeInteractive).then(() => {
@@ -415,9 +419,11 @@ export class ElectronDesktopRuntime implements DesktopRuntime {
   /** @inheritdoc */
   reportRendererBoot(report: RendererBootReport): void {
     this.rendererHealthGate?.report(report)
+    this.generation?.reportRendererRecovery(report)
   }
 
   private handleRendererBootVerdict(report: RendererBootReport): void {
+    this.rendererBootHealthy = report.status === 'healthy'
     if (report.status === 'failed') {
       const plugins = report.plugins.length === 0 ? 'Unknown client plugin' : report.plugins.join(', ')
       const error = report.error === undefined ? 'The client Loader did not provide an error message.' : report.error
@@ -507,6 +513,7 @@ export class ElectronDesktopRuntime implements DesktopRuntime {
   /** @inheritdoc */
   prepareToQuit(): void {
     this.quitting = true
+    this.generation?.stopRendererRecovery()
     this.stopRendererBootMonitoring()
   }
 
@@ -843,6 +850,12 @@ export class ElectronDesktopRuntime implements DesktopRuntime {
 
   private buildTrayTemplate(spec: DesktopShellSpec): Electron.MenuItemConstructorOptions[] {
     const show = (): void => { this.show() }
+    const changeMode = (mode: DesktopShellSpec['mode']): void => {
+      if (!this.platformStrategy.canToggleShellMode || mode === spec.mode) return
+      void spec.requestModeChange(mode).catch((cause: unknown) => {
+        this.logError(`dsh-plugin-desktop: failed to change shell mode: ${cause instanceof Error ? cause.message : String(cause)}`)
+      })
+    }
     const tools = this.contributedTrayItems('tools')
     const profiles = this.contributedTrayItems('profiles')
     const status = this.contributedTrayItems('status')
@@ -855,13 +868,15 @@ export class ElectronDesktopRuntime implements DesktopRuntime {
     template.push(
       { type: 'separator' },
       {
-        label: modeToggleLabel(spec.mode, this.locale),
+        label: desktopTrayLabel(this.locale, 'shellMode', desktopTrayLabel(this.locale, spec.mode)),
         enabled: this.platformStrategy.canToggleShellMode,
-        click: () => {
-          void spec.requestModeChange(nextDesktopShellMode(spec.mode)).catch((cause: unknown) => {
-            this.logError(`dsh-plugin-desktop: failed to change shell mode: ${cause instanceof Error ? cause.message : String(cause)}`)
-          })
-        },
+        submenu: (['compatibility', 'extended', 'advanced'] as const).map(mode => ({
+          label: desktopTrayLabel(this.locale, mode),
+          type: 'radio',
+          checked: mode === spec.mode,
+          enabled: this.platformStrategy.canToggleShellMode,
+          click: () => { changeMode(mode) },
+        })),
       },
       { type: 'separator' },
       { label: desktopTrayLabel(this.locale, 'quit'), click: () => { spec.requestQuit(0) } },
@@ -888,6 +903,11 @@ export class ElectronDesktopRuntime implements DesktopRuntime {
     if (tools.length > 0) items.push(...tools)
     if (tools.length > 0 && profiles.length > 0) items.push({ type: 'separator' })
     if (profiles.length > 0) items.push(...profiles)
+    const status = this.contributedTrayItems('status')
+    if (status.length > 0) {
+      if (items.length > 0) items.push({ type: 'separator' })
+      items.push(...status)
+    }
     return items
   }
 }

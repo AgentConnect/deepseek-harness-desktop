@@ -26,6 +26,7 @@ import {
   createDesktopSettingsApi,
   desktopSettingsPaths,
   parseDesktopActionAcceptance,
+  parseDesktopAwikiUpdateView,
   parseDesktopRestartAcceptance,
   parseDesktopSettingsView,
   type DesktopSettingsView,
@@ -44,6 +45,7 @@ const BROWSER_AUTH_TOKEN = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'
 const CA_FINGERPRINT = 'a'.repeat(64)
 
 const VIEW: DesktopSettingsView = {
+  aa: { requested: false, effective: false },
   current: 'desktop',
   profiles: [
     { name: 'desktop', exists: true, webCapable: true, selectable: true, deletable: false },
@@ -85,6 +87,20 @@ describe('Desktop settings API', () => {
     expect(parseDesktopActionAcceptance({ accepted: true })).toBeUndefined()
     expect(() => parseDesktopActionAcceptance({ accepted: true, detail: 'extra' }))
       .toThrow('invalid Desktop action response')
+    expect(parseDesktopAwikiUpdateView({
+      status: 'available',
+      current: { pluginVersion: '0.3.2', modelProxyVersion: '0.1.2' },
+      target: { pluginVersion: '0.3.3', modelProxyVersion: '0.1.2' },
+      previewId: 'a'.repeat(43),
+    })).toEqual({
+      status: 'available',
+      current: { pluginVersion: '0.3.2', modelProxyVersion: '0.1.2' },
+      target: { pluginVersion: '0.3.3', modelProxyVersion: '0.1.2' },
+      previewId: 'a'.repeat(43),
+    })
+    expect(() => parseDesktopAwikiUpdateView({
+      status: 'available', current: {}, target: {}, previewId: 'unsafe',
+    })).toThrow('invalid AWiki update response')
   })
 
   it('accepts only authenticated root browser URLs with a canonical token query', () => {
@@ -376,6 +392,14 @@ describe('Desktop settings API', () => {
         || path === desktopSettingsPaths.diagnosticsExport) {
         return json({ accepted: true })
       }
+      if (path === desktopSettingsPaths.awikiUpdateCheck) {
+        return json({
+          status: 'available',
+          current: { pluginVersion: '0.3.2', modelProxyVersion: '0.1.2' },
+          target: { pluginVersion: '0.3.3', modelProxyVersion: '0.1.2' },
+          previewId: 'a'.repeat(43),
+        })
+      }
       return path === desktopSettingsPaths.settings || path === desktopSettingsPaths.profileCreate || path === desktopSettingsPaths.profileDelete
         ? json(VIEW)
         : json({ accepted: true, restartRequired: true })
@@ -394,6 +418,8 @@ describe('Desktop settings API', () => {
     await expect(api.toggleDeveloperTools()).resolves.toBeUndefined()
     await expect(api.checkForUpdates()).resolves.toBeUndefined()
     await expect(api.exportDiagnostics()).resolves.toBeUndefined()
+    await expect(api.checkAwikiUpdate()).resolves.toMatchObject({ status: 'available' })
+    await expect(api.applyAwikiUpdate('a'.repeat(43))).resolves.toEqual({ accepted: true, restartRequired: true })
 
     expect(fetcher.mock.calls.map(call => call[0])).toEqual([
       desktopSettingsPaths.settings,
@@ -408,6 +434,8 @@ describe('Desktop settings API', () => {
       desktopSettingsPaths.developerToolsToggle,
       desktopSettingsPaths.updateCheck,
       desktopSettingsPaths.diagnosticsExport,
+      desktopSettingsPaths.awikiUpdateCheck,
+      desktopSettingsPaths.awikiUpdateApply,
     ])
     expect(fetcher.mock.calls[1]?.[1]).toMatchObject({
       method: 'POST',
@@ -445,6 +473,8 @@ describe('Desktop settings API', () => {
       method: 'POST',
       body: JSON.stringify({}),
     })
+    expect(fetcher.mock.calls[12]?.[1]).toMatchObject({ body: JSON.stringify({}) })
+    expect(fetcher.mock.calls[13]?.[1]).toMatchObject({ body: JSON.stringify({ previewId: 'a'.repeat(43) }) })
   })
 
   it('does not reflect an untrusted error body into its public error', async () => {

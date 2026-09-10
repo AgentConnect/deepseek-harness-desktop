@@ -7,7 +7,10 @@ import DesktopSettingsController, {
 } from '../src/desktop-settings-controller.ts'
 import {
   handleDesktopDeveloperToolsToggleRequest,
+  handleDesktopAwikiUpdateApplyRequest,
+  handleDesktopAwikiUpdateCheckRequest,
   handleDesktopDiagnosticsExportRequest,
+  handleDesktopAaSelectRequest,
   handleDesktopMarketSelectRequest,
   handleDesktopProfileCreateRequest,
   handleDesktopProfileDeleteRequest,
@@ -82,6 +85,12 @@ function bootstrap(overrides: DesktopSettingsControllerBootstrapOverrides = {}):
     reloadRenderer: () => {},
     toggleDeveloperTools: () => {},
     exportDiagnostics: async () => {},
+    checkAwikiUpdate: async () => ({
+      status: 'up-to-date',
+      current: { pluginVersion: '0.3.3', modelProxyVersion: '0.1.2' },
+      target: { pluginVersion: '0.3.3', modelProxyVersion: '0.1.2' },
+    }),
+    prepareAwikiUpgrade: () => ({ response: { accepted: true, restartRequired: true } }),
     ...overrides,
     profiles: {
       current: { name: DESKTOP.name, dir: DESKTOP.dir },
@@ -95,6 +104,7 @@ function bootstrap(overrides: DesktopSettingsControllerBootstrapOverrides = {}):
       delete: async () => {},
       ...overrides.profiles,
     },
+
   }
 }
 
@@ -147,6 +157,38 @@ function response(): ServerResponse & {
   return res as unknown as ServerResponse & typeof res
 }
 
+describe('AA selection', () => {
+  it('persists before acknowledging and restarts only after the response', async () => {
+    let requested = false
+    const restart = vi.fn()
+    const controller = new DesktopSettingsController(bootstrap({
+      readAa: () => ({ requested, effective: false }),
+      selectAa: async enabled => { requested = enabled }, scheduleRestart: restart,
+    }))
+    const operation = await controller.selectAa(true)
+    expect(requested).toBe(true)
+    expect(controller.read().aa).toEqual({ requested: true, effective: false })
+    expect(operation.response.restartRequired).toBe(true)
+    expect(restart).not.toHaveBeenCalled()
+    await operation.afterResponse?.()
+    expect(restart).toHaveBeenCalledOnce()
+  })
+  it('rejects forged bodies and cross-origin writes', async () => {
+    const selectAa = vi.fn(async () => {})
+    const controller = new DesktopSettingsController(bootstrap({ selectAa,
+      readAa: () => ({ requested: false, effective: false }) }))
+    for (const body of [{ enabled: 'true' }, { enabled: true, extra: true }, {}]) {
+      const res = response()
+      await handleDesktopAaSelectRequest(jsonRequest(body), res, ORIGIN, controller)
+      expect(res.statusCode).toBe(400)
+    }
+    const res = response()
+    await handleDesktopAaSelectRequest(jsonRequest({ enabled: true }, { headers: { origin: 'https://example.com' } }), res, ORIGIN, controller)
+    expect(res.statusCode).toBe(403)
+    expect(selectAa).not.toHaveBeenCalled()
+  })
+})
+
 describe('desktop settings controller', () => {
   it('projects profiles without paths, bundles, or parser diagnostics', () => {
     const controller = new DesktopSettingsController(bootstrap())
@@ -158,6 +200,7 @@ describe('desktop settings controller', () => {
         { name: 'work', exists: true, webCapable: true, selectable: true, deletable: false },
         { name: 'broken', exists: true, webCapable: false, selectable: false, deletable: false },
       ],
+      aa: { requested: false, effective: false },
       market: { requested: 'disabled', effective: 'disabled', legacyDefaulted: false },
       web: {
         localUrl: 'http://127.0.0.1:43120/',
@@ -192,6 +235,7 @@ describe('desktop settings controller', () => {
         { name: 'desktop', exists: true, webCapable: true, selectable: true, deletable: false },
         { name: 'work', exists: true, webCapable: true, selectable: true, deletable: false },
       ],
+      aa: { requested: false, effective: false },
       market: { requested: 'disabled', effective: 'disabled', legacyDefaulted: false },
       web: {
         localUrl: 'http://127.0.0.1:43120/',
@@ -225,6 +269,7 @@ describe('desktop settings controller', () => {
         { name: 'desktop', exists: true, webCapable: true, selectable: true, deletable: false },
         { name: 'work', exists: true, webCapable: true, selectable: true, deletable: true },
       ],
+      aa: { requested: false, effective: false },
       market: { requested: 'disabled', effective: 'disabled', legacyDefaulted: false },
       web: {
         localUrl: 'http://127.0.0.1:43120/',
@@ -363,6 +408,61 @@ describe('desktop settings controller', () => {
     await expect(controller.exportDiagnostics()).resolves.toEqual({ accepted: true })
     expect(exportDiagnostics).toHaveBeenCalledOnce()
   })
+
+  it('mints a one-shot AWiki update preview and defers installation until after response', async () => {
+    const afterResponse = vi.fn()
+    const prepareAwikiUpgrade = vi.fn(() => ({
+      response: { accepted: true as const, restartRequired: true as const },
+      afterResponse,
+    }))
+    const controller = new DesktopSettingsController(bootstrap({
+      checkAwikiUpdate: async () => ({
+        status: 'available',
+        current: { pluginVersion: '0.3.2', modelProxyVersion: '0.1.2' },
+        target: { pluginVersion: '0.3.3', modelProxyVersion: '0.1.2' },
+      }),
+      prepareAwikiUpgrade,
+    }))
+
+    const preview = await controller.checkAwikiUpdate()
+    expect(preview).toMatchObject({
+      status: 'available',
+      current: { pluginVersion: '0.3.2', modelProxyVersion: '0.1.2' },
+      target: { pluginVersion: '0.3.3', modelProxyVersion: '0.1.2' },
+    })
+    if (preview.status !== 'available') throw new Error('expected update preview')
+    expect(preview.previewId).toMatch(/^[A-Za-z0-9_-]{43}$/u)
+
+    const operation = controller.applyAwikiUpdate(preview.previewId)
+    expect(operation.response).toEqual({ accepted: true, restartRequired: true })
+    expect(prepareAwikiUpgrade).toHaveBeenCalledWith(preview.current, preview.target)
+    expect(afterResponse).not.toHaveBeenCalled()
+    operation.afterResponse?.()
+    expect(afterResponse).toHaveBeenCalledOnce()
+    expect(() => controller.applyAwikiUpdate(preview.previewId)).toThrow('expired or was already used')
+  })
+
+  it('expires an AWiki update preview without preparing any mutation', async () => {
+    let now = 1_000
+    const prepareAwikiUpgrade = vi.fn(() => ({
+      response: { accepted: true as const, restartRequired: true as const },
+    }))
+    const controller = new DesktopSettingsController(bootstrap({
+      now: () => now,
+      checkAwikiUpdate: async () => ({
+        status: 'available',
+        current: { pluginVersion: '0.3.2', modelProxyVersion: '0.1.2' },
+        target: { pluginVersion: '0.3.3', modelProxyVersion: '0.1.2' },
+      }),
+      prepareAwikiUpgrade,
+    }))
+    const preview = await controller.checkAwikiUpdate()
+    if (preview.status !== 'available') throw new Error('expected update preview')
+    now += 5 * 60 * 1000
+
+    expect(() => controller.applyAwikiUpdate(preview.previewId)).toThrow('expired or was already used')
+    expect(prepareAwikiUpgrade).not.toHaveBeenCalled()
+  })
 })
 
 describe('desktop settings HTTP boundary', () => {
@@ -418,6 +518,7 @@ describe('desktop settings HTTP boundary', () => {
         { name: 'desktop', exists: true, webCapable: true, selectable: true, deletable: false },
         { name: 'work', exists: true, webCapable: true, selectable: true, deletable: false },
       ],
+      aa: { requested: false, effective: false },
       market: { requested: 'disabled', effective: 'disabled', legacyDefaulted: false },
       web: {
         localUrl: 'http://127.0.0.1:43120/',
@@ -610,6 +711,42 @@ describe('desktop settings HTTP boundary', () => {
       expect(rejected.statusCode).toBe(req.headers.origin === ORIGIN ? 400 : 403)
     }
     expect(openTerminal).toHaveBeenCalledOnce()
+  })
+
+  it('checks AWiki updates and applies only the exact one-shot preview after response', async () => {
+    const afterResponse = vi.fn()
+    const controller = new DesktopSettingsController(bootstrap({
+      checkAwikiUpdate: async () => ({
+        status: 'available',
+        current: { pluginVersion: '0.3.2', modelProxyVersion: '0.1.2' },
+        target: { pluginVersion: '0.3.3', modelProxyVersion: '0.1.2' },
+      }),
+      prepareAwikiUpgrade: () => ({
+        response: { accepted: true, restartRequired: true },
+        afterResponse,
+      }),
+    }))
+    const checkResponse = response()
+    await handleDesktopAwikiUpdateCheckRequest(jsonRequest({}), checkResponse, ORIGIN, controller)
+    expect(checkResponse.statusCode).toBe(200)
+    const preview = JSON.parse(checkResponse.body) as { previewId: string }
+    expect(preview.previewId).toMatch(/^[A-Za-z0-9_-]{43}$/u)
+
+    const applyResponse = response()
+    await handleDesktopAwikiUpdateApplyRequest(
+      jsonRequest({ previewId: preview.previewId }), applyResponse, ORIGIN, controller,
+    )
+    expect(applyResponse.statusCode).toBe(202)
+    expect(JSON.parse(applyResponse.body)).toEqual({ accepted: true, restartRequired: true })
+    expect(afterResponse).not.toHaveBeenCalled()
+    await new Promise<void>(resolve => { setImmediate(resolve) })
+    expect(afterResponse).toHaveBeenCalledOnce()
+
+    const reused = response()
+    await handleDesktopAwikiUpdateApplyRequest(
+      jsonRequest({ previewId: preview.previewId }), reused, ORIGIN, controller,
+    )
+    expect(reused.statusCode).toBe(409)
   })
 
   it('runs the shared interactive update flow only for an exact empty request', async () => {

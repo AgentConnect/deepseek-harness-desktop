@@ -6,6 +6,7 @@ import type { DesktopMarketProvider } from './desktop-market.ts'
 import type DesktopSettingsController from './desktop-settings-controller.ts'
 import type { DesktopSettingsPostResponse } from './desktop-settings-controller.ts'
 import type {
+  DesktopAwikiUpdateApplyRequest,
   DesktopMarketSelectRequest,
   DesktopProfileCreateRequest,
   DesktopProfileDeleteRequest,
@@ -151,6 +152,13 @@ function parseMarketRequest(value: unknown): DesktopMarketSelectRequest | undefi
 function isEmptyRequest(value: unknown): boolean {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
     && Object.keys(value).length === 0
+}
+
+function parseAwikiUpdateApplyRequest(value: unknown): DesktopAwikiUpdateApplyRequest | undefined {
+  if (!isExactRecord(value, 'previewId')
+    || typeof value.previewId !== 'string'
+    || !/^[A-Za-z0-9_-]{43}$/u.test(value.previewId)) return undefined
+  return { previewId: value.previewId }
 }
 
 async function parsePostBody(
@@ -319,6 +327,37 @@ export async function handleDesktopMarketSelectRequest(
   }
 }
 
+/** Save the AA opt-in before scheduling its next Host generation. */
+export async function handleDesktopAaSelectRequest(
+  req: IncomingMessage,
+  res: ServerResponse,
+  expectedOrigin: string,
+  controller: DesktopSettingsController,
+  reportError: (operation: string, cause: unknown) => void = () => {},
+): Promise<void> {
+  if (req.method !== 'POST') return finishJson(res, 405, error('method not allowed'), 'POST')
+  if (!isSameOriginLoopbackRequest(req, expectedOrigin, true)) {
+    return finishJson(res, 403, error('forbidden'))
+  }
+  const value = await parsePostBody(req, res)
+  if (value === INVALID_BODY) return
+  const request = isExactRecord(value, 'enabled') && typeof value.enabled === 'boolean' ? { enabled: value.enabled } : undefined
+  if (request === undefined) return finishJson(res, 400, error('invalid AA selection request'))
+  try {
+    const operation = await controller.selectAa(request.enabled)
+    finishPostResponse(
+      res,
+      operation.response.restartRequired ? 202 : 200,
+      operation,
+      'select AA plugin',
+      reportError,
+    )
+  } catch (cause) {
+    reportError('select AA plugin', cause)
+    finishJson(res, 500, error('AA selection could not be saved'))
+  }
+}
+
 /** Open the launcher-owned DSH terminal from an exact empty request. */
 export async function handleDesktopTerminalOpenRequest(
   req: IncomingMessage,
@@ -463,6 +502,59 @@ export async function handleDesktopDiagnosticsExportRequest(
   } catch (cause) {
     reportError('export diagnostics', cause)
     finishJson(res, 500, error('diagnostics could not be exported'))
+  }
+}
+
+/** Query the fixed npm packages from an exact empty same-origin request. */
+export async function handleDesktopAwikiUpdateCheckRequest(
+  req: IncomingMessage,
+  res: ServerResponse,
+  expectedOrigin: string,
+  controller: DesktopSettingsController,
+  reportError: (operation: string, cause: unknown) => void = () => {},
+): Promise<void> {
+  if (req.method !== 'POST') return finishJson(res, 405, error('method not allowed'), 'POST')
+  if (!isSameOriginLoopbackRequest(req, expectedOrigin, true)) {
+    return finishJson(res, 403, error('forbidden'))
+  }
+  const value = await parsePostBody(req, res)
+  if (value === INVALID_BODY) return
+  if (!isEmptyRequest(value)) return finishJson(res, 400, error('invalid AWiki update check request'))
+  try {
+    finishJson(res, 200, await controller.checkAwikiUpdate())
+  } catch (cause) {
+    reportError('check AWiki plugin updates', cause)
+    finishJson(res, 503, error('AWiki plugin updates could not be checked'))
+  }
+}
+
+/** Consume one exact update preview and start installation only after response. */
+export async function handleDesktopAwikiUpdateApplyRequest(
+  req: IncomingMessage,
+  res: ServerResponse,
+  expectedOrigin: string,
+  controller: DesktopSettingsController,
+  reportError: (operation: string, cause: unknown) => void = () => {},
+): Promise<void> {
+  if (req.method !== 'POST') return finishJson(res, 405, error('method not allowed'), 'POST')
+  if (!isSameOriginLoopbackRequest(req, expectedOrigin, true)) {
+    return finishJson(res, 403, error('forbidden'))
+  }
+  const value = await parsePostBody(req, res)
+  if (value === INVALID_BODY) return
+  const request = parseAwikiUpdateApplyRequest(value)
+  if (request === undefined) return finishJson(res, 400, error('invalid AWiki update request'))
+  try {
+    finishPostResponse(
+      res,
+      202,
+      controller.applyAwikiUpdate(request.previewId),
+      'apply AWiki plugin update',
+      reportError,
+    )
+  } catch (cause) {
+    reportError('prepare AWiki plugin update', cause)
+    finishJson(res, 409, error('AWiki plugin update preview expired'))
   }
 }
 
