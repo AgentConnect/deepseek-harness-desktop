@@ -190,13 +190,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@awiki/dsh-model-proxy@file:../vendor/awiki/e436b87/awiki-dsh-model-proxy-0.1.6.tgz::locator=dsh-plugin-desktop%40workspace%3Adsh-plugin-desktop":
-  version: 0.1.6
-  resolution: "@awiki/dsh-model-proxy@file:../vendor/awiki/e436b87/awiki-dsh-model-proxy-0.1.6.tgz#../vendor/awiki/e436b87/awiki-dsh-model-proxy-0.1.6.tgz::hash=b1fe2f&locator=dsh-plugin-desktop%40workspace%3Adsh-plugin-desktop"
+"@awiki/dsh-model-proxy@file:../vendor/awiki/8e2cad1/awiki-dsh-model-proxy-0.1.7.tgz::locator=dsh-plugin-desktop%40workspace%3Adsh-plugin-desktop":
+  version: 0.1.7
+  resolution: "@awiki/dsh-model-proxy@file:../vendor/awiki/8e2cad1/awiki-dsh-model-proxy-0.1.7.tgz#../vendor/awiki/8e2cad1/awiki-dsh-model-proxy-0.1.7.tgz::hash=e8d433&locator=dsh-plugin-desktop%40workspace%3Adsh-plugin-desktop"
   dependencies:
     "@deepseek-ai/schemastery": "npm:^3.18.1"
   peerDependencies:
-    "@awiki/dsh-plugin": ^0.3.10
+    "@awiki/dsh-plugin": ^0.3.11
     "@deepseek-ai/cordis": ^4.0.2
     "@deepseek-ai/dsh-agent-default-model": 0.1.5-rc.1
     "@deepseek-ai/dsh-anonymous-user-id": 0.1.5-rc.1
@@ -211,17 +211,17 @@ __metadata:
     "@deepseek-ai/dsh-llm-deepseek": 0.1.5-rc.1
     "@deepseek-ai/dsh-settings": 0.1.5-rc.1
     react: ^18.2.0
-  checksum: 10c0/ac7e860805f8718df6c92202c80b3385133afc4ce71988609cda13fe52fff74eda79bb1bc2d8626c3d77485817e908ebf9a396da06bd36fe0e3b218bbd980955
+  checksum: 10c0/4ecc6f30265de638a853604e1299b12be36e826d994de55d71eb760a093780c0f9c4b3e40245ff43b6c28d7f92459ec5725e79fce56a0c92e584efb9074b8811
   languageName: node
   linkType: hard
 
-"@awiki/dsh-model-proxy@file:../vendor/awiki/e436b87/awiki-dsh-model-proxy-0.1.6.tgz::locator=dsh-plugin-desktop-beta%40workspace%3Adsh-plugin-desktop-beta":
-  version: 0.1.6
-  resolution: "@awiki/dsh-model-proxy@file:../vendor/awiki/e436b87/awiki-dsh-model-proxy-0.1.6.tgz#../vendor/awiki/e436b87/awiki-dsh-model-proxy-0.1.6.tgz::hash=b1fe2f&locator=dsh-plugin-desktop-beta%40workspace%3Adsh-plugin-desktop-beta"
+"@awiki/dsh-model-proxy@file:../vendor/awiki/8e2cad1/awiki-dsh-model-proxy-0.1.7.tgz::locator=dsh-plugin-desktop-beta%40workspace%3Adsh-plugin-desktop-beta":
+  version: 0.1.7
+  resolution: "@awiki/dsh-model-proxy@file:../vendor/awiki/8e2cad1/awiki-dsh-model-proxy-0.1.7.tgz#../vendor/awiki/8e2cad1/awiki-dsh-model-proxy-0.1.7.tgz::hash=e8d433&locator=dsh-plugin-desktop-beta%40workspace%3Adsh-plugin-desktop-beta"
   dependencies:
     "@deepseek-ai/schemastery": "npm:^3.18.1"
   peerDependencies:
-    "@awiki/dsh-plugin": ^0.3.10
+    "@awiki/dsh-plugin": ^0.3.11
     "@deepseek-ai/cordis": ^4.0.2
     "@deepseek-ai/dsh-agent-default-model": 0.1.5-rc.1
     "@deepseek-ai/dsh-anonymous-user-id": 0.1.5-rc.1
@@ -236,13 +236,13 @@ __metadata:
     "@deepseek-ai/dsh-llm-deepseek": 0.1.5-rc.1
     "@deepseek-ai/dsh-settings": 0.1.5-rc.1
     react: ^18.2.0
-  checksum: 10c0/ac7e860805f8718df6c92202c80b3385133afc4ce71988609cda13fe52fff74eda79bb1bc2d8626c3d77485817e908ebf9a396da06bd36fe0e3b218bbd980955
+  checksum: 10c0/4ecc6f30265de638a853604e1299b12be36e826d994de55d71eb760a093780c0f9c4b3e40245ff43b6c28d7f92459ec5725e79fce56a0c92e584efb9074b8811
   languageName: node
   linkType: hard
 
-"@awiki/dsh-plugin@file:../vendor/awiki/e436b87/awiki-dsh-plugin-0.3.10.tgz::locator=dsh-plugin-desktop%40workspace%3Adsh-plugin-desktop":
-  version: 0.3.10
-  resolution: "@awiki/dsh-plugin@file:../vendor/awiki/e436b87/awiki-dsh-plugin-0.3.10.tgz#../vendor/awiki/e436b87/awiki-dsh-plugin-0.3.10.tgz::hash=4d36cc&locator=dsh-plugin-desktop%40workspace%3Adsh-plugin-desktop"
+"@awiki/dsh-plugin@file:../vendor/awiki/8e2cad1/awiki-dsh-plugin-0.3.11.tgz::locator=dsh-plugin-desktop%40workspace%3Adsh-plugin-desktop":
+  version: 0.3.11
+  resolution: "@awiki/dsh-plugin@file:../vendor/awiki/8e2cad1/awiki-dsh-plugin-0.3.11.tgz#../vendor/awiki/8e2cad1/awiki-dsh-plugin-0.3.11.tgz::hash=dabcc2&locator=dsh-plugin-desktop%40workspace%3Adsh-plugin-desktop"
   dependencies:
     "@awiki/im-core-node": "npm:0.2.5"
     "@deepseek-ai/schemastery": "npm:^3.18.1"
@@ -275,13 +275,13 @@ __metadata:
   peerDependenciesMeta:
     "@deepseek-ai/dsh-workspace":
       optional: true
-  checksum: 10c0/2526ae3647b2975918c3ee20cb2c596d6ad00938eba7fcf9eb1dc7cea7a07b72c703a98941f9dccbe359f161f0d5e191617c05e008ab3cbaa5618f19e6aba615
+  checksum: 10c0/2e9306ad761e10deede38624ec57468904383f051e35f83d066422f2f68842b54816452c71a104505e0c1b183d51f06b2225f11243973fba7cb9dbd8a3007483
   languageName: node
   linkType: hard
 
-"@awiki/dsh-plugin@file:../vendor/awiki/e436b87/awiki-dsh-plugin-0.3.10.tgz::locator=dsh-plugin-desktop-beta%40workspace%3Adsh-plugin-desktop-beta":
-  version: 0.3.10
-  resolution: "@awiki/dsh-plugin@file:../vendor/awiki/e436b87/awiki-dsh-plugin-0.3.10.tgz#../vendor/awiki/e436b87/awiki-dsh-plugin-0.3.10.tgz::hash=4d36cc&locator=dsh-plugin-desktop-beta%40workspace%3Adsh-plugin-desktop-beta"
+"@awiki/dsh-plugin@file:../vendor/awiki/8e2cad1/awiki-dsh-plugin-0.3.11.tgz::locator=dsh-plugin-desktop-beta%40workspace%3Adsh-plugin-desktop-beta":
+  version: 0.3.11
+  resolution: "@awiki/dsh-plugin@file:../vendor/awiki/8e2cad1/awiki-dsh-plugin-0.3.11.tgz#../vendor/awiki/8e2cad1/awiki-dsh-plugin-0.3.11.tgz::hash=dabcc2&locator=dsh-plugin-desktop-beta%40workspace%3Adsh-plugin-desktop-beta"
   dependencies:
     "@awiki/im-core-node": "npm:0.2.5"
     "@deepseek-ai/schemastery": "npm:^3.18.1"
@@ -314,7 +314,7 @@ __metadata:
   peerDependenciesMeta:
     "@deepseek-ai/dsh-workspace":
       optional: true
-  checksum: 10c0/2526ae3647b2975918c3ee20cb2c596d6ad00938eba7fcf9eb1dc7cea7a07b72c703a98941f9dccbe359f161f0d5e191617c05e008ab3cbaa5618f19e6aba615
+  checksum: 10c0/2e9306ad761e10deede38624ec57468904383f051e35f83d066422f2f68842b54816452c71a104505e0c1b183d51f06b2225f11243973fba7cb9dbd8a3007483
   languageName: node
   linkType: hard
 
@@ -9119,8 +9119,8 @@ __metadata:
   dependencies:
     "@agent-network-protocol/dsh-anp-identity": "npm:0.1.1"
     "@agents-anywhere/dsh-bridge-next": "file:../vendor/agents-anywhere/agents-anywhere-dsh-bridge-next-0.1.0-dev.0.desktop.cc26402633cb8.r16f8dfa9.tgz"
-    "@awiki/dsh-model-proxy": "file:../vendor/awiki/e436b87/awiki-dsh-model-proxy-0.1.6.tgz"
-    "@awiki/dsh-plugin": "file:../vendor/awiki/e436b87/awiki-dsh-plugin-0.3.10.tgz"
+    "@awiki/dsh-model-proxy": "file:../vendor/awiki/8e2cad1/awiki-dsh-model-proxy-0.1.7.tgz"
+    "@awiki/dsh-plugin": "file:../vendor/awiki/8e2cad1/awiki-dsh-plugin-0.3.11.tgz"
     "@base-ui/react": "npm:^1.7.0"
     "@deepseek-ai/cordis": "npm:4.0.2"
     "@deepseek-ai/cordis-plugin-group": "npm:1.0.2"
@@ -9319,8 +9319,8 @@ __metadata:
   dependencies:
     "@agent-network-protocol/dsh-anp-identity": "npm:0.1.1"
     "@agents-anywhere/dsh-bridge-next": "file:../vendor/agents-anywhere/agents-anywhere-dsh-bridge-next-0.1.0-dev.0.desktop.cc26402633cb8.r16f8dfa9.tgz"
-    "@awiki/dsh-model-proxy": "file:../vendor/awiki/e436b87/awiki-dsh-model-proxy-0.1.6.tgz"
-    "@awiki/dsh-plugin": "file:../vendor/awiki/e436b87/awiki-dsh-plugin-0.3.10.tgz"
+    "@awiki/dsh-model-proxy": "file:../vendor/awiki/8e2cad1/awiki-dsh-model-proxy-0.1.7.tgz"
+    "@awiki/dsh-plugin": "file:../vendor/awiki/8e2cad1/awiki-dsh-plugin-0.3.11.tgz"
     "@base-ui/react": "npm:^1.7.0"
     "@deepseek-ai/cordis": "npm:4.0.2"
     "@deepseek-ai/cordis-plugin-group": "npm:1.0.2"
