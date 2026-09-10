@@ -7,7 +7,7 @@ const betaRoot = join(root, 'dsh-plugin-desktop-beta', 'src')
 // PR #868's isolated compatibility chrome is beta-only. Stable retains the
 // single-document frame; both variants retain renderer crash recovery (#869).
 const betaOnlyPaths = new Set([
-  // Opt-in Host process experiment remains Beta-only until validated.
+  // Default Beta Host process experiment remains Beta-only until validated.
   'host-bootstrap.ts',
   'host-launch-environment.ts',
   'host-process.ts',
@@ -24,6 +24,10 @@ const betaOnlyPaths = new Set([
   'native-ui/compatibility-chrome/style.css',
 ])
 const allowedDifferences = new Set([
+  // Beta reserves the full enhanced drag strip and isolates extended chrome.
+  'client/styles.ts',
+  'client/extended-shell.ts',
+  'client/extended-styles.ts',
   // Compatibility chrome integration differs intentionally between channels.
   'client/ExtendedTitlebar.tsx',
   'client/window-service.ts',

@@ -1402,7 +1402,7 @@ async function start(): Promise<void> {
     if (profilePreferences === undefined) {
       throw new Error(`${BIN_NAME}: active Profile preferences were not initialized`)
     }
-    if (process.env.DSH_DESKTOP_ISOLATED_HOST === '1') {
+    if (process.env.DSH_DESKTOP_ISOLATED_HOST !== '0') {
       startupStage = 'host-boot'
       lifecycleRecorder.transitionStartupStage(startupStage)
       await startIsolatedDesktopHost({
