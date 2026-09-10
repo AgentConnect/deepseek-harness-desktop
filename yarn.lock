@@ -1171,6 +1171,32 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@deepseek-ai/dsh-agent-presets@patch:@deepseek-ai/dsh-agent-presets@file%3Avendor/dsh-runtime/0.1.5-rc.1/deepseek-ai-dsh-agent-presets-0.1.5-rc.1.tgz#./patches/dsh-agent-presets@0.1.5-rc.1.patch::locator=deepseek-harness-desktop%40workspace%3A.":
+  version: 0.1.5-rc.1
+  resolution: "@deepseek-ai/dsh-agent-presets@patch:@deepseek-ai/dsh-agent-presets@file%3Avendor/dsh-runtime/0.1.5-rc.1/deepseek-ai-dsh-agent-presets-0.1.5-rc.1.tgz%23vendor/dsh-runtime/0.1.5-rc.1/deepseek-ai-dsh-agent-presets-0.1.5-rc.1.tgz%3A%3Ahash=e03297&locator=deepseek-harness-desktop%2540workspace%253A.#./patches/dsh-agent-presets@0.1.5-rc.1.patch::version=0.1.5-rc.1&hash=e34af3&locator=deepseek-harness-desktop%40workspace%3A."
+  dependencies:
+    "@deepseek-ai/schemastery": "npm:^3.18.2"
+    js-yaml: "npm:^4.1.0"
+    zod: "npm:^4.4.3"
+  peerDependencies:
+    "@deepseek-ai/cordis": ^4.0.2
+    "@deepseek-ai/cordis-plugin-include": ^1.0.7
+    "@deepseek-ai/cordis-plugin-loader": ^1.0.3
+    "@deepseek-ai/dsh-agent": ^0.1.5-rc.1
+    "@deepseek-ai/dsh-atomic-write": ^0.1.5-rc.1
+    "@deepseek-ai/dsh-home-paths": ^0.1.5-rc.1
+    "@deepseek-ai/dsh-invariants": ^0.1.5-rc.1
+    "@deepseek-ai/dsh-scope": ^0.1.5-rc.1
+    "@deepseek-ai/dsh-session": ^0.1.5-rc.1
+    "@deepseek-ai/dsh-session-projection": ^0.1.5-rc.1
+    "@deepseek-ai/dsh-settings": ^0.1.5-rc.1
+    "@deepseek-ai/dsh-system-prompt": ^0.1.5-rc.1
+    "@deepseek-ai/dsh-tools": ^0.1.5-rc.1
+    "@deepseek-ai/dsh-typert-protocol": ^0.1.5-rc.1
+  checksum: 10c0/aa4a643396fd2104e0b7f4b67a0f2e776d3f61db6081f11ef6c1f36f0ed9f10ca5a6a270b16bb9f828813f1837975447b78428a6ad638cbfef361bbc6efa5dc3
+  languageName: node
+  linkType: hard
+
 "@deepseek-ai/dsh-agent-tool-presentation@file:vendor/dsh-runtime/0.1.5-rc.1/deepseek-ai-dsh-agent-tool-presentation-0.1.5-rc.1.tgz::locator=deepseek-harness-desktop%40workspace%3A.":
   version: 0.1.5-rc.1
   resolution: "@deepseek-ai/dsh-agent-tool-presentation@file:vendor/dsh-runtime/0.1.5-rc.1/deepseek-ai-dsh-agent-tool-presentation-0.1.5-rc.1.tgz#vendor/dsh-runtime/0.1.5-rc.1/deepseek-ai-dsh-agent-tool-presentation-0.1.5-rc.1.tgz::hash=fb21f8&locator=deepseek-harness-desktop%40workspace%3A."
