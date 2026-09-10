@@ -409,7 +409,7 @@ virtualStoreDirMaxLength: 60
     }))
     expect(patches).toContainEqual(expect.objectContaining({
       id: 'agent-presets',
-      config: expect.objectContaining({ roots: [expect.objectContaining({ trust: 'system' })] }),
+      config: expect.objectContaining({ roots: [expect.objectContaining({ trust: 'system' }), { path: join(home, '.agent-presets'), trust: 'user' }], includeUserRoot: false }),
     }))
     expect(readFileSync(prepared.rootConfig, 'utf8')).toBe('[]\n')
     expect(prepared.homeDir).toBe(home)
@@ -1043,7 +1043,8 @@ virtualStoreDirMaxLength: 60
     expect(rows.find(row => row.id === 'agent-presets')).toEqual(expect.objectContaining({
       name: '@deepseek-ai/dsh-agent-presets',
       config: expect.objectContaining({
-        roots: [{ path: shippedPresetRoot(), trust: 'system' }],
+        roots: [{ path: shippedPresetRoot(), trust: 'system' }, { path: join(home, '.agent-presets'), trust: 'user' }],
+        includeUserRoot: false,
       }),
     }))
     expect(rows.find(row => row.id === 'agent-presets')?.disabled).toBeFalsy()

@@ -26,28 +26,19 @@ const allowedDifferences = new Set([
   'update-lifecycle.ts',
   'bin.ts',
   'client/AdvancedFrame.tsx',
-  // Beta v0.1.5 replaces Detail with the upstream right Sidebar contract.
-  'client/contracts.ts',
-  'client/layout-state.ts',
-  'client/layout-service.ts', // Beta alpha.2 adds root panel selection and navigation cancellation.
-  'client/advanced-shell.ts',
-  'client/extended-shell.ts',
-  'client/styles.ts',
+  // Both channels use the v0.1.5 main/rightbar contract; remaining differences
+  // preserve channel identity and the beta-only compatibility frame.
   'client/desktop-settings.ts',
   'client/DesktopSettingsSection.tsx',
   'client/index.ts',
   'desktop-browser-access.ts',
-  'desktop-cli.ts', // alpha.2 requires explicit runCli dispatch after importing the CLI.
   'desktop-dialog-window.ts',
   'desktop-plugins.ts',
   'desktop-terminal.ts',
   'diagnostic-export-worker.ts',
-  'index.ts',
   'launch-environment.ts',
   'main.ts',
   'native-ui/setup-wizard/App.tsx',
-  'notifications.ts',
-  'packaged-runtime-smoke.ts',
   'product-identity.ts',
   'profile-manager.ts',
   'profile.ts',
