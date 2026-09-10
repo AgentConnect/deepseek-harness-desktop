@@ -69,7 +69,7 @@ const PNPM_RUNTIME_VERSION = packageVersion(PNPM_PACKAGE_ROOT)
 export const MAX_UNPACKED_RUNTIME_FILES = 1_500
 
 /** Maximum physical payload accepted beside ASAR after smart unpack. */
-export const MAX_UNPACKED_RUNTIME_BYTES = 128 * 1024 * 1024
+export const MAX_UNPACKED_RUNTIME_BYTES = 256 * 1024 * 1024
 
 /** Narrow ceiling for pnpm's smart-unpacked native-helper package root. */
 export const MAX_PNPM_SMART_UNPACK_FILES = 32
@@ -77,6 +77,17 @@ export const MAX_PNPM_SMART_UNPACK_BYTES = 32 * 1024 * 1024
 
 /** Package roots electron-builder may smart-unpack as one indivisible unit. */
 export const ALLOWED_SMART_UNPACK_PACKAGE_ROOTS = [
+  // Pinned IM Core and ANP Identity native platform packages.
+  'node_modules/@awiki/im-core-node-darwin-arm64',
+  'node_modules/@awiki/im-core-node-darwin-x64',
+  'node_modules/@awiki/im-core-node-linux-arm64-gnu',
+  'node_modules/@awiki/im-core-node-linux-x64-gnu',
+  'node_modules/@awiki/im-core-node-win32-x64-msvc',
+  'node_modules/@agent-network-protocol/anp-identity-darwin-arm64',
+  'node_modules/@agent-network-protocol/anp-identity-darwin-x64',
+  'node_modules/@agent-network-protocol/anp-identity-linux-arm64-gnu',
+  'node_modules/@agent-network-protocol/anp-identity-linux-x64-gnu',
+  'node_modules/@agent-network-protocol/anp-identity-win32-x64-msvc',
   'node_modules/fs-ext',
   'node_modules/koffi',
   'node_modules/node-addon-require-builtin',

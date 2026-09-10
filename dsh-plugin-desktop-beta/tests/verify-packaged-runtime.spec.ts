@@ -480,6 +480,20 @@ describe('packaged desktop runtime verification', () => {
       [{ path: host, bytes: 100 }])).toThrow('non-allowlisted package roots')
   })
 
+  it('accepts the integrated native identity and messaging payload while rejecting unknown family members', () => {
+    const paths = [
+      'node_modules/@awiki/im-core-node-darwin-arm64/binding.node',
+      'node_modules/@agent-network-protocol/anp-identity-darwin-arm64/binding.node',
+      'node_modules/@awiki/im-core-node-darwin-x64/binding.node',
+      'node_modules/@agent-network-protocol/anp-identity-darwin-x64/binding.node',
+    ]
+    expect(() => verifySelectiveUnpackedRuntime(asarIndex(paths), '/build/resources/app.asar.unpacked',
+      paths.map(path => ({ path, bytes: 37 * 1024 * 1024 })))).not.toThrow()
+    const unknown = 'node_modules/@awiki/im-core-node-unknown/binding.node'
+    expect(() => verifySelectiveUnpackedRuntime(asarIndex([unknown]), '/build/resources/app.asar.unpacked',
+      [{ path: unknown, bytes: 1 }])).toThrow('non-allowlisted package roots')
+  })
+
   it('rejects a new smart-unpacked package until its native root is reviewed', () => {
     const path = 'node_modules/unexpected-native/binding.node'
     expect(() => verifySelectiveUnpackedRuntime(

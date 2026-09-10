@@ -43,6 +43,12 @@ const LAN_HTTPS = Object.freeze({
   async stop() { return LAN_HTTPS_SNAPSHOT },
 })
 const home = mkdtempSync(join(tmpdir(), 'dsh-desktop-profile-'))
+// Headless acceptance owns its identity state; never require a desktop keyring.
+process.env.DSH_AWIKI_STATE_ROOT = join(home, 'awiki')
+process.env.DSH_ANP_IDENTITY_STATE_ROOT = join(home, 'identity')
+process.env.DSH_ANP_IDENTITY_ROOT_KEY_PROVIDER = 'local-file'
+process.env.DSH_ANP_IDENTITY_ROOT_KEY_PROVIDER_ID = 'desktop-profile-smoke'
+
 let ctx
 let releasePackageResolver
 let pnpmRuntime

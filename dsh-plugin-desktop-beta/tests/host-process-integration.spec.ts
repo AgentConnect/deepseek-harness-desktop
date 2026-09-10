@@ -38,6 +38,11 @@ it.each([false, true])('boots a separate Web Host with client plugins (AA enable
     pnpm = installDesktopPnpmRuntime({ platform: process.platform, appExecutable: process.execPath, pnpmBinPath,
       electronVersion, stateDir: join(home, 'runtime'), environment: process.env })
     child = fork(fileURLToPath(new URL('./fixtures/isolated-host/child.mjs', import.meta.url)), [], {
+      env: { ...process.env, DSH_HOME: home,
+        DSH_AWIKI_STATE_ROOT: join(home, 'awiki'),
+        DSH_ANP_IDENTITY_STATE_ROOT: join(home, 'identity'),
+        DSH_ANP_IDENTITY_ROOT_KEY_PROVIDER: 'local-file',
+        DSH_ANP_IDENTITY_ROOT_KEY_PROVIDER_ID: 'isolated-host-test' },
       execArgv: [], stdio: ['ignore', 'pipe', 'pipe', 'ipc'], serialization: 'advanced',
     })
     child.stderr?.on('data', data => { stderr += String(data) })
