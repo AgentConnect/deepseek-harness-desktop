@@ -224,6 +224,11 @@ jobs:
           RELEASE_VERSION: ${{ needs.validate.outputs.version }}
         run: |
           set -euo pipefail
+          existing_tag="$(git ls-remote --tags origin "refs/tags/$RELEASE_TAG")"
+          if [[ -n "$existing_tag" ]]; then
+            echo "Refusing to publish against existing remote tag $RELEASE_TAG" >&2
+            exit 1
+          fi
           if git rev-parse "$RELEASE_TAG" >/dev/null 2>&1; then
             echo "Refusing to replace existing tag $RELEASE_TAG" >&2
             exit 1
