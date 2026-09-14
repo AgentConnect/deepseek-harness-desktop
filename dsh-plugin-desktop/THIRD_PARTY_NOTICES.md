@@ -2,28 +2,20 @@
 DSH Desktop distributes the following third-party packages inside its installers.
 Each package ships with its own license text in the application files; this list records
 the package names, versions, and licenses for transparency.
-## AWiki commercial license grant
-The following exact package set is authorized for target-specific DSH Desktop distributions under AWIKI-DSH-DESKTOP-2026-08-25.
-Each installer contains only the platform packages relevant to that target. The complete grant is shipped as AWIKI-COMMERCIAL-LICENSE.md.
-| Package | Authorized version | Upstream license |
-| --- | --- | --- |
-| @awiki/im-core-node | 0.1.8 | AGPL-3.0-only |
-| @awiki/im-core-node-darwin-arm64 | 0.1.8 | AGPL-3.0-only |
-| @awiki/im-core-node-darwin-x64 | 0.1.8 | AGPL-3.0-only |
-| @awiki/im-core-node-linux-arm64-gnu | 0.1.8 | AGPL-3.0-only |
-| @awiki/im-core-node-linux-x64-gnu | 0.1.8 | AGPL-3.0-only |
-| @awiki/im-core-node-win32-x64-msvc | 0.1.8 | AGPL-3.0-only |
-## Installed dependency inventory
 | Package | Version | License |
 | --- | --- | --- |
-| @awiki/dsh-model-proxy | 0.1.4 | MIT |
-| @awiki/dsh-plugin | 0.3.5 | MIT |
-| @awiki/im-core-node | 0.1.8 | AWiki Commercial License (AWIKI-DSH-DESKTOP-2026-08-25; upstream AGPL-3.0-only) |
-| @awiki/im-core-node-darwin-arm64 | 0.1.8 | AWiki Commercial License (AWIKI-DSH-DESKTOP-2026-08-25; upstream AGPL-3.0-only) |
-| @awiki/im-core-node-darwin-x64 | 0.1.8 | AWiki Commercial License (AWIKI-DSH-DESKTOP-2026-08-25; upstream AGPL-3.0-only) |
+| @agent-network-protocol/anp-identity | 0.2.2 | Apache-2.0 |
+| @agent-network-protocol/anp-identity-darwin-arm64 | 0.2.2 | Apache-2.0 |
+| @agent-network-protocol/anp-identity-darwin-x64 | 0.2.2 | Apache-2.0 |
+| @agent-network-protocol/dsh-anp-identity | 0.1.3 | Apache-2.0 |
 | @agentclientprotocol/sdk | 1.4.0 | Apache-2.0 |
 | @agents-anywhere/dsh-bridge-next | 0.1.0-dev.0.desktop.c00df092c98b2.rcda81994 | MIT |
 | @anthropic-ai/sdk | 0.123.0 | MIT |
+| @awiki/dsh-model-proxy | 0.1.7 | MIT |
+| @awiki/dsh-plugin | 0.3.11 | MIT |
+| @awiki/im-core-node | 0.2.7 | Apache-2.0 |
+| @awiki/im-core-node-darwin-arm64 | 0.2.7 | Apache-2.0 |
+| @awiki/im-core-node-darwin-x64 | 0.2.7 | Apache-2.0 |
 | @aws-crypto/sha256-browser | 5.2.0 | Apache-2.0 |
 | @aws-crypto/sha256-js | 5.2.0 | Apache-2.0 |
 | @aws-crypto/supports-web-crypto | 5.2.0 | Apache-2.0 |
@@ -293,19 +285,30 @@ Each installer contains only the platform packages relevant to that target. The 
 | @deepseek-ai/dsh-workflow-worker-thread | 0.1.5-rc.2 | MIT |
 | @deepseek-ai/dsh-workspace | 0.1.5-rc.2 | MIT |
 | @deepseek-ai/node-addon-system | 0.1.2 | BSD-3-Clause |
+| @deepseek-ai/node-addon-system-darwin-arm64 | 0.1.2 | BSD-3-Clause |
+| @deepseek-ai/node-addon-system-darwin-x64 | 0.1.2 | BSD-3-Clause |
 | @deepseek-ai/schemastery | 3.18.2 | MIT |
 | @earendil-works/pi-ai | 0.85.1 | MIT |
 | @earendil-works/pi-telemetry | 0.85.1 | MIT |
 | @google/genai | 1.52.0 | Apache-2.0 |
 | @hono/node-server | 2.1.0 | MIT |
 | @img/colour | 1.1.0 | MIT |
-| @img/sharp-win32-arm64 | 0.35.3 | Apache-2.0 AND LGPL-3.0-or-later |
-| @img/sharp-win32-x64 | 0.35.3 | Apache-2.0 AND LGPL-3.0-or-later |
+| @img/sharp-darwin-arm64 | 0.35.3 | Apache-2.0 |
+| @img/sharp-darwin-x64 | 0.35.3 | Apache-2.0 |
+| @img/sharp-libvips-darwin-arm64 | 1.3.2 | LGPL-3.0-or-later |
+| @img/sharp-libvips-darwin-x64 | 1.3.2 | LGPL-3.0-or-later |
 | @joplin/turndown-plugin-gfm | 1.0.67 | MIT |
-| @koromix/koffi-win32-arm64 | 3.1.5 | MIT |
-| @koromix/koffi-win32-x64 | 3.1.5 | MIT |
+| @koromix/koffi-darwin-arm64 | 3.1.5 | MIT |
+| @koromix/koffi-darwin-x64 | 3.1.5 | MIT |
 | @mixmark-io/domino | 2.2.0 | BSD-2-Clause |
 | @modelcontextprotocol/sdk | 1.30.0 | MIT |
+| @noble/hashes | 1.4.0 | MIT |
+| @octokit/openapi-types | 28.0.0 | MIT |
+| @octokit/openapi-webhooks-types | 12.1.0 | MIT |
+| @octokit/request-error | 7.1.1 | MIT |
+| @octokit/types | 17.0.0 | MIT |
+| @octokit/webhooks | 14.2.0 | MIT |
+| @octokit/webhooks-methods | 6.0.0 | MIT |
 | @opentelemetry/api | 1.9.1 | Apache-2.0 |
 | @opentelemetry/api-logs | 0.220.0 | Apache-2.0 |
 | @opentelemetry/core | 2.9.0 | Apache-2.0 |
@@ -354,8 +357,6 @@ Each installer contains only the platform packages relevant to that target. The 
 | @vscode/ripgrep | 1.18.0 | MIT |
 | @vscode/ripgrep-darwin-arm64 | 1.18.0 | MIT |
 | @vscode/ripgrep-darwin-x64 | 1.18.0 | MIT |
-| @vscode/ripgrep-win32-arm64 | 1.18.0 | MIT |
-| @vscode/ripgrep-win32-x64 | 1.18.0 | MIT |
 | @xterm/headless | 6.0.0 | MIT |
 | accepts | 2.0.0 | MIT |
 | adm-zip | 0.6.0 | MIT |
@@ -365,6 +366,7 @@ Each installer contains only the platform packages relevant to that target. The 
 | ansi-regex | 5.0.1 | MIT |
 | ansi-styles | 4.3.0 | MIT |
 | argparse | 2.0.1 | Python-2.0 |
+| asn1js | 3.0.10 | BSD-3-Clause |
 | async-function | 1.0.0 | MIT |
 | async-generator-function | 1.0.0 | MIT |
 | base64-js | 1.5.1 | MIT |
@@ -374,6 +376,7 @@ Each installer contains only the platform packages relevant to that target. The 
 | buffer-equal-constant-time | 1.0.1 | BSD-3-Clause |
 | bundle-name | 4.1.0 | MIT |
 | bytes | 3.1.2 | MIT |
+| bytestreamjs | 2.0.1 | BSD-3-Clause |
 | call-bind-apply-helpers | 1.0.2 | MIT |
 | call-bound | 1.0.4 | MIT |
 | camelcase | 5.3.1 | MIT |
@@ -383,6 +386,8 @@ Each installer contains only the platform packages relevant to that target. The 
 | color-convert | 2.0.1 | MIT |
 | color-name | 1.1.4 | MIT |
 | commander | 15.0.0 | MIT |
+| compressible | 2.0.18 | MIT |
+| compression | 1.8.1 | MIT |
 | content-disposition | 1.1.0 | MIT |
 | content-type | 1.0.5 | MIT |
 | cookie | 0.7.2 | MIT |
@@ -400,7 +405,7 @@ Each installer contains only the platform packages relevant to that target. The 
 | diff | 9.0.0 | BSD-3-Clause |
 | dijkstrajs | 1.0.3 | MIT |
 | dsh-community-market | 0.1.0-dev.0 | MIT |
-| dshmarket | 1.17.1 | MIT |
+| dshmarket | 1.38.1 | MIT |
 | dunder-proto | 1.0.1 | MIT |
 | ecdsa-sig-formatter | 1.0.11 | Apache-2.0 |
 | ee-first | 1.1.1 | MIT |
@@ -437,6 +442,7 @@ Each installer contains only the platform packages relevant to that target. The 
 | google-auth-library | 10.9.1 | Apache-2.0 |
 | google-logging-utils | 1.1.3 | Apache-2.0 |
 | gopd | 1.2.0 | MIT |
+| graceful-fs | 4.2.11 | ISC |
 | has-symbols | 1.1.0 | MIT |
 | hasown | 2.0.4 | MIT |
 | hono | 4.13.2 | MIT |
@@ -446,7 +452,7 @@ Each installer contains only the platform packages relevant to that target. The 
 | iconv-lite | 0.7.3 | MIT |
 | inherits | 2.0.4 | ISC |
 | ip-address | 10.5.0 | MIT |
-| ipaddr.js | 1.9.1 | MIT |
+| ipaddr.js | 2.5.0 | MIT |
 | is-docker | 3.0.0 | MIT |
 | is-fullwidth-code-point | 3.0.0 | MIT |
 | is-in-ssh | 1.0.0 | MIT |
@@ -479,14 +485,15 @@ Each installer contains only the platform packages relevant to that target. The 
 | node-addon-api | 7.1.1 | MIT |
 | node-addon-native-custom-loader | 0.1.4 | MIT |
 | node-addon-require-builtin | 0.1.4 | MIT |
-| node-addon-require-builtin-win32-arm64-msvc | 0.1.4 | MIT |
-| node-addon-require-builtin-win32-x64-msvc | 0.1.4 | MIT |
+| node-addon-require-builtin-darwin-arm64 | 0.1.4 | MIT |
+| node-addon-require-builtin-darwin-x64 | 0.1.4 | MIT |
 | node-domexception | 1.0.0 | MIT |
 | node-fetch | 3.3.2 | MIT |
 | node-pty | 1.2.0-beta.15 | MIT |
 | object-assign | 4.1.1 | MIT |
 | object-inspect | 1.13.4 | MIT |
 | on-finished | 2.4.1 | MIT |
+| on-headers | 1.1.0 | MIT |
 | once | 1.4.0 | ISC |
 | open | 11.0.1 | MIT |
 | openai | 6.40.0 | Apache-2.0 |
@@ -506,6 +513,7 @@ Each installer contains only the platform packages relevant to that target. The 
 | pngjs | 5.0.0 | MIT |
 | pnpm | 11.8.0 | MIT |
 | powershell-utils | 0.2.0 | MIT |
+| proper-lockfile | 4.1.2 | MIT |
 | protobufjs | 7.6.5 | BSD-3-Clause |
 | proxy-addr | 2.0.7 | MIT |
 | pvtsutils | 1.3.6 | MIT |
@@ -521,7 +529,7 @@ Each installer contains only the platform packages relevant to that target. The 
 | require-from-string | 2.0.2 | MIT |
 | require-main-filename | 2.0.0 | ISC |
 | resolve.exports | 2.0.3 | MIT |
-| retry | 0.13.1 | MIT |
+| retry | 0.12.0 | MIT |
 | router | 2.2.0 | MIT |
 | run-applescript | 7.1.0 | MIT |
 | safe-buffer | 5.2.1 | MIT |
@@ -539,6 +547,7 @@ Each installer contains only the platform packages relevant to that target. The 
 | side-channel-list | 1.0.1 | MIT |
 | side-channel-map | 1.0.1 | MIT |
 | side-channel-weakmap | 1.0.2 | MIT |
+| signal-exit | 3.0.7 | ISC |
 | sonner | 2.0.8 | MIT |
 | standardwebhooks | 1.1.1 | MIT |
 | statuses | 2.0.2 | MIT |
@@ -547,6 +556,7 @@ Each installer contains only the platform packages relevant to that target. The 
 | toidentifier | 1.0.1 | MIT |
 | ts-algebra | 2.0.0 | MIT |
 | tslib | 2.8.1 | 0BSD |
+| tsyringe | 4.10.0 | MIT |
 | turndown | 7.2.4 | MIT |
 | type-is | 2.1.0 | MIT |
 | typebox | 1.3.7 | MIT |
@@ -565,6 +575,6 @@ Each installer contains only the platform packages relevant to that target. The 
 | yaml | 2.9.0 | ISC |
 | yargs | 15.4.1 | MIT |
 | yargs-parser | 18.1.3 | ISC |
-| zod | 4.4.3 | MIT |
+| zod | 4.6.4 | MIT |
 | zod-to-json-schema | 3.25.2 | ISC |
-> Notice-required licenses in use: Apache-2.0 AND LGPL-3.0-or-later. Their license texts ship inside node_modules; see the package LICENSE files for the full terms.
+> Notice-required licenses in use: LGPL-3.0-or-later. Their license texts ship inside node_modules; see the package LICENSE files for the full terms.

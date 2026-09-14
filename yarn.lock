@@ -5,50 +5,50 @@ __metadata:
   version: 10
   cacheKey: 10c0
 
-"@agent-network-protocol/anp-identity-darwin-arm64@npm:0.2.1":
-  version: 0.2.1
-  resolution: "@agent-network-protocol/anp-identity-darwin-arm64@npm:0.2.1"
+"@agent-network-protocol/anp-identity-darwin-arm64@npm:0.2.2":
+  version: 0.2.2
+  resolution: "@agent-network-protocol/anp-identity-darwin-arm64@npm:0.2.2"
   conditions: os=darwin & cpu=arm64
   languageName: node
   linkType: hard
 
-"@agent-network-protocol/anp-identity-darwin-x64@npm:0.2.1":
-  version: 0.2.1
-  resolution: "@agent-network-protocol/anp-identity-darwin-x64@npm:0.2.1"
+"@agent-network-protocol/anp-identity-darwin-x64@npm:0.2.2":
+  version: 0.2.2
+  resolution: "@agent-network-protocol/anp-identity-darwin-x64@npm:0.2.2"
   conditions: os=darwin & cpu=x64
   languageName: node
   linkType: hard
 
-"@agent-network-protocol/anp-identity-linux-arm64-gnu@npm:0.2.1":
-  version: 0.2.1
-  resolution: "@agent-network-protocol/anp-identity-linux-arm64-gnu@npm:0.2.1"
+"@agent-network-protocol/anp-identity-linux-arm64-gnu@npm:0.2.2":
+  version: 0.2.2
+  resolution: "@agent-network-protocol/anp-identity-linux-arm64-gnu@npm:0.2.2"
   conditions: os=linux & cpu=arm64 & libc=glibc
   languageName: node
   linkType: hard
 
-"@agent-network-protocol/anp-identity-linux-x64-gnu@npm:0.2.1":
-  version: 0.2.1
-  resolution: "@agent-network-protocol/anp-identity-linux-x64-gnu@npm:0.2.1"
+"@agent-network-protocol/anp-identity-linux-x64-gnu@npm:0.2.2":
+  version: 0.2.2
+  resolution: "@agent-network-protocol/anp-identity-linux-x64-gnu@npm:0.2.2"
   conditions: os=linux & cpu=x64 & libc=glibc
   languageName: node
   linkType: hard
 
-"@agent-network-protocol/anp-identity-win32-x64-msvc@npm:0.2.1":
-  version: 0.2.1
-  resolution: "@agent-network-protocol/anp-identity-win32-x64-msvc@npm:0.2.1"
+"@agent-network-protocol/anp-identity-win32-x64-msvc@npm:0.2.2":
+  version: 0.2.2
+  resolution: "@agent-network-protocol/anp-identity-win32-x64-msvc@npm:0.2.2"
   conditions: os=win32 & cpu=x64
   languageName: node
   linkType: hard
 
-"@agent-network-protocol/anp-identity@npm:0.2.1":
-  version: 0.2.1
-  resolution: "@agent-network-protocol/anp-identity@npm:0.2.1"
+"@agent-network-protocol/anp-identity@npm:0.2.2":
+  version: 0.2.2
+  resolution: "@agent-network-protocol/anp-identity@npm:0.2.2"
   dependencies:
-    "@agent-network-protocol/anp-identity-darwin-arm64": "npm:0.2.1"
-    "@agent-network-protocol/anp-identity-darwin-x64": "npm:0.2.1"
-    "@agent-network-protocol/anp-identity-linux-arm64-gnu": "npm:0.2.1"
-    "@agent-network-protocol/anp-identity-linux-x64-gnu": "npm:0.2.1"
-    "@agent-network-protocol/anp-identity-win32-x64-msvc": "npm:0.2.1"
+    "@agent-network-protocol/anp-identity-darwin-arm64": "npm:0.2.2"
+    "@agent-network-protocol/anp-identity-darwin-x64": "npm:0.2.2"
+    "@agent-network-protocol/anp-identity-linux-arm64-gnu": "npm:0.2.2"
+    "@agent-network-protocol/anp-identity-linux-x64-gnu": "npm:0.2.2"
+    "@agent-network-protocol/anp-identity-win32-x64-msvc": "npm:0.2.2"
   dependenciesMeta:
     "@agent-network-protocol/anp-identity-darwin-arm64":
       optional: true
@@ -60,20 +60,49 @@ __metadata:
       optional: true
     "@agent-network-protocol/anp-identity-win32-x64-msvc":
       optional: true
-  checksum: 10c0/702291fade84a94ba39647dd3a68a2b5643a796808a20644d778ffdb5afcdc4be145387607efc1d013866446789b82d25789044213abed9618203bcd628cf7c8
+  checksum: 10c0/56deffdba5471814b70fc6e04195bbe66b6c490fa7893199daba122f90b7ba7088295c93cd4a2a88b20c44d537c691660a30c4f138d4287e96d7b20dd205903b
   languageName: node
   linkType: hard
 
-"@agent-network-protocol/dsh-anp-identity@npm:0.1.1":
-  version: 0.1.1
-  resolution: "@agent-network-protocol/dsh-anp-identity@npm:0.1.1"
+"@agent-network-protocol/dsh-anp-identity@npm:0.1.3":
+  version: 0.1.3
+  resolution: "@agent-network-protocol/dsh-anp-identity@npm:0.1.3"
   dependencies:
-    "@agent-network-protocol/anp-identity": "npm:0.2.1"
+    "@agent-network-protocol/anp-identity": "npm:0.2.2"
     "@deepseek-ai/schemastery": "npm:^3.18.1"
     proper-lockfile: "npm:^4.1.2"
+    zod: "npm:^4.6.2"
   peerDependencies:
-    "@deepseek-ai/cordis": ^4.0.1
-  checksum: 10c0/313f73ce4cff2154cbaa52e45bc3f192120348bde6fcc7ac7bd808fb9fb7773b94ac7aa72acc22912ba26d9796876b1448277c7b9a4fbb59abbd7660608da2a0
+    "@deepseek-ai/cordis": ^4.0.2
+    "@deepseek-ai/dsh-api-remotes": ^0.1.5-rc.1
+    "@deepseek-ai/dsh-client-connection": ^0.1.5-rc.1
+    "@deepseek-ai/dsh-client-ui-layout": ^0.1.5-rc.1
+    "@deepseek-ai/dsh-client-ui-primitives": ^0.1.5-rc.1
+    "@deepseek-ai/dsh-client-ui-renderer": ^0.1.5-rc.1
+    "@deepseek-ai/dsh-client-ui-settings": ^0.1.5-rc.1
+    "@deepseek-ai/dsh-client-ui-slots": ^0.1.5-rc.1
+    "@deepseek-ai/dsh-typert-protocol": ^0.1.5-rc.1
+    react: ^18.3.1
+  peerDependenciesMeta:
+    "@deepseek-ai/dsh-api-remotes":
+      optional: true
+    "@deepseek-ai/dsh-client-connection":
+      optional: true
+    "@deepseek-ai/dsh-client-ui-layout":
+      optional: true
+    "@deepseek-ai/dsh-client-ui-primitives":
+      optional: true
+    "@deepseek-ai/dsh-client-ui-renderer":
+      optional: true
+    "@deepseek-ai/dsh-client-ui-settings":
+      optional: true
+    "@deepseek-ai/dsh-client-ui-slots":
+      optional: true
+    "@deepseek-ai/dsh-typert-protocol":
+      optional: true
+    react:
+      optional: true
+  checksum: 10c0/4ae27d580d7b7c570d9a2491e1f89f15ca386632591d0b7f6a0c9a606ee78d34fe5bc704ee8ec8acdcd17c141762bbded1d8bed33e19bfecad73b69aa554be03
   languageName: node
   linkType: hard
 
@@ -190,178 +219,114 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@awiki/dsh-model-proxy@file:../vendor/awiki/8e2cad1/awiki-dsh-model-proxy-0.1.7.tgz::locator=dsh-plugin-desktop%40workspace%3Adsh-plugin-desktop":
+"@awiki/dsh-model-proxy@npm:0.1.7":
   version: 0.1.7
-  resolution: "@awiki/dsh-model-proxy@file:../vendor/awiki/8e2cad1/awiki-dsh-model-proxy-0.1.7.tgz#../vendor/awiki/8e2cad1/awiki-dsh-model-proxy-0.1.7.tgz::hash=e8d433&locator=dsh-plugin-desktop%40workspace%3Adsh-plugin-desktop"
+  resolution: "@awiki/dsh-model-proxy@npm:0.1.7"
   dependencies:
     "@deepseek-ai/schemastery": "npm:^3.18.1"
   peerDependencies:
     "@awiki/dsh-plugin": ^0.3.11
     "@deepseek-ai/cordis": ^4.0.2
-    "@deepseek-ai/dsh-agent-default-model": 0.1.5-rc.1
-    "@deepseek-ai/dsh-anonymous-user-id": 0.1.5-rc.1
-    "@deepseek-ai/dsh-api-remotes": 0.1.5-rc.1
-    "@deepseek-ai/dsh-client-connection": 0.1.5-rc.1
-    "@deepseek-ai/dsh-client-locale": 0.1.5-rc.1
-    "@deepseek-ai/dsh-client-ui-primitives": 0.1.5-rc.1
-    "@deepseek-ai/dsh-client-ui-renderer": 0.1.5-rc.1
-    "@deepseek-ai/dsh-client-ui-settings": 0.1.5-rc.1
-    "@deepseek-ai/dsh-client-ui-slots": 0.1.5-rc.1
-    "@deepseek-ai/dsh-llm": 0.1.5-rc.1
-    "@deepseek-ai/dsh-llm-deepseek": 0.1.5-rc.1
-    "@deepseek-ai/dsh-settings": 0.1.5-rc.1
+    "@deepseek-ai/dsh-agent-default-model": 0.1.5-rc.2
+    "@deepseek-ai/dsh-anonymous-user-id": 0.1.5-rc.2
+    "@deepseek-ai/dsh-api-remotes": 0.1.5-rc.2
+    "@deepseek-ai/dsh-client-connection": 0.1.5-rc.2
+    "@deepseek-ai/dsh-client-locale": 0.1.5-rc.2
+    "@deepseek-ai/dsh-client-ui-primitives": 0.1.5-rc.2
+    "@deepseek-ai/dsh-client-ui-renderer": 0.1.5-rc.2
+    "@deepseek-ai/dsh-client-ui-settings": 0.1.5-rc.2
+    "@deepseek-ai/dsh-client-ui-slots": 0.1.5-rc.2
+    "@deepseek-ai/dsh-llm": 0.1.5-rc.2
+    "@deepseek-ai/dsh-llm-deepseek": 0.1.5-rc.2
+    "@deepseek-ai/dsh-settings": 0.1.5-rc.2
     react: ^18.2.0
-  checksum: 10c0/4ecc6f30265de638a853604e1299b12be36e826d994de55d71eb760a093780c0f9c4b3e40245ff43b6c28d7f92459ec5725e79fce56a0c92e584efb9074b8811
+  checksum: 10c0/68a59dc3dcbc8f1e39f6d0690739eba64e746b291d645b2bc95ab54b63f2fca1b2d35df90066490bc9ed1349bf46785685c4cdcc1f9094ed3d5a798e2b172385
   languageName: node
   linkType: hard
 
-"@awiki/dsh-model-proxy@file:../vendor/awiki/8e2cad1/awiki-dsh-model-proxy-0.1.7.tgz::locator=dsh-plugin-desktop-beta%40workspace%3Adsh-plugin-desktop-beta":
-  version: 0.1.7
-  resolution: "@awiki/dsh-model-proxy@file:../vendor/awiki/8e2cad1/awiki-dsh-model-proxy-0.1.7.tgz#../vendor/awiki/8e2cad1/awiki-dsh-model-proxy-0.1.7.tgz::hash=e8d433&locator=dsh-plugin-desktop-beta%40workspace%3Adsh-plugin-desktop-beta"
-  dependencies:
-    "@deepseek-ai/schemastery": "npm:^3.18.1"
-  peerDependencies:
-    "@awiki/dsh-plugin": ^0.3.11
-    "@deepseek-ai/cordis": ^4.0.2
-    "@deepseek-ai/dsh-agent-default-model": 0.1.5-rc.1
-    "@deepseek-ai/dsh-anonymous-user-id": 0.1.5-rc.1
-    "@deepseek-ai/dsh-api-remotes": 0.1.5-rc.1
-    "@deepseek-ai/dsh-client-connection": 0.1.5-rc.1
-    "@deepseek-ai/dsh-client-locale": 0.1.5-rc.1
-    "@deepseek-ai/dsh-client-ui-primitives": 0.1.5-rc.1
-    "@deepseek-ai/dsh-client-ui-renderer": 0.1.5-rc.1
-    "@deepseek-ai/dsh-client-ui-settings": 0.1.5-rc.1
-    "@deepseek-ai/dsh-client-ui-slots": 0.1.5-rc.1
-    "@deepseek-ai/dsh-llm": 0.1.5-rc.1
-    "@deepseek-ai/dsh-llm-deepseek": 0.1.5-rc.1
-    "@deepseek-ai/dsh-settings": 0.1.5-rc.1
-    react: ^18.2.0
-  checksum: 10c0/4ecc6f30265de638a853604e1299b12be36e826d994de55d71eb760a093780c0f9c4b3e40245ff43b6c28d7f92459ec5725e79fce56a0c92e584efb9074b8811
-  languageName: node
-  linkType: hard
-
-"@awiki/dsh-plugin@file:../vendor/awiki/8e2cad1/awiki-dsh-plugin-0.3.11.tgz::locator=dsh-plugin-desktop%40workspace%3Adsh-plugin-desktop":
+"@awiki/dsh-plugin@npm:0.3.11":
   version: 0.3.11
-  resolution: "@awiki/dsh-plugin@file:../vendor/awiki/8e2cad1/awiki-dsh-plugin-0.3.11.tgz#../vendor/awiki/8e2cad1/awiki-dsh-plugin-0.3.11.tgz::hash=dabcc2&locator=dsh-plugin-desktop%40workspace%3Adsh-plugin-desktop"
+  resolution: "@awiki/dsh-plugin@npm:0.3.11"
   dependencies:
-    "@awiki/im-core-node": "npm:0.2.5"
+    "@awiki/im-core-node": "npm:0.2.7"
     "@deepseek-ai/schemastery": "npm:^3.18.1"
     semver: "npm:7.8.5"
     zod: "npm:^4.4.3"
   peerDependencies:
-    "@agent-network-protocol/dsh-anp-identity": ^0.1.1
+    "@agent-network-protocol/dsh-anp-identity": 0.1.3
     "@deepseek-ai/cordis": ^4.0.2
-    "@deepseek-ai/dsh-agent": 0.1.5-rc.1
-    "@deepseek-ai/dsh-agent-default-model": 0.1.5-rc.1
-    "@deepseek-ai/dsh-api-remotes": 0.1.5-rc.1
-    "@deepseek-ai/dsh-brand": 0.1.5-rc.1
-    "@deepseek-ai/dsh-client-connection": 0.1.5-rc.1
-    "@deepseek-ai/dsh-client-locale": 0.1.5-rc.1
-    "@deepseek-ai/dsh-client-store": 0.1.5-rc.1
-    "@deepseek-ai/dsh-client-ui-layout": 0.1.5-rc.1
-    "@deepseek-ai/dsh-client-ui-primitives": 0.1.5-rc.1
-    "@deepseek-ai/dsh-client-ui-renderer": 0.1.5-rc.1
-    "@deepseek-ai/dsh-client-ui-settings": 0.1.5-rc.1
-    "@deepseek-ai/dsh-client-ui-slots": 0.1.5-rc.1
-    "@deepseek-ai/dsh-invariants": 0.1.5-rc.1
-    "@deepseek-ai/dsh-llm": 0.1.5-rc.1
-    "@deepseek-ai/dsh-session": 0.1.5-rc.1
-    "@deepseek-ai/dsh-settings": 0.1.5-rc.1
-    "@deepseek-ai/dsh-tools": 0.1.5-rc.1
-    "@deepseek-ai/dsh-typert-protocol": 0.1.5-rc.1
-    "@deepseek-ai/dsh-util-values": 0.1.5-rc.1
-    "@deepseek-ai/dsh-workspace": 0.1.5-rc.1
+    "@deepseek-ai/dsh-agent": 0.1.5-rc.2
+    "@deepseek-ai/dsh-agent-default-model": 0.1.5-rc.2
+    "@deepseek-ai/dsh-api-remotes": 0.1.5-rc.2
+    "@deepseek-ai/dsh-brand": 0.1.5-rc.2
+    "@deepseek-ai/dsh-client-connection": 0.1.5-rc.2
+    "@deepseek-ai/dsh-client-locale": 0.1.5-rc.2
+    "@deepseek-ai/dsh-client-store": 0.1.5-rc.2
+    "@deepseek-ai/dsh-client-ui-layout": 0.1.5-rc.2
+    "@deepseek-ai/dsh-client-ui-primitives": 0.1.5-rc.2
+    "@deepseek-ai/dsh-client-ui-renderer": 0.1.5-rc.2
+    "@deepseek-ai/dsh-client-ui-settings": 0.1.5-rc.2
+    "@deepseek-ai/dsh-client-ui-slots": 0.1.5-rc.2
+    "@deepseek-ai/dsh-invariants": 0.1.5-rc.2
+    "@deepseek-ai/dsh-llm": 0.1.5-rc.2
+    "@deepseek-ai/dsh-session": 0.1.5-rc.2
+    "@deepseek-ai/dsh-settings": 0.1.5-rc.2
+    "@deepseek-ai/dsh-tools": 0.1.5-rc.2
+    "@deepseek-ai/dsh-typert-protocol": 0.1.5-rc.2
+    "@deepseek-ai/dsh-util-values": 0.1.5-rc.2
+    "@deepseek-ai/dsh-workspace": 0.1.5-rc.2
     react: ^18.2.0
   peerDependenciesMeta:
     "@deepseek-ai/dsh-workspace":
       optional: true
-  checksum: 10c0/2e9306ad761e10deede38624ec57468904383f051e35f83d066422f2f68842b54816452c71a104505e0c1b183d51f06b2225f11243973fba7cb9dbd8a3007483
+  checksum: 10c0/802f3d301d9eb56f2f9e112b093707c631aeb6f9e81b5993ecf1c53a6cbacbdfe7f9bd03a763e83066f38de27fd77dbd1d4fb172e148f53a129b90b34f28f6dd
   languageName: node
   linkType: hard
 
-"@awiki/dsh-plugin@file:../vendor/awiki/8e2cad1/awiki-dsh-plugin-0.3.11.tgz::locator=dsh-plugin-desktop-beta%40workspace%3Adsh-plugin-desktop-beta":
-  version: 0.3.11
-  resolution: "@awiki/dsh-plugin@file:../vendor/awiki/8e2cad1/awiki-dsh-plugin-0.3.11.tgz#../vendor/awiki/8e2cad1/awiki-dsh-plugin-0.3.11.tgz::hash=dabcc2&locator=dsh-plugin-desktop-beta%40workspace%3Adsh-plugin-desktop-beta"
-  dependencies:
-    "@awiki/im-core-node": "npm:0.2.5"
-    "@deepseek-ai/schemastery": "npm:^3.18.1"
-    semver: "npm:7.8.5"
-    zod: "npm:^4.4.3"
-  peerDependencies:
-    "@agent-network-protocol/dsh-anp-identity": ^0.1.1
-    "@deepseek-ai/cordis": ^4.0.2
-    "@deepseek-ai/dsh-agent": 0.1.5-rc.1
-    "@deepseek-ai/dsh-agent-default-model": 0.1.5-rc.1
-    "@deepseek-ai/dsh-api-remotes": 0.1.5-rc.1
-    "@deepseek-ai/dsh-brand": 0.1.5-rc.1
-    "@deepseek-ai/dsh-client-connection": 0.1.5-rc.1
-    "@deepseek-ai/dsh-client-locale": 0.1.5-rc.1
-    "@deepseek-ai/dsh-client-store": 0.1.5-rc.1
-    "@deepseek-ai/dsh-client-ui-layout": 0.1.5-rc.1
-    "@deepseek-ai/dsh-client-ui-primitives": 0.1.5-rc.1
-    "@deepseek-ai/dsh-client-ui-renderer": 0.1.5-rc.1
-    "@deepseek-ai/dsh-client-ui-settings": 0.1.5-rc.1
-    "@deepseek-ai/dsh-client-ui-slots": 0.1.5-rc.1
-    "@deepseek-ai/dsh-invariants": 0.1.5-rc.1
-    "@deepseek-ai/dsh-llm": 0.1.5-rc.1
-    "@deepseek-ai/dsh-session": 0.1.5-rc.1
-    "@deepseek-ai/dsh-settings": 0.1.5-rc.1
-    "@deepseek-ai/dsh-tools": 0.1.5-rc.1
-    "@deepseek-ai/dsh-typert-protocol": 0.1.5-rc.1
-    "@deepseek-ai/dsh-util-values": 0.1.5-rc.1
-    "@deepseek-ai/dsh-workspace": 0.1.5-rc.1
-    react: ^18.2.0
-  peerDependenciesMeta:
-    "@deepseek-ai/dsh-workspace":
-      optional: true
-  checksum: 10c0/2e9306ad761e10deede38624ec57468904383f051e35f83d066422f2f68842b54816452c71a104505e0c1b183d51f06b2225f11243973fba7cb9dbd8a3007483
-  languageName: node
-  linkType: hard
-
-"@awiki/im-core-node-darwin-arm64@npm:0.2.5":
-  version: 0.2.5
-  resolution: "@awiki/im-core-node-darwin-arm64@npm:0.2.5"
+"@awiki/im-core-node-darwin-arm64@npm:0.2.7":
+  version: 0.2.7
+  resolution: "@awiki/im-core-node-darwin-arm64@npm:0.2.7"
   conditions: os=darwin & cpu=arm64
   languageName: node
   linkType: hard
 
-"@awiki/im-core-node-darwin-x64@npm:0.2.5":
-  version: 0.2.5
-  resolution: "@awiki/im-core-node-darwin-x64@npm:0.2.5"
+"@awiki/im-core-node-darwin-x64@npm:0.2.7":
+  version: 0.2.7
+  resolution: "@awiki/im-core-node-darwin-x64@npm:0.2.7"
   conditions: os=darwin & cpu=x64
   languageName: node
   linkType: hard
 
-"@awiki/im-core-node-linux-arm64-gnu@npm:0.2.5":
-  version: 0.2.5
-  resolution: "@awiki/im-core-node-linux-arm64-gnu@npm:0.2.5"
+"@awiki/im-core-node-linux-arm64-gnu@npm:0.2.7":
+  version: 0.2.7
+  resolution: "@awiki/im-core-node-linux-arm64-gnu@npm:0.2.7"
   conditions: os=linux & cpu=arm64 & libc=glibc
   languageName: node
   linkType: hard
 
-"@awiki/im-core-node-linux-x64-gnu@npm:0.2.5":
-  version: 0.2.5
-  resolution: "@awiki/im-core-node-linux-x64-gnu@npm:0.2.5"
+"@awiki/im-core-node-linux-x64-gnu@npm:0.2.7":
+  version: 0.2.7
+  resolution: "@awiki/im-core-node-linux-x64-gnu@npm:0.2.7"
   conditions: os=linux & cpu=x64 & libc=glibc
   languageName: node
   linkType: hard
 
-"@awiki/im-core-node-win32-x64-msvc@npm:0.2.5":
-  version: 0.2.5
-  resolution: "@awiki/im-core-node-win32-x64-msvc@npm:0.2.5"
+"@awiki/im-core-node-win32-x64-msvc@npm:0.2.7":
+  version: 0.2.7
+  resolution: "@awiki/im-core-node-win32-x64-msvc@npm:0.2.7"
   conditions: os=win32 & cpu=x64
   languageName: node
   linkType: hard
 
-"@awiki/im-core-node@npm:0.2.5":
-  version: 0.2.5
-  resolution: "@awiki/im-core-node@npm:0.2.5"
+"@awiki/im-core-node@npm:0.2.7":
+  version: 0.2.7
+  resolution: "@awiki/im-core-node@npm:0.2.7"
   dependencies:
-    "@awiki/im-core-node-darwin-arm64": "npm:0.2.5"
-    "@awiki/im-core-node-darwin-x64": "npm:0.2.5"
-    "@awiki/im-core-node-linux-arm64-gnu": "npm:0.2.5"
-    "@awiki/im-core-node-linux-x64-gnu": "npm:0.2.5"
-    "@awiki/im-core-node-win32-x64-msvc": "npm:0.2.5"
+    "@awiki/im-core-node-darwin-arm64": "npm:0.2.7"
+    "@awiki/im-core-node-darwin-x64": "npm:0.2.7"
+    "@awiki/im-core-node-linux-arm64-gnu": "npm:0.2.7"
+    "@awiki/im-core-node-linux-x64-gnu": "npm:0.2.7"
+    "@awiki/im-core-node-win32-x64-msvc": "npm:0.2.7"
   dependenciesMeta:
     "@awiki/im-core-node-darwin-arm64":
       optional: true
@@ -373,7 +338,7 @@ __metadata:
       optional: true
     "@awiki/im-core-node-win32-x64-msvc":
       optional: true
-  checksum: 10c0/17e216e1e0ffe5bde8fb622802586e1c26431353eb341063340cb7edac0b98867d0c4691be780205893233818b75295bc8677b3ae95509252b5806711da121a9
+  checksum: 10c0/7297fdcb1c66a5a42a1f43aa5bd1a7110e2b88180e596baa6bb4c775a3b1be79d12a30844e2d1283288f5467c2be73657176bac34bf7c231901ff075f1862926
   languageName: node
   linkType: hard
 
@@ -9152,10 +9117,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "dsh-plugin-desktop-beta@workspace:dsh-plugin-desktop-beta"
   dependencies:
-    "@agent-network-protocol/dsh-anp-identity": "npm:0.1.1"
+    "@agent-network-protocol/dsh-anp-identity": "npm:0.1.3"
     "@agents-anywhere/dsh-bridge-next": "file:../vendor/agents-anywhere/agents-anywhere-dsh-bridge-next-0.1.0-dev.0.desktop.c00df092c98b2.rcda81994.tgz"
-    "@awiki/dsh-model-proxy": "file:../vendor/awiki/8e2cad1/awiki-dsh-model-proxy-0.1.7.tgz"
-    "@awiki/dsh-plugin": "file:../vendor/awiki/8e2cad1/awiki-dsh-plugin-0.3.11.tgz"
+    "@awiki/dsh-model-proxy": "npm:0.1.7"
+    "@awiki/dsh-plugin": "npm:0.3.11"
     "@base-ui/react": "npm:^1.7.0"
     "@deepseek-ai/cordis": "npm:4.0.2"
     "@deepseek-ai/cordis-plugin-group": "npm:1.0.2"
@@ -9352,10 +9317,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "dsh-plugin-desktop@workspace:dsh-plugin-desktop"
   dependencies:
-    "@agent-network-protocol/dsh-anp-identity": "npm:0.1.1"
+    "@agent-network-protocol/dsh-anp-identity": "npm:0.1.3"
     "@agents-anywhere/dsh-bridge-next": "file:../vendor/agents-anywhere/agents-anywhere-dsh-bridge-next-0.1.0-dev.0.desktop.c00df092c98b2.rcda81994.tgz"
-    "@awiki/dsh-model-proxy": "file:../vendor/awiki/8e2cad1/awiki-dsh-model-proxy-0.1.7.tgz"
-    "@awiki/dsh-plugin": "file:../vendor/awiki/8e2cad1/awiki-dsh-plugin-0.3.11.tgz"
+    "@awiki/dsh-model-proxy": "npm:0.1.7"
+    "@awiki/dsh-plugin": "npm:0.3.11"
     "@base-ui/react": "npm:^1.7.0"
     "@deepseek-ai/cordis": "npm:4.0.2"
     "@deepseek-ai/cordis-plugin-group": "npm:1.0.2"
@@ -14772,5 +14737,12 @@ __metadata:
   version: 4.4.3
   resolution: "zod@npm:4.4.3"
   checksum: 10c0/7ea31b558e88f9faf44f31dd185e2e1cbf51fed3081787fb96cc2534749b50c0acfc6da7f0922a7353ed092dd358c7d50c28ea96c94d04af64191bd33152eca3
+  languageName: node
+  linkType: hard
+
+"zod@npm:^4.6.2":
+  version: 4.6.4
+  resolution: "zod@npm:4.6.4"
+  checksum: 10c0/c0b9f14353e7cbd7b984703b28ede906c0b6784ca4d0fdb0e0a371add14d6fc29ec4428ef5234a9189ef9db6cfb936cdc98201fb0d446e7521b81cabf627ea3d
   languageName: node
   linkType: hard
