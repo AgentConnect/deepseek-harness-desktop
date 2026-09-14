@@ -42,8 +42,8 @@ Desktop Host、profile 和 DSH home 位于本机。是否向外部服务发送�
 
 ## 应用如何更新？
 
-打包后的应用会在后台检查稳定版本，但不会静默安装。发现新版本后先征得用户确认；下载前可以在原生保存对话框中选择安装包的目录和文件名，取消保存不会开始下载。macOS 下载并打开 DMG，Windows 下载并启动 NSIS 安装程序。升级完成并重新启动后，应用会询问是否删除或保留安装包。网络或下载失败不会破坏当前安装。
+从设置或托盘检查当前 AWiki 租户的版本，再前往该租户下载页面，手动安装完整安装包并重启。正式版只推荐正式版，RC 可升级到更新 RC 或正式版。网络失败保留同租户已验证结果；没有策略时不会改用其他租户。
 
 ## 在哪里下载和报告问题？
 
-从[项目下载页](https://www.dshdesktop.cn/)或[最新 GitHub Release](https://github.com/anywhere-labs/deepseek-harness-desktop/releases/latest)下载安装包。遇到问题时先查看[用户指南的排查部分](user-guide.md#排查)，仍无法解决再提交 [GitHub Issue](https://github.com/anywhere-labs/deepseek-harness-desktop/issues/new/choose)，并附上操作系统、应用版本、复现步骤和错误信息。
+从当前租户官网的“DSH Desktop”入口下载安装包。遇到问题时先查看[用户指南的排查部分](user-guide.md#排查)，仍无法解决再提交 [GitHub Issue](https://github.com/anywhere-labs/deepseek-harness-desktop/issues/new/choose)，并附上操作系统、应用版本、复现步骤和错误信息。

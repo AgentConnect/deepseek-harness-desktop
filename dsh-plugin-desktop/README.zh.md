@@ -179,13 +179,16 @@ npx dsh-plugin-desktop
 
 当 Desktop 窗口没有焦点时，直接用户发起的回合到达 `completed` 会显示原生完成通知；以 `error` 或 `max-tokens` 结束时则显示需要处理的通知。后台任务完成或失败也使用同一条原生注意力路径。取消、阻塞、中断、被终止的任务、插件发起、仅 continuation、turn 不匹配及 subagent 活动都保持静默。点击通知会显示并聚焦窗口。macOS 与 Linux 会递增应用角标，Windows 会闪烁任务栏按钮；显示、聚焦或释放窗口时会清除这些提示。实时生效的 `dsh-desktop-notifications` settings namespace 提供相互独立的 `notifyOnTurnCompletion`、`notifyOnTurnFailure`、`notifyOnJobCompletion` 与 `notifyOnJobFailure` 开关，默认全部开启。通知文案刻意保持通用，不会包含提示词、回复、错误、任务标签、命令、路径、会话 ID、模型或 provider 名称、工具数据及输出。
 
-打包应用在启动 60 秒后查询 `https://awiki.me/downloads/dsh-awiki/stable/desktop-release.json`，之后每六小时检查一次。设置和托盘共用单次版本请求，超时为 15 秒。AWiki 发行版只接受自身的规范 SemVer 清单：预发行用户可升级到更新的预发行版或正式版，正式版用户不会收到预发行升级。后台每个新版本只显示一次轻量通知。查询失败保留内存中上次成功结果，并明确标注查询失败。
+打包应用在启动 60 秒后查询当前 AWiki 租户的 `/user-service/v1/server-info?client_platform=dsh`，之后每六小时检查一次。设置、托盘和后台共享查询；请求超时为 15 秒。各租户的 `products.dsh.desktop.channels` 分别维护 stable 与 prerelease。正式版只选 stable；RC 可升级到更新的 RC 或正式版，不推荐降级。
 
-托盘的 **Check for Updates…** 显示原生结果对话框；查询失败时仍提供固定的[桌面下载页面](https://awiki.me/downloads/dsh-awiki/)。用户自行下载、安装并重启。客户端不下载安装器、不启动安装器，也不删除旧安装包；旧安装包清理回执保持原样。公共 `desktopDistribution` 服务只提供版本、通道、下载页面和查询状态，AWiki 设置页独立读取该服务，不受当前租户插件兼容要求影响。
+托盘 **Check for Updates…** 显示检查结果，只有通过校验的当前租户下载页可以打开。用户从页面下载完整安装包，手动安装并重启；内置组件随整包更新，更新界面不提供 npm 命令。客户端不下载、启动或清理安装器。新安装仍默认中国；Global 用户在 AWiki 设置选择全球（硅谷）。升级保留既有租户、身份和本地数据。
 
-发布人员通过 `awiki-web/deploy/prepare-desktop-downloads.mjs` 准备完整的三类平台制品，并一起发布匹配的版本清单和下载页面。清单标识为 `awiki-dsh-desktop`；可选的 `bundled_versions.plugin/model_proxy` 必须来自实际内置 runtime inputs。旧版无该标识的清单只在当前固定发行地址兼容。独立 npm 插件的已发布版本仍由各租户 user-service 管理，不能将 runtime-input 归档冒充公开 npm 包。
+没有 AWiki 租户能力或本租户未发布时显示更新不可用，不回退到上海或上游更新源。缓存按租户、origin、发行标识和通道隔离；失败只保留同租户的已验证结果。切换开始即清除旧推荐，取消请求，迟到结果或已打开的旧对话框不能打开原租户链接。后台提醒同样按租户和通道隔离。
 
-在 macOS 与 Windows 上，**Open DSH Terminal** 会打开以当前激活 profile 为工作目录的系统终端。欢迎信息会显示应用版本、当前 profile、profile 目录与 DSH home，并列出配置与插件管理命令。在该终端内，裸 `dsh`、`dsh --dump-config`，以及没有选择 profile 的 plugin 子命令都会默认使用当前激活 profile；显式 `--profile` 与上游 `web` alias 会保留原有含义。DSH Desktop 会在自身 user-data 目录下按 profile 生成私有 `dsh`、`pnpm` 与 `node` shim，设置 `DSH_HOME`，使用当前 profile 作为工作目录，并且只在该终端的 `PATH` 前置 shim 目录；之后切换 profile 不会改变已经打开的终端命令。它不会修改全局环境或 shell 启动文件。macOS launcher 会先保留用户的交互式 zsh 或 bash 设置，再恢复 desktop 自有变量。Windows 会依次选择 PowerShell 7、Windows PowerShell 或命令提示符，并在新的 Windows Terminal 窗口中打开；如果 `wt.exe` 不可用，则由私有 `cmd start` broker 创建可见控制台。同步启动失败与 broker 非正常退出会显示在原生错误对话框中。Linux 不组合该终端命令。
+公共 `desktopDistribution` 快照为 schemaVersion 2，包含 tenantId、policyOrigin、tenantGeneration 和 policyRevision；仅通过同进程能力和 loopback RPC 投影。旧 schemaVersion 1 由新版 AWiki 仅显示当前版本与人工升级说明，不沿用固定上海链接。
+
+发布工具 `awiki-web/deploy/prepare-desktop-downloads.mjs` 支持按各租户策略生成页面与两个通道清单，三平台制品可共享相同字节和来源 URL。Desktop 策略启用独立于 npm enabled。内置版本必须来自真实 runtime inputs；这些字段不代表 npm 已发布。本轮未升级现有 DSH pins，未打包或发布新安装包，后续需要单独对齐兼容运行时并验收制品。
+
 
 ## 日志与诊断
 

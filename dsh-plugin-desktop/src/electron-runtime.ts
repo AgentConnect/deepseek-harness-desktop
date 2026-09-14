@@ -44,7 +44,6 @@ import {
   desktopLocaleFromLanguageTag,
   desktopTrayLabel,
 } from './tray-locale.ts'
-import { DESKTOP_DOWNLOAD_PAGE } from './distribution.ts'
 import type { UpdateCheckResult } from './update-checker.ts'
 import {
   type WindowsVolumeQuery,
@@ -130,7 +129,7 @@ export class ElectronDesktopRuntime implements DesktopRuntime {
       get currentVersion() { return PRODUCT_VERSION },
       get statePath() { return join(app.getPath('userData'), 'updates', 'state.json') },
       request: (url, init) => net.fetch(url, init),
-      showManualCheckResult: result => this.showManualUpdateCheckResult(result),
+      showManualCheckResult: (result, isCurrent) => this.showManualUpdateCheckResult(result, isCurrent),
       notify: notification => { this.showNotification(notification) },
     }
   }
@@ -487,15 +486,18 @@ export class ElectronDesktopRuntime implements DesktopRuntime {
     nativeNotification.show()
   }
 
-  /** A manual check only offers the distribution's fixed download page. */
-  private async showManualUpdateCheckResult(result: UpdateCheckResult | null): Promise<void> {
+  /** A manual check opens only the still-active tenant's verified download page. */
+  private async showManualUpdateCheckResult(result: UpdateCheckResult | null, isCurrent: () => boolean = () => true): Promise<void> {
     const zh = this.currentLocale === 'zh'
     const available = result?.status === 'update-available'
+    const downloadPage = result?.downloadPageUrl
     const outcome = await dialog.showMessageBox({
       type: result === null ? 'warning' : 'info',
       title: zh ? 'DSH Desktop 版本与更新' : 'DSH Desktop Updates',
       message: result === null
         ? zh ? '检查失败，请稍后重试。' : 'Unable to check for updates. Please retry.'
+        : result.status === 'unavailable'
+          ? zh ? '当前租户未提供桌面版更新信息。' : 'This tenant has not provided Desktop updates.'
         : available
           ? zh ? `发现新版本 ${result.latestVersion}` : `Version ${result.latestVersion} is available.`
           : result.status === 'no-release'
@@ -503,15 +505,15 @@ export class ElectronDesktopRuntime implements DesktopRuntime {
             : zh ? '当前版本无需升级。' : 'Your version is up to date.',
       detail: zh ? '在下载页面选择适合电脑的安装包，安装后重新打开应用。'
         : 'Choose an installer on the download page, install it, then reopen the application.',
-      buttons: zh ? ['前往下载页面', '关闭'] : ['Visit Download Page', 'Close'],
-      defaultId: available ? 0 : 1, cancelId: 1, noLink: true,
+      buttons: downloadPage === undefined ? [zh ? '关闭' : 'Close'] : zh ? ['前往下载页面', '关闭'] : ['Visit Download Page', 'Close'],
+      defaultId: available || downloadPage === undefined ? 0 : 1, cancelId: downloadPage === undefined ? 0 : 1, noLink: true,
     })
-    if (outcome.response !== 0) return
-    try { await shell.openExternal(DESKTOP_DOWNLOAD_PAGE) }
+    if (outcome.response !== 0 || downloadPage === undefined || !isCurrent()) return
+    try { await shell.openExternal(downloadPage) }
     catch {
       await dialog.showMessageBox({ type: 'warning', title: zh ? '无法打开下载页面' : 'Unable to Open Download Page',
         message: zh ? '请复制此地址到浏览器打开。' : 'Open this address in your browser.',
-        detail: DESKTOP_DOWNLOAD_PAGE, buttons: ['OK'], noLink: true })
+        detail: downloadPage, buttons: ['OK'], noLink: true })
     }
   }
 

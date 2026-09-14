@@ -97,7 +97,7 @@ export interface DesktopUpdateAdapter {
   /** Request adapter backed by Electron's native network session. */
   readonly request: UpdateRequest
   /** Present the outcome of a user-triggered version check. */
-  showManualCheckResult(result: UpdateCheckResult | null): Promise<void>
+  showManualCheckResult(result: UpdateCheckResult | null, isCurrent?: () => boolean): Promise<void>
   /** Present a native status notification without blocking the Host tree. */
   notify(notification: DesktopNotification): void
 }

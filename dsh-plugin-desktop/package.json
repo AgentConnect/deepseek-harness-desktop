@@ -128,6 +128,7 @@
     "verify:loader": "node scripts/verify-loader-boot.mjs",
     "verify:profile": "node scripts/verify-profile-boot.mjs",
     "verify:awiki-tenant-source": "node scripts/verify-awiki-tenant-source.mjs",
+    "verify:awiki-direct-source": "node scripts/verify-awiki-tenant-source.mjs --direct",
     "verify:licenses": "node scripts/verify-licenses.mjs",
     "verify:operations": "node --test scripts/operation-reliability.spec.mjs && node scripts/verify-operation-reliability.mjs",
     "verify:notices": "node scripts/verify-licenses.mjs --notices THIRD_PARTY_NOTICES.md",
