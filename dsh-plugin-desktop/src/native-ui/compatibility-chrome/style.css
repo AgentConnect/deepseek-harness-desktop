@@ -334,3 +334,6 @@ html, body, #root { background: transparent; font-size: 13px; }
   font-size: 11px;
   line-height: 1.4;
 }
+
+.dshDesktopRemoteControl { margin-right: 8px; display: inline-flex; align-items: center; gap: 6px; -webkit-app-region: no-drag; }
+.dshDesktopRemoteControlDot { width: 6px; height: 6px; border-radius: 50%; background: #ef4444; flex-shrink: 0; }
