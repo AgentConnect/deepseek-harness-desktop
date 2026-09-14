@@ -14,12 +14,14 @@ export interface CompatibilityShellActions {
   reload(): void
   developerTools(): void
   checkForUpdates(): Promise<void>
+  remoteControl?: { read(): Promise<{ enabled: boolean; seen: boolean }>; open(): Promise<void> }
 }
 
 export class CompatibilityShell {
   readonly content: WebContentsView
   private readonly documentPath = fileURLToPath(new URL('./native-ui/compatibility-chrome.html', import.meta.url))
   private disposed = false
+  private remoteControl: CompatibilityChromeState['remoteControl']
   readonly chromeView: WebContentsView
   private expanded = false
   private readonly chrome: WebContents
@@ -87,6 +89,7 @@ export class CompatibilityShell {
   get chromeWebContents(): WebContents { return this.chrome }
 
   async load(): Promise<void> {
+    await this.updateRemoteControl()
     await this.chrome.loadFile(this.documentPath)
   }
 
@@ -96,8 +99,21 @@ export class CompatibilityShell {
     }
   }
 
+  private async updateRemoteControl(): Promise<void> {
+    try { this.remoteControl = await this.actions.remoteControl?.read() }
+    catch { this.remoteControl = undefined }
+  }
+
+  private async openRemoteControl(): Promise<void> {
+    if (!this.actions.remoteControl) return
+    if (this.remoteControl) this.remoteControl = { ...this.remoteControl, seen: true }
+    this.refresh()
+    try { await this.actions.remoteControl.open() }
+    finally { await this.updateRemoteControl(); this.refresh() }
+  }
+
   private state(): CompatibilityChromeState {
-    return { mode: this.spec.mode === 'extended' ? 'extended' : 'compatibility', locale: this.actions.locale(), version: this.actions.version, platform: this.platform, material: this.spec.material }
+    return { mode: this.spec.mode === 'extended' ? 'extended' : 'compatibility', locale: this.actions.locale(), version: this.actions.version, platform: this.platform, material: this.spec.material, ...(this.remoteControl ? { remoteControl: this.remoteControl } : {}) }
   }
 
   private readonly resize = (): void => {
@@ -134,6 +150,7 @@ export class CompatibilityShell {
   private command(command: unknown): CompatibilityChromeState | undefined | Promise<void> {
     switch (command) {
       case 'state': return this.state()
+      case 'remote-control': return this.openRemoteControl()
       case 'expand': this.expanded = true; this.resize(); return
       case 'collapse': this.collapse(); return
       case 'terminal': this.actions.openTerminal(); return

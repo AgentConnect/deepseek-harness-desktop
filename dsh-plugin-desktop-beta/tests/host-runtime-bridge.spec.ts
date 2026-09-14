@@ -34,11 +34,16 @@ it('preserves the Web URL and authentication while projecting shell and tray cal
       readLocalePreference: () => language, readThemeSource: () => 'dark',
       requestQuit() {}, requestModeChange: mode,
     } as unknown as DesktopShellSpec
+    spec.readRemoteControl = vi.fn(async () => false)
+    spec.enableRemoteControl = vi.fn(async () => {})
     const stopShell = runtime.schedule(spec)
     runtime.registerTrayItem({ group: 'tools', order: 1, label: () => 'Plugin action', invoke,
       submenu: () => [{ label: () => 'Child', invoke }] })
     language = 'zh'
     await runtime.mountScheduled()
+    expect(await shell.readRemoteControl?.()).toBe(false)
+    await shell.enableRemoteControl?.()
+    expect(spec.enableRemoteControl).toHaveBeenCalledTimes(1)
     expect(shell.url).toBe(spec.url)
     expect(shell.authenticationUrl).toBe(spec.authenticationUrl)
     expect(shell.rendererAccessHeader).toEqual(spec.rendererAccessHeader)

@@ -1,6 +1,8 @@
 /** Desktop-owned settings copy. */
 
 export const zh = {
+  remoteControl: '远程控制',
+  remoteControlNew: '新功能',
   aaSaving: '正在保存手机连接设置…',
   aaLoadFailed: '手机连接未能启动。选择“重试加载”以重试；如果仍然失败，请检查日志。',
   retryAa: '重试加载',
@@ -134,6 +136,8 @@ export const zh = {
 export type DesktopSettingsLocaleKey = keyof typeof zh
 
 export const en: Record<DesktopSettingsLocaleKey, string> = {
+  remoteControl: 'Remote control',
+  remoteControlNew: 'New feature',
   aaSaving: 'Saving phone connection settings…',
   aaLoadFailed: 'Phone connection could not start. Select Retry loading to try again. If it still fails, check the logs.',
   retryAa: 'Retry loading',
