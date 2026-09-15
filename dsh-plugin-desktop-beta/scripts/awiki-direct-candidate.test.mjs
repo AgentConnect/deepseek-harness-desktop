@@ -4,7 +4,7 @@ import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import test from 'node:test'
-import { verifyAwikiDirectCandidate } from './awiki-direct-candidate.mjs'
+import { verifyAwikiDirectCandidate, candidateBundleNames } from './awiki-direct-candidate.mjs'
 
 test('accepts matching candidate bytes and rejects stale code or substituted runtime dependencies', () => {
   const root = mkdtempSync(join(tmpdir(), 'desktop-direct-candidate-'))
@@ -33,4 +33,12 @@ test('accepts matching candidate bytes and rejects stale code or substituted run
   } finally {
     rmSync(root, { recursive: true, force: true })
   }
+})
+
+test('compares identical runtime bundle inventories from Windows and POSIX tar output', () => {
+  const entries = ['package/', 'package/lib/index.js', 'package/lib/sdk-adapter-real.mjs',
+    'package/lib/client.js', 'package/lib/types/index.js', 'package/lib/client.js.map', '']
+  const expected = ['client.js', 'index.js', 'sdk-adapter-real.mjs']
+  assert.deepEqual(candidateBundleNames(entries.join('\r\n')), expected)
+  assert.deepEqual(candidateBundleNames(entries.join('\n')), expected)
 })

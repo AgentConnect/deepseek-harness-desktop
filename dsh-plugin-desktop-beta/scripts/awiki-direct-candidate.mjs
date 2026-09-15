@@ -15,9 +15,7 @@ export function verifyAwikiDirectCandidate(sourceRoot, candidate) {
   }
   // Include shared SDK chunks: the Provider entry alone does not contain the send implementation.
   const bundles = readdirSync(join(sourceRoot, 'lib')).filter(file => /\.m?js$/u.test(file)).sort()
-  const packedBundles = execFileSync('tar', ['-tzf', candidate], { encoding: 'utf8' })
-    .split('\n').filter(file => /^package\/lib\/[^/]+\.m?js$/u.test(file))
-    .map(file => file.slice('package/lib/'.length)).sort()
+  const packedBundles = candidateBundleNames(execFileSync('tar', ['-tzf', candidate], { encoding: 'utf8' }))
   if (JSON.stringify(bundles) !== JSON.stringify(packedBundles)) {
     throw new Error('AWiki candidate runtime bundles do not match the verified source')
   }
@@ -29,4 +27,10 @@ export function verifyAwikiDirectCandidate(sourceRoot, candidate) {
     mode: 'local-candidate-only', package: manifest.name, version: manifest.version,
     sha256: createHash('sha256').update(readFileSync(candidate)).digest('hex'),
   }
+}
+
+/** Windows bsdtar writes CRLF; archive entry names themselves stay POSIX paths. */
+export function candidateBundleNames(listing) {
+  return listing.split(/\r?\n/u).filter(file => /^package\/lib\/[^/]+\.m?js$/u.test(file))
+    .map(file => file.slice('package/lib/'.length)).sort()
 }
