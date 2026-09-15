@@ -104,6 +104,17 @@ describe('AWiki Desktop package compatibility', () => {
     )
   })
 
+  it('selects the fixed local candidate pair over the previously shipped AWiki bundle', () => {
+    const target = fixture()
+    installAwikiPair(target.install, '0.3.10', '0.1.6', '^0.3.10')
+    installAwikiPair(target.profile, '0.3.11-rc.1', '0.1.7-rc.1', '^0.3.11-rc.1')
+    const result = selectDesktopAwikiCompatibility(target.options)
+    expect(result.fallback).toBeUndefined()
+    expect(Object.fromEntries(result.preferredSources)).toEqual({
+      '@awiki/dsh-plugin': 'profile', '@awiki/dsh-model-proxy': 'profile',
+    })
+  })
+
   it('fails safely when a peer range is missing instead of guessing compatibility', () => {
     const target = fixture()
     installAwikiPair(target.install, '0.3.1', '0.1.1', '')

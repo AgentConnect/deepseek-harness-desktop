@@ -1,7 +1,9 @@
 /** Headless version checks against the public DSH Desktop release service. */
 
-/** Public endpoint returning the AWiki DSH Desktop release manifest. */
-export const DESKTOP_VERSION_ENDPOINT = 'https://awiki.me/downloads/dsh-awiki/stable/desktop-release.json'
+import type { DesktopTenantContext } from './distribution.ts'
+
+/** Resolved only beneath the active tenant; artifact URLs may use a shared host. */
+export const DESKTOP_VERSION_PATH = '/user-service/v1/server-info?client_platform=dsh'
 
 /** Maximum response body bytes accepted from the version service. */
 export const MAX_VERSION_RESPONSE_BYTES = 64 * 1024
@@ -27,6 +29,8 @@ export type UpdateRequest = (url: string, init: RequestInit) => Promise<Response
 
 /** Inputs for one Desktop release check. */
 export interface UpdateCheckOptions {
+  readonly tenant?: DesktopTenantContext
+  readonly minimumRevision?: number
   /** Installed application version, expressed as canonical SemVer. */
   readonly currentVersion: string
   /** Caller-owned cancellation signal; the checker does not create its own timeout. */
@@ -38,12 +42,16 @@ export interface UpdateCheckOptions {
 /** Successful comparison with the selected Desktop distribution. */
 export type UpdateCheckResult = {
   /** Whether the service reports a version newer than the installed application. */
-  readonly status: 'up-to-date' | 'update-available' | 'no-release'
+  readonly status: 'up-to-date' | 'update-available' | 'no-release' | 'unavailable'
   /** Canonical installed Desktop version. */
   readonly currentVersion: string
   /** Canonical latest eligible version returned by the service. */
   readonly latestVersion: string
   readonly bundledVersions?: Readonly<{ plugin: string; modelProxy?: string }>
+  readonly downloadPageUrl?: string
+  readonly policyRevision?: number
+  /** Validated response retained only in this tenant's cache. */
+  readonly policy?: string
 }
 
 const SEMVER_PATTERN =
@@ -86,7 +94,7 @@ export function compareSemVerVersions(left: string, right: string): number | nul
 }
 
 /**
- * Check the fixed DSH Desktop version endpoint for a newer release in the installed channel.
+ * Check the active tenant's policy for a release in the installed channel.
  * @param options - installed version, caller-owned signal, and optional request adapter.
  * @returns a successful comparison, or null when any request or validation step fails.
  */
@@ -94,7 +102,13 @@ export async function checkForDesktopUpdate(
   options: UpdateCheckOptions,
 ): Promise<UpdateCheckResult | null> {
   const current = parseCanonicalVersion(options.currentVersion)
-  if (current === null) return null
+  if (current === null || options.tenant === undefined) return null
+  let endpoint: string
+  try {
+    const origin = new URL(options.tenant.policyOrigin)
+    if (origin.protocol !== 'https:' || origin.origin !== options.tenant.policyOrigin) return null
+    endpoint = new URL(DESKTOP_VERSION_PATH, origin).href
+  } catch { return null }
 
   const init: RequestInit = {
     method: 'GET',
@@ -107,12 +121,14 @@ export async function checkForDesktopUpdate(
 
   let response: Response
   try {
-    response = await request(DESKTOP_VERSION_ENDPOINT, init)
+    response = await request(endpoint, init)
   } catch {
     return null
   }
-  if (response.status !== 200 || response.redirected
-    || (response.url !== '' && new URL(response.url).origin !== new URL(DESKTOP_VERSION_ENDPOINT).origin)) return null
+  try {
+    if (response.status !== 200 || response.redirected
+      || (response.url !== '' && new URL(response.url).origin !== options.tenant.policyOrigin)) return null
+  } catch { return null }
 
   let body: string
   try {
@@ -121,18 +137,57 @@ export async function checkForDesktopUpdate(
     return null
   }
 
-  const release = parseVersionResponse(body)
-  if (release === null) return null
-  const latest = release.version
-  if (current.prerelease.length === 0 && latest.prerelease.length > 0) {
-    return { status: 'no-release', currentVersion: current.version, latestVersion: current.version }
-  }
-  return {
-    status: compareParsedSemVer(latest, current) > 0 ? 'update-available' : 'up-to-date',
-    currentVersion: current.version,
-    latestVersion: latest.version,
-    ...release.bundledVersions === undefined ? {} : { bundledVersions: release.bundledVersions },
-  }
+  return parseDesktopPolicy(body, options)
+}
+
+/** Re-validate cached and network responses with identical tenant/channel rules. */
+export function parseDesktopPolicy(body: string, options: UpdateCheckOptions): UpdateCheckResult | null {
+  try {
+    const current = parseCanonicalVersion(options.currentVersion)
+    const value: unknown = JSON.parse(body)
+    if (current === null || options.tenant === undefined || !isRecord(value) || value.schema_version !== 1) return null
+    const policy = value.client_versions
+    if (!isRecord(policy) || policy.schema_version !== 1 || policy.channel !== 'stable'
+      || policy.policy_origin !== options.tenant.policyOrigin || !Number.isSafeInteger(policy.policy_revision)
+      || (policy.policy_revision as number) < Math.max(1, options.minimumRevision ?? 1)
+      || typeof policy.published_at !== 'string' || !Number.isFinite(Date.parse(policy.published_at))
+      || !isRecord(policy.products) || !isRecord(policy.products.dsh)) return null
+    const base = { currentVersion: current.version, latestVersion: current.version,
+      policyRevision: policy.policy_revision as number, policy: body }
+    const desktop = policy.products.dsh.desktop
+    if (desktop === undefined || desktop === null || (isRecord(desktop) && desktop.enabled === false)) {
+      return { ...base, status: 'unavailable' }
+    }
+    if (!isRecord(desktop) || desktop.enabled !== true || !isRecord(desktop.channels)) return null
+    let publishedChannels = 0
+    const candidates: Array<{ version: ParsedSemVer; downloadPageUrl: string; bundledVersions: { plugin: string; modelProxy?: string } }> = []
+    for (const channel of ['stable', 'prerelease'] as const) {
+      const release = desktop.channels[channel]
+      if (release === undefined || release === null) continue
+      publishedChannels++
+      if (!isRecord(release) || release.distribution_id !== 'awiki-dsh-desktop' || release.channel !== channel
+        || typeof release.version !== 'string' || !isRecord(release.bundled_versions)
+        || typeof release.bundled_versions.plugin !== 'string' || parseCanonicalVersion(release.bundled_versions.plugin) === null
+        || typeof release.download_page_url !== 'string') return null
+      const version = parseCanonicalVersion(release.version)
+      if (version === null || (version.prerelease.length > 0) !== (channel === 'prerelease')) return null
+      const page = new URL(release.download_page_url)
+      if (page.protocol !== 'https:' || page.username !== '' || page.password !== '' || page.origin !== options.tenant.policyOrigin) return null
+      const modelProxy = release.bundled_versions.model_proxy
+      if (modelProxy !== undefined && modelProxy !== null && (typeof modelProxy !== 'string' || parseCanonicalVersion(modelProxy) === null)) return null
+      if (current.prerelease.length === 0 && channel === 'prerelease') continue
+      candidates.push({ version, downloadPageUrl: page.href, bundledVersions: {
+        plugin: release.bundled_versions.plugin,
+        ...typeof modelProxy === 'string' ? { modelProxy } : {},
+      } })
+    }
+    if (publishedChannels === 0) return null
+    candidates.sort((a, b) => compareParsedSemVer(b.version, a.version))
+    const latest = candidates[0]
+    if (latest === undefined) return { ...base, status: 'no-release' }
+    return { ...base, status: compareParsedSemVer(latest.version, current) > 0 ? 'update-available' : 'up-to-date',
+      latestVersion: latest.version.version, downloadPageUrl: latest.downloadPageUrl, bundledVersions: latest.bundledVersions }
+  } catch { return null }
 }
 
 async function defaultRequest(url: string, init: RequestInit): Promise<Response> {
@@ -167,24 +222,6 @@ async function readLimitedBody(response: Response): Promise<string> {
   } finally {
     reader.releaseLock()
   }
-}
-
-function parseVersionResponse(body: string): { version: ParsedSemVer; bundledVersions?: Readonly<{ plugin: string; modelProxy?: string }> } | null {
-  let value: unknown
-  try { value = JSON.parse(body) } catch { return null }
-  if (!isRecord(value) || value.schema_version !== 1 || value.product !== 'dsh-desktop'
-    || (value.distribution_id !== undefined && value.distribution_id !== 'awiki-dsh-desktop')
-    || (value.channel !== 'stable' && value.channel !== 'prerelease')
-    || typeof value.version !== 'string') return null
-  const version = parseCanonicalVersion(value.version)
-  if (version === null || (value.channel === 'stable' && version.prerelease.length > 0)
-    || (value.channel === 'prerelease' && version.prerelease.length === 0)) return null
-  const bundled = value.bundled_versions
-  if (bundled === undefined) return { version } // Existing Shanghai release manifests.
-  if (!isRecord(bundled) || typeof bundled.plugin !== 'string' || parseCanonicalVersion(bundled.plugin) === null
-    || (bundled.model_proxy !== undefined && (typeof bundled.model_proxy !== 'string' || parseCanonicalVersion(bundled.model_proxy) === null))) return null
-  return { version, bundledVersions: { plugin: bundled.plugin,
-    ...typeof bundled.model_proxy === 'string' ? { modelProxy: bundled.model_proxy } : {} } }
 }
 
 function parseCanonicalVersion(input: string): ParsedSemVer | null {

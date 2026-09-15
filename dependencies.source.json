@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "dependencies": {
+    "dsh-awiki": {
+      "repository": "https://github.com/AgentConnect/dsh-awiki.git",
+      "commit": "f4b181f22c58bcc1a76f8099882ddc5191823eab",
+      "pull_request": "https://github.com/AgentConnect/dsh-awiki/pull/62"
+    }
+  }
+}

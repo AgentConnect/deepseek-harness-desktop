@@ -92,6 +92,6 @@
     "upstream:install": "cd deepseek-harness && corepack pnpm install --frozen-lockfile",
     "upstream:build": "cd deepseek-harness && corepack pnpm run build",
     "prepare:runtime-inputs": "node scripts/prepare-runtime-inputs.mjs",
-    "check:runtime-inputs": "node --test scripts/runtime-inputs.test.mjs && node scripts/prepare-runtime-inputs.mjs --verify-only"
+    "check:runtime-inputs": "node --test scripts/runtime-inputs.test.mjs && node scripts/prepare-runtime-inputs.mjs --verify-only && yarn workspace dsh-plugin-desktop verify:awiki-updates"
   }
 }

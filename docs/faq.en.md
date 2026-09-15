@@ -42,8 +42,8 @@ No plugins are copied automatically. Each profile has its own bundle and depende
 
 ## How are updates installed?
 
-Packaged applications check for stable releases in the background but never install silently. A newer version requires confirmation. Before downloading, a native save dialog lets you choose the installer's directory and filename; cancelling it does not start a download. macOS downloads and opens a DMG; Windows downloads and starts an NSIS installer. After the upgrade and next launch, the app asks whether to delete or keep the installer. Network and download failures leave the current installation intact.
+Check the active AWiki tenant from Settings or the tray, open its download page, install the complete package manually, and restart. Stable installations only use stable releases; RC installations can upgrade to newer RC or stable releases. Failed requests retain only verified results from that tenant. Missing policy never falls back to another tenant.
 
 ## Where can I download the app or report a problem?
 
-Download from the [project download page](https://www.dshdesktop.cn/) or the [latest GitHub Release](https://github.com/anywhere-labs/deepseek-harness-desktop/releases/latest). Check the [troubleshooting section](user-guide.en.md#troubleshooting) first. If the problem remains, open a [GitHub Issue](https://github.com/anywhere-labs/deepseek-harness-desktop/issues/new/choose) with the operating system, app version, reproduction steps, and error details.
+Download from the DSH Desktop entry on your current tenant’s website. Check the [troubleshooting section](user-guide.en.md#troubleshooting) first. If the problem remains, open a [GitHub Issue](https://github.com/anywhere-labs/deepseek-harness-desktop/issues/new/choose) with the operating system, app version, reproduction steps, and error details.

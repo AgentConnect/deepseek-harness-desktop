@@ -5,6 +5,22 @@ import z from '@deepseek-ai/schemastery'
 import type {} from './runtime.ts'
 import type {} from './distribution.ts'
 import { startDesktopUpdateLifecycle } from './update-lifecycle.ts'
+import type { DesktopTenantContext } from './distribution.ts'
+
+/** Public, same-process AWiki tenant capability; no identity or private path access. */
+interface TenantOwner {
+  getTenantRegistryView(): { activeTenantId: string; generation: number; tenants: readonly { tenantId: string; backendBaseUrl: string }[] }
+  registerTenantLifecycleParticipant(participant: {
+    prepareSwitch(): void
+    commitSwitch(context: TenantSwitch): void
+    rollbackSwitch(context: TenantSwitch): void
+  }): () => void
+}
+interface TenantSwitch {
+  from: { tenantId: string; backendBaseUrl: string }
+  to: { tenantId: string; backendBaseUrl: string }
+  generation: number
+}
 
 /** Stable Cordis plugin name. */
 export const name = 'desktop-updates'
@@ -48,6 +64,26 @@ export function apply(ctx: Context, config: Config): void {
       registerTrayItem: item => ctx.desktopRuntime.registerTrayItem(item),
     })
     const removeService = ctx.provide('desktopDistribution', lifecycle)
+    ctx.inject(['awiki'], tenantCtx => {
+      const candidate: unknown = tenantCtx.get('awiki')
+      if (typeof candidate !== 'object' || candidate === null
+        || !('getTenantRegistryView' in candidate) || typeof candidate.getTenantRegistryView !== 'function'
+        || !('registerTenantLifecycleParticipant' in candidate) || typeof candidate.registerTenantLifecycleParticipant !== 'function') return
+      const owner = candidate as TenantOwner
+      const bind = (tenant: TenantSwitch['to'] | undefined, generation: number): void => {
+        const context: DesktopTenantContext | undefined = tenant === undefined ? undefined
+          : { tenantId: tenant.tenantId, policyOrigin: tenant.backendBaseUrl, tenantGeneration: generation }
+        lifecycle.setTenant(context)
+      }
+      const view = owner.getTenantRegistryView()
+      bind(view.tenants.find(tenant => tenant.tenantId === view.activeTenantId), view.generation)
+      const unregister = owner.registerTenantLifecycleParticipant({
+        prepareSwitch: () => { lifecycle.setTenant(undefined) },
+        commitSwitch: context => { bind(context.to, context.generation) },
+        rollbackSwitch: context => { bind(context.from, context.generation) },
+      })
+      tenantCtx.effect(() => () => { unregister(); lifecycle.setTenant(undefined) })
+    })
     return async () => { removeService(); await lifecycle.dispose() }
   }, 'dsh-plugin-desktop: version checks and manual download-page guidance')
 }
