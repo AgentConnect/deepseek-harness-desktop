@@ -63,11 +63,7 @@ The welcome text shows the application version, active profile, profile director
 
 ## Updates
 
-Packaged macOS and Windows applications check `https://www.dshdesktop.cn/api/desktop/version` in the background. Startup is not blocked; network errors, non-200 responses, invalid versions, and a server version that is not newer remain silent in the background. A newer version updates the tray and raises one non-blocking system notification per version instead of opening a download confirmation automatically; clicking the notification reveals Desktop.
-
-**Check for Updates…** in the tray checks the current release channel: stable receives only stable updates, while Beta receives only Beta updates. It shows a result even when the installed version is current and reports a retry message when the check fails. Beta also provides **Install Stable Edition…**, which installs stable alongside Beta. Cancelling never requests the counted download endpoint.
-
-After confirmation, the app first opens the native **Save Update Installer** dialog, defaulting to the Downloads directory. You can choose another directory and filename; cancelling the dialog does not start a download. After the destination is confirmed, the app requests the fixed platform download URL and remembers the installer location. macOS opens the DMG for the user to replace the application in Applications; Windows prepares the NSIS installer and then asks whether to quit and start installation. After the upgrade completes and the app starts again, it asks whether to delete the installer to free disk space or keep it. Download or installer failures do not damage the current version, and the tray operation can be retried.
+Packaged applications check updates for the active AWiki tenant. Stable builds select stable releases; prerelease builds compare stable and prerelease channels. Only newer versions are recommended. Settings and the tray share the result. Switching tenants clears the previous recommendation, and an already-open dialog cannot open the former tenant’s download page. Network failures may retain that tenant’s verified cache; missing policy is shown as unavailable. Users visit the active tenant’s download page, choose an installer, install it manually, and reopen the app.
 
 ## Troubleshooting
 

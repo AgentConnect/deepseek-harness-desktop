@@ -148,7 +148,7 @@ export class ElectronDesktopRuntime implements DesktopRuntime {
       ...(installationId === undefined ? {} : { installationId }),
       request: (url, init) => net.fetch(url, init),
       confirmDownload: (version, channel) => this.confirmUpdateDownload(version, channel),
-      showManualCheckResult: result => this.showManualUpdateCheckResult(result),
+      showManualCheckResult: (result, isCurrent) => this.showManualUpdateCheckResult(result, isCurrent),
       downloadAndOpen: (version, signal, channel) => this.downloadAndOpenUpdate(version, signal, channel),
       notify: notification => { this.showNotification(notification) },
     }
@@ -647,44 +647,39 @@ export class ElectronDesktopRuntime implements DesktopRuntime {
     return result.response === 0
   }
 
-  /** Report one user-triggered check without exposing network or response details. */
-  private async showManualUpdateCheckResult(result: UpdateCheckResult | null): Promise<void> {
-    const copy = desktopNativeCopy(this.currentLocale)
-    if (result === null) {
-      await this.showUpdateMessageBox({
-        type: 'warning',
-        title: copy.updateCheckFailedTitle,
-        message: copy.updateCheckFailedMessage,
-        detail: copy.tryAgainLater,
-        buttons: [copy.ok],
-        defaultId: 0,
-        noLink: true,
-      })
-      return
-    }
-
-    if (result.status === 'up-to-date') {
-      await this.showUpdateMessageBox({
-        type: 'info',
-        title: copy.upToDateTitle,
-        message: copy.upToDateMessage,
-        detail: copy.installedVersion(result.currentVersion),
-        buttons: [copy.ok],
-        defaultId: 0,
-        noLink: true,
-      })
-      return
-    }
-
-    await this.showUpdateMessageBox({
-      type: 'info',
-      title: copy.updateAvailableTitle,
-      message: copy.updateAvailableMessage(result.latestVersion),
-      detail: copy.installerUnavailable,
-      buttons: [copy.ok],
-      defaultId: 0,
-      noLink: true,
+  /** Open only the current tenant's verified page after a manual check. */
+  private async showManualUpdateCheckResult(
+    result: UpdateCheckResult | null,
+    isCurrent: () => boolean | Promise<boolean> = () => true,
+  ): Promise<void> {
+    const zh = this.currentLocale === 'zh'
+    const available = result?.status === 'update-available'
+    const downloadPage = result?.downloadPageUrl
+    const outcome = await this.showUpdateMessageBox({
+      type: result === null ? 'warning' : 'info',
+      title: zh ? 'DSH Desktop 版本与更新' : 'DSH Desktop Updates',
+      message: result === null
+        ? zh ? '检查失败，请稍后重试。' : 'Unable to check for updates. Please retry.'
+        : result.status === 'unavailable'
+          ? zh ? '当前租户未提供桌面版更新信息。' : 'This tenant has not provided Desktop updates.'
+          : available
+            ? zh ? `发现新版本 ${result.latestVersion}` : `Version ${result.latestVersion} is available.`
+            : result.status === 'no-release'
+              ? zh ? '当前通道暂无可用版本。' : 'No release is available in this channel.'
+              : zh ? '当前版本无需升级。' : 'Your version is up to date.',
+      detail: zh ? '在下载页面选择适合电脑的安装包，安装后重新打开应用。'
+        : 'Choose an installer on the download page, install it, then reopen the application.',
+      buttons: downloadPage === undefined ? [zh ? '关闭' : 'Close'] : zh ? ['前往下载页面', '关闭'] : ['Visit Download Page', 'Close'],
+      defaultId: available || downloadPage === undefined ? 0 : 1,
+      cancelId: downloadPage === undefined ? 0 : 1, noLink: true,
     })
+    if (outcome.response !== 0 || downloadPage === undefined || !await isCurrent()) return
+    try { await shell.openExternal(downloadPage) }
+    catch {
+      await this.showUpdateMessageBox({ type: 'warning', title: zh ? '无法打开下载页面' : 'Unable to Open Download Page',
+        message: zh ? '请复制此地址到浏览器打开。' : 'Open this address in your browser.',
+        detail: downloadPage, buttons: ['OK'], noLink: true })
+    }
   }
 
   /** Download a confirmed installer and hand it to the native installation flow. */

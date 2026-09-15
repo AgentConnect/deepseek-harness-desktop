@@ -117,7 +117,7 @@ export interface DesktopUpdateAdapter {
   /** Ask whether one strictly newer version may be downloaded. */
   confirmDownload(version: string, channel?: DesktopReleaseChannel): Promise<boolean>
   /** Present the outcome of a user-triggered version check. */
-  showManualCheckResult(result: UpdateCheckResult | null): Promise<void>
+  showManualCheckResult(result: UpdateCheckResult | null, isCurrent?: () => boolean | Promise<boolean>): Promise<void>
   /** Download and hand one confirmed update to the platform installer. */
   downloadAndOpen(version: string, signal: AbortSignal, channel?: DesktopReleaseChannel): Promise<void>
   /** Present a native status notification without blocking the Host tree. */
