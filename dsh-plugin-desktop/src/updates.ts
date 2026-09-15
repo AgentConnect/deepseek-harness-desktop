@@ -2,18 +2,35 @@
 
 import type { Context } from '@deepseek-ai/cordis'
 import z from '@deepseek-ai/schemastery'
-import type {} from '@deepseek-ai/dsh-client-connection'
+import type {} from './runtime.ts'
 import type {} from '@deepseek-ai/dsh-host-webserver'
+import type {} from '@deepseek-ai/dsh-client-connection'
 import { DESKTOP_UPDATE_CHECK_PATH } from './desktop-settings-contract.ts'
 import { handleDesktopUpdateCheckRequest } from './desktop-settings-route.ts'
-import type {} from './runtime.ts'
+import type {} from './distribution.ts'
 import { startDesktopUpdateLifecycle } from './update-lifecycle.ts'
+import type { DesktopTenantContext } from './distribution.ts'
+
+/** Public, same-process AWiki tenant capability; no identity or private path access. */
+interface TenantOwner {
+  getTenantRegistryView(): { activeTenantId: string; generation: number; tenants: readonly { tenantId: string; backendBaseUrl: string }[] }
+  registerTenantLifecycleParticipant(participant: {
+    prepareSwitch(): void
+    commitSwitch(context: TenantSwitch): void
+    rollbackSwitch(context: TenantSwitch): void
+  }): () => void
+}
+interface TenantSwitch {
+  from: { tenantId: string; backendBaseUrl: string }
+  to: { tenantId: string; backendBaseUrl: string }
+  generation: number
+}
 
 /** Stable Cordis plugin name. */
 export const name = 'desktop-updates'
 
-/** Native adapter required for network, tray, confirmation, and installer access. */
-export const inject = ['desktopRuntime', 'webServer', 'connection']
+/** Native adapter required for version discovery, tray, and result dialogs. */
+export const inject = ['desktopRuntime']
 
 const MAX_TIMER_DELAY_MS = 2_147_483_647
 
@@ -50,33 +67,43 @@ export function apply(ctx: Context, config: Config): void {
       locale: () => ctx.desktopRuntime.locale,
       registerTrayItem: item => ctx.desktopRuntime.registerTrayItem(item),
     })
-    const rendererOrigin = `http://127.0.0.1:${String(ctx.webServer.port)}`
-    const unregister = ctx.webServer.register({
-      kind: 'exact',
-      path: DESKTOP_UPDATE_CHECK_PATH,
-      handler: (req, res) => {
-        const rejection = ctx.connection.requestRejection(req)
-        if (rejection !== undefined) {
-          res.writeHead(rejection)
-          res.end(rejection === 401 ? 'unauthorized' : 'forbidden')
-          return
-        }
-        return handleDesktopUpdateCheckRequest(
-          req,
-          res,
-          rendererOrigin,
-          () => lifecycle.checkNow(),
-          (operation, cause) => {
-            ctx.logger.error(
-              `dsh-plugin-desktop: failed to ${operation}: ${cause instanceof Error ? cause.message : String(cause)}`,
-            )
-          },
-        )
-      },
+    const removeService = ctx.provide('desktopDistribution', lifecycle)
+    // Keep the existing authenticated Desktop settings action on the same tenant lifecycle.
+    ctx.inject(['webServer', 'connection'], webCtx => {
+      webCtx.effect(() => webCtx.webServer.register({
+        kind: 'exact', path: DESKTOP_UPDATE_CHECK_PATH,
+        handler: (req, res) => {
+          const rejection = webCtx.connection.requestRejection(req)
+          if (rejection !== undefined) {
+            res.writeHead(rejection); res.end(rejection === 401 ? 'unauthorized' : 'forbidden'); return
+          }
+          return handleDesktopUpdateCheckRequest(req, res, `http://127.0.0.1:${String(webCtx.webServer.port)}`,
+            () => lifecycle.checkNow(), (operation, cause) => {
+              webCtx.logger.error(`Desktop update ${operation}: ${cause instanceof Error ? cause.message : String(cause)}`)
+            })
+        },
+      }))
     })
-    return async () => {
-      unregister()
-      await lifecycle.dispose()
-    }
-  }, 'dsh-plugin-desktop: update polling, confirmation, and installer handoff')
+    ctx.inject(['awiki'], tenantCtx => {
+      const candidate: unknown = tenantCtx.get('awiki')
+      if (typeof candidate !== 'object' || candidate === null
+        || !('getTenantRegistryView' in candidate) || typeof candidate.getTenantRegistryView !== 'function'
+        || !('registerTenantLifecycleParticipant' in candidate) || typeof candidate.registerTenantLifecycleParticipant !== 'function') return
+      const owner = candidate as TenantOwner
+      const bind = (tenant: TenantSwitch['to'] | undefined, generation: number): void => {
+        const context: DesktopTenantContext | undefined = tenant === undefined ? undefined
+          : { tenantId: tenant.tenantId, policyOrigin: tenant.backendBaseUrl, tenantGeneration: generation }
+        lifecycle.setTenant(context)
+      }
+      const view = owner.getTenantRegistryView()
+      bind(view.tenants.find(tenant => tenant.tenantId === view.activeTenantId), view.generation)
+      const unregister = owner.registerTenantLifecycleParticipant({
+        prepareSwitch: () => { lifecycle.setTenant(undefined) },
+        commitSwitch: context => { bind(context.to, context.generation) },
+        rollbackSwitch: context => { bind(context.from, context.generation) },
+      })
+      tenantCtx.effect(() => () => { unregister(); lifecycle.setTenant(undefined) })
+    })
+    return async () => { removeService(); await lifecycle.dispose() }
+  }, 'dsh-plugin-desktop: version checks and manual download-page guidance')
 }

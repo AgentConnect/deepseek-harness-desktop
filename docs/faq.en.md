@@ -42,7 +42,7 @@ No plugins are copied automatically. Each profile has its own bundle and depende
 
 ## How are updates installed?
 
-Packaged applications check for stable releases in the background but never install silently. A newer version requires confirmation. Before downloading, a native save dialog lets you choose the installer's directory and filename; cancelling it does not start a download. macOS downloads and opens a DMG; Windows downloads and starts an NSIS installer. After the upgrade and next launch, the app asks whether to delete or keep the installer. Network and download failures leave the current installation intact.
+Packaged applications check updates for the active AWiki tenant. Stable builds select stable releases; prerelease builds compare stable and prerelease channels. Only newer versions are recommended. Settings and the tray share the result. Switching tenants clears the previous recommendation, and an already-open dialog cannot open the former tenant’s download page. Network failures may retain that tenant’s verified cache; missing policy is shown as unavailable. Users visit the active tenant’s download page, choose an installer, install it manually, and reopen the app.
 
 ## Where can I download the app or report a problem?
 

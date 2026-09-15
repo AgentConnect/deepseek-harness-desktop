@@ -1,6 +1,7 @@
 /** Native capability adapters; frontend HTTP and WebSocket connections are unchanged. */
 import type { DesktopRuntime, DesktopShellSpec, DesktopTrayItem, DesktopTrayItemRegistration, DesktopUpdateAdapter } from './runtime.ts'
 import { HostRpc } from './host-rpc.ts'
+import { MAX_VERSION_RESPONSE_BYTES } from './update-checker.ts'
 
 export type RuntimeSnapshot = Pick<DesktopRuntime, 'platform' | 'windowsBuild' | 'locale'> & {
   updates: Omit<DesktopUpdateAdapter, 'request' | 'confirmDownload' | 'showManualCheckResult' | 'downloadAndOpen' | 'notify'>
@@ -43,12 +44,19 @@ export function createHostRuntime(rpc: HostRpc, snapshot: RuntimeSnapshot): Desk
       ...snapshot.updates,
       request: async (url, init) => {
         const { signal, ...options } = init
-        const response = await send<{ body: string; status: number; headers: [string, string][] }>('update:request',
+        const response = await send<{ body: string; status: number; headers: [string, string][]; url: string; redirected: boolean }>('update:request',
           [url, { ...options, headers: [...new Headers(init.headers).entries()] }], signal ?? undefined)
-        return new Response([204, 205, 304].includes(response.status) ? null : response.body, { status: response.status, headers: response.headers })
+        const projected = new Response([204, 205, 304].includes(response.status) ? null : response.body,
+          { status: response.status, headers: response.headers })
+        Object.defineProperties(projected, { url: { value: response.url }, redirected: { value: response.redirected } })
+        return projected
       },
       confirmDownload: (version, channel) => send('update:confirmDownload', [version, channel]),
-      showManualCheckResult: result => send('update:showManualCheckResult', [result]),
+      showManualCheckResult: async (result, isCurrent = () => true) => {
+        const guard = callbacks({ isCurrent })
+        try { await send('update:showManualCheckResult', [result, guard.id]) }
+        finally { guard.release() }
+      },
       downloadAndOpen: (version, signal, channel) => send('update:downloadAndOpen', [version, channel], signal),
       notify: notification => { void send('update:notify', [notification]) },
     },
@@ -165,10 +173,30 @@ export function bindNativeRuntime(rpc: HostRpc, runtime: DesktopRuntime): () => 
   handle('tray:dispose', ([id]) => { trays.get(id)?.dispose(); trays.delete(id) })
   handle('update:request', async ([url, init], signal) => {
     const response = await runtime.updates.request(url, { ...init, signal })
-    return { body: await response.text(), status: response.status, headers: [...response.headers.entries()] }
+    const reader = response.body?.getReader()
+    const chunks: Uint8Array[] = []
+    let size = 0
+    try {
+      if (reader) while (true) {
+        const chunk = await reader.read()
+        if (chunk.done) break
+        size += chunk.value.byteLength
+        if (size > MAX_VERSION_RESPONSE_BYTES) {
+          await reader.cancel().catch(() => {})
+          throw new Error('Desktop update response exceeds the policy size limit')
+        }
+        chunks.push(chunk.value)
+      }
+    } finally { reader?.releaseLock() }
+    return { body: new TextDecoder('utf-8', { fatal: true }).decode(Buffer.concat(chunks)), status: response.status,
+      headers: [...response.headers.entries()], url: response.url, redirected: response.redirected }
   })
   handle('update:confirmDownload', ([version, channel]) => runtime.updates.confirmDownload(version, channel))
-  handle('update:showManualCheckResult', ([result]) => runtime.updates.showManualCheckResult(result))
+  handle('update:showManualCheckResult', ([result, guardId]) => runtime.updates.showManualCheckResult(result,
+    async () => {
+      if (typeof guardId !== 'string') return false
+      try { return await rpc.call<boolean>(`${guardId}:isCurrent`) === true } catch { return false }
+    }))
   handle('update:downloadAndOpen', ([version, channel], signal) => runtime.updates.downloadAndOpen(version, signal, channel))
   handle('update:notify', ([value]) => runtime.updates.notify(value))
   return async () => {

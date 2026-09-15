@@ -2360,9 +2360,9 @@ describe('Electron desktop runtime', () => {
     expect(electron.dialog.showMessageBox).toHaveBeenLastCalledWith(
       activeWindow,
       expect.objectContaining({
-        title: 'DSH Desktop Is Up to Date',
-        detail: 'Installed version: 2.0.0',
-        buttons: ['OK'],
+        title: 'DSH Desktop Updates',
+        message: 'Your version is up to date.',
+        buttons: ['Close'],
       }),
     )
 
@@ -2370,8 +2370,9 @@ describe('Electron desktop runtime', () => {
     expect(electron.dialog.showMessageBox).toHaveBeenLastCalledWith(
       activeWindow,
       expect.objectContaining({
-        title: 'Unable to Check for Updates',
-        buttons: ['OK'],
+        title: 'DSH Desktop Updates',
+        message: 'Unable to check for updates. Please retry.',
+        buttons: ['Close'],
       }),
     )
 
@@ -2432,6 +2433,20 @@ describe('Electron desktop runtime', () => {
     expect(activeWindow?.focus).toHaveBeenCalledTimes(2)
 
     await release()
+  })
+
+  it('opens the verified tenant page only while the Host dialog guard is current', async () => {
+    const { ElectronDesktopRuntime } = await import('../src/electron-runtime.ts')
+    const runtime = new ElectronDesktopRuntime(async () => {})
+    const result = { status: 'update-available' as const, currentVersion: '2.2.1', latestVersion: '2.2.2',
+      downloadPageUrl: 'https://awiki.ai/downloads/dsh-awiki/' }
+    electron.dialog.showMessageBox.mockResolvedValueOnce({ response: 0, checkboxChecked: false })
+    await runtime.updates.showManualCheckResult(result, async () => false)
+    expect(electron.shell.openExternal).not.toHaveBeenCalled()
+    electron.dialog.showMessageBox.mockResolvedValueOnce({ response: 0, checkboxChecked: false })
+    await runtime.updates.showManualCheckResult(result, async () => true)
+    expect(electron.shell.openExternal).toHaveBeenCalledExactlyOnceWith(result.downloadPageUrl)
+    expect(updater.download).not.toHaveBeenCalled()
   })
 
   it('starts the downloaded Windows installer visibly before requesting orderly exit', async () => {

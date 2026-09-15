@@ -1,23 +1,19 @@
 import { describe, expect, it, vi } from 'vitest'
 import {
-  DESKTOP_CURRENT_VERSION_HEADER,
-  DESKTOP_VERSION_ENDPOINT,
+  DESKTOP_VERSION_PATH,
   MAX_VERSION_RESPONSE_BYTES,
-  checkForStableUpdate,
+  checkForDesktopUpdate as checkTenantUpdate,
+  type UpdateCheckOptions,
   compareSemVerVersions,
-  desktopVersionRequestHeaders,
   parseSemVer,
   type UpdateRequest,
 } from '../src/update-checker.ts'
-import {
-  assertDesktopInstallationId,
-  DESKTOP_INSTALLATION_ID_HEADER,
-} from '../src/desktop-installation-id.ts'
 
-const INSTALLATION_ID = assertDesktopInstallationId('01234567-89ab-4cde-8f01-23456789abcd')
-
-function versionResponse(version: unknown, init: ResponseInit = {}): Response {
-  return Response.json({ version }, init)
+import { china, globalTenant, desktopPolicy } from './fixtures/desktop-update-policy.ts'
+const DESKTOP_VERSION_ENDPOINT = 'https://china.example/user-service/v1/server-info?client_platform=dsh'
+const checkForDesktopUpdate = (options: UpdateCheckOptions) => checkTenantUpdate({ tenant: china, ...options })
+function versionResponse(version: string, init: ResponseInit = {}): Response {
+  return Response.json(desktopPolicy(china.policyOrigin, [version]), init)
 }
 
 describe('strict SemVer parsing', () => {
@@ -60,7 +56,7 @@ describe('strict SemVer parsing', () => {
 })
 
 describe('public Desktop version check', () => {
-  it('uses only the fixed no-cache version endpoint and reports a newer stable version', async () => {
+  it('uses only the active tenant no-cache version endpoint and reports a newer stable version', async () => {
     const controller = new AbortController()
     const calls: Array<{ url: string, init: RequestInit }> = []
     const request: UpdateRequest = async (url, init) => {
@@ -68,12 +64,11 @@ describe('public Desktop version check', () => {
       return versionResponse('2.10.0')
     }
 
-    await expect(checkForStableUpdate({
+    await expect(checkForDesktopUpdate({
       currentVersion: '2.9.9',
-      installationId: INSTALLATION_ID,
       signal: controller.signal,
       request,
-    })).resolves.toEqual({
+    })).resolves.toMatchObject({
       status: 'update-available',
       currentVersion: '2.9.9',
       latestVersion: '2.10.0',
@@ -90,35 +85,8 @@ describe('public Desktop version check', () => {
     })
     const headers = new Headers(calls[0]?.init.headers)
     expect(headers.get('accept')).toBe('application/json')
-    expect(headers.get(DESKTOP_CURRENT_VERSION_HEADER)).toBe('2.9.9')
-    expect(headers.get(DESKTOP_INSTALLATION_ID_HEADER)).toBe(INSTALLATION_ID)
     expect(headers.has('if-none-match')).toBe(false)
     expect(headers.has('x-github-api-version')).toBe(false)
-  })
-
-  it('builds a bounded version-check header set and rejects malformed identities', () => {
-    expect(desktopVersionRequestHeaders(INSTALLATION_ID)).toEqual({
-      Accept: 'application/json',
-      [DESKTOP_INSTALLATION_ID_HEADER]: INSTALLATION_ID,
-    })
-    expect(desktopVersionRequestHeaders(INSTALLATION_ID, '2.9.9')).toEqual({
-      Accept: 'application/json',
-      [DESKTOP_CURRENT_VERSION_HEADER]: '2.9.9',
-      [DESKTOP_INSTALLATION_ID_HEADER]: INSTALLATION_ID,
-    })
-    expect(desktopVersionRequestHeaders()).toEqual({ Accept: 'application/json' })
-    expect(() => desktopVersionRequestHeaders(undefined, '2.9.0-rc.1')).toThrow('canonical stable SemVer')
-    expect(() => desktopVersionRequestHeaders('not-a-uuid')).toThrow('canonical lowercase UUID v4')
-  })
-
-  it('skips the fixed endpoint when an invalid installation identity reaches the checker', async () => {
-    const request = vi.fn(async () => versionResponse('2.1.0'))
-    await expect(checkForStableUpdate({
-      currentVersion: '2.0.0',
-      installationId: 'not-a-uuid' as never,
-      request,
-    })).resolves.toBeNull()
-    expect(request).not.toHaveBeenCalled()
   })
 
   it.each([
@@ -126,10 +94,10 @@ describe('public Desktop version check', () => {
     ['2.0.1', '2.0.0'],
     ['2.0.0+installed', '2.0.0+release'],
   ])('reports no update for installed %s and service %s', async (currentVersion, latestVersion) => {
-    await expect(checkForStableUpdate({
+    await expect(checkForDesktopUpdate({
       currentVersion,
       request: async () => versionResponse(latestVersion),
-    })).resolves.toEqual({
+    })).resolves.toMatchObject({
       status: 'up-to-date',
       currentVersion,
       latestVersion,
@@ -137,7 +105,7 @@ describe('public Desktop version check', () => {
   })
 
   it('compares service versions without overflowing JavaScript numbers', async () => {
-    await expect(checkForStableUpdate({
+    await expect(checkForDesktopUpdate({
       currentVersion: '9007199254740992.0.0',
       request: async () => versionResponse('10000000000000000.0.0'),
     })).resolves.toMatchObject({ status: 'update-available' })
@@ -151,36 +119,36 @@ describe('public Desktop version check', () => {
     ['non-string version', { version: 2 }],
     ['array response', ['2.1.0']],
   ])('silently ignores a service response with %s', async (_case, value) => {
-    await expect(checkForStableUpdate({
+    await expect(checkForDesktopUpdate({
       currentVersion: '2.0.0',
       request: async () => Response.json(value),
     })).resolves.toBeNull()
   })
 
   it('silently ignores malformed JSON and non-200 statuses', async () => {
-    await expect(checkForStableUpdate({
+    await expect(checkForDesktopUpdate({
       currentVersion: '2.0.0',
       request: async () => new Response('{'),
     })).resolves.toBeNull()
-    await expect(checkForStableUpdate({
+    await expect(checkForDesktopUpdate({
       currentVersion: '2.0.0',
       request: async () => new Response('unavailable', { status: 503 }),
     })).resolves.toBeNull()
-    await expect(checkForStableUpdate({
+    await expect(checkForDesktopUpdate({
       currentVersion: '2.0.0',
       request: async () => new Response(null, { status: 304 }),
     })).resolves.toBeNull()
   })
 
   it('silently ignores network failure and caller cancellation', async () => {
-    await expect(checkForStableUpdate({
+    await expect(checkForDesktopUpdate({
       currentVersion: '2.0.0',
       request: async () => { throw new TypeError('offline') },
     })).resolves.toBeNull()
 
     const controller = new AbortController()
     controller.abort()
-    await expect(checkForStableUpdate({
+    await expect(checkForDesktopUpdate({
       currentVersion: '2.0.0',
       signal: controller.signal,
       request: async () => { throw new DOMException('cancelled', 'AbortError') },
@@ -188,22 +156,80 @@ describe('public Desktop version check', () => {
   })
 
   it('silently ignores declared and streamed oversized responses', async () => {
-    await expect(checkForStableUpdate({
+    await expect(checkForDesktopUpdate({
       currentVersion: '2.0.0',
       request: async () => new Response('{}', {
         headers: { 'content-length': String(MAX_VERSION_RESPONSE_BYTES + 1) },
       }),
     })).resolves.toBeNull()
-    await expect(checkForStableUpdate({
+    await expect(checkForDesktopUpdate({
       currentVersion: '2.0.0',
       request: async () => new Response('x'.repeat(MAX_VERSION_RESPONSE_BYTES + 1)),
     })).resolves.toBeNull()
   })
 
-  it.each(['2.0', 'v2.0.0', '2.0.0-rc.1'])('skips invalid installed version %s before requesting', async currentVersion => {
+  it.each(['2.0', 'v2.0.0'])('skips invalid installed version %s before requesting', async currentVersion => {
     const request = vi.fn(async () => versionResponse('2.1.0'))
 
-    await expect(checkForStableUpdate({ currentVersion, request })).resolves.toBeNull()
+    await expect(checkForDesktopUpdate({ currentVersion, request })).resolves.toBeNull()
     expect(request).not.toHaveBeenCalled()
+  })
+})
+
+
+describe('Desktop release channels', () => {
+  it('rejects an enabled policy with no channel instead of reporting no release', async () => {
+    expect(await checkTenantUpdate({ tenant: china, currentVersion: '2.0.0',
+      request: async () => Response.json(desktopPolicy(china.policyOrigin, [])) })).toBeNull()
+  })
+  it('keeps policy selection on the active tenant while artifacts are shared', async () => {
+    const calls: string[] = []
+    const request = async (url: string) => {
+      calls.push(url)
+      const origin = new URL(url).origin
+      return Response.json(desktopPolicy(origin, [origin === china.policyOrigin ? '2.1.0' : '2.2.0']))
+    }
+    expect(await checkTenantUpdate({ tenant: china, currentVersion: '2.0.0', request })).toMatchObject({ latestVersion: '2.1.0' })
+    expect(await checkTenantUpdate({ tenant: globalTenant, currentVersion: '2.0.0', request })).toMatchObject({ latestVersion: '2.2.0', downloadPageUrl: `${globalTenant.policyOrigin}/downloads/dsh-awiki/` })
+    expect(calls).toEqual([`${china.policyOrigin}${DESKTOP_VERSION_PATH}`, `${globalTenant.policyOrigin}${DESKTOP_VERSION_PATH}`])
+    expect(await checkTenantUpdate({ tenant: globalTenant, currentVersion: '2.0.0', request: async () => Response.json(desktopPolicy()) })).toBeNull()
+  })
+  it('selects independent stable and prerelease targets without downgrading', async () => {
+    const request = async () => Response.json(desktopPolicy(china.policyOrigin, ['2.1.1', '2.2.0-rc.1']))
+    expect(await checkForDesktopUpdate({ currentVersion: '2.1.0', request })).toMatchObject({ latestVersion: '2.1.1' })
+    expect(await checkForDesktopUpdate({ currentVersion: '2.1.0-rc.8', request })).toMatchObject({ latestVersion: '2.2.0-rc.1' })
+    expect(await checkForDesktopUpdate({ currentVersion: '2.3.0', request })).toMatchObject({ status: 'up-to-date' })
+  })
+  it('rejects stale policy revisions and never requests a fallback tenant', async () => {
+    const request = vi.fn(async () => Response.json(desktopPolicy()))
+    expect(await checkForDesktopUpdate({ currentVersion: '2.0.0', minimumRevision: 2, request })).toBeNull()
+    expect(request).toHaveBeenCalledOnce()
+    const absent = vi.fn()
+    expect(await checkTenantUpdate({ currentVersion: '2.0.0', request: absent })).toBeNull()
+    expect(absent).not.toHaveBeenCalled()
+  })
+  it('distinguishes an unavailable Desktop policy from an up-to-date release', async () => {
+    const policy = desktopPolicy()
+    policy.client_versions.products.dsh.desktop.enabled = false
+    expect(await checkForDesktopUpdate({ currentVersion: '2.0.0', request: async () => Response.json(policy) })).toMatchObject({ status: 'unavailable' })
+    expect(await checkForDesktopUpdate({ currentVersion: '2.0.0', request: async () => Response.json({ schema_version: 1, client_versions: null }) })).toBeNull()
+  })
+  it.each(['2.1.0-rc.8', '2.1.0'])('allows rc.7 to discover %s', async version => {
+    const request = vi.fn(async () => versionResponse(version))
+    expect(await checkForDesktopUpdate({ currentVersion: '2.1.0-rc.7', request }))
+      .toMatchObject({ status: 'update-available', latestVersion: version })
+    expect(request).toHaveBeenCalledOnce()
+  })
+  it('keeps stable users on the stable channel', async () => {
+    expect(await checkForDesktopUpdate({ currentVersion: '2.1.0', request: async () => versionResponse('2.2.0-rc.1') }))
+      .toMatchObject({ status: 'no-release' })
+  })
+  it('rejects another distribution and projects exact bundled component versions', async () => {
+    const manifest = desktopPolicy()
+    manifest.client_versions.products.dsh.desktop.channels.stable!.bundled_versions = { plugin: '0.3.9', model_proxy: '0.1.5' }
+    expect(await checkForDesktopUpdate({ currentVersion: '2.1.0-rc.7', request: async () => Response.json(manifest) }))
+      .toMatchObject({ bundledVersions: { plugin: '0.3.9', modelProxy: '0.1.5' } })
+    manifest.client_versions.products.dsh.desktop.channels.stable!.distribution_id = 'foreign'
+    expect(await checkForDesktopUpdate({ currentVersion: '2.1.0-rc.7', request: async () => Response.json(manifest) })).toBeNull()
   })
 })

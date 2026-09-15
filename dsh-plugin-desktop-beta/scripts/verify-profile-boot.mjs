@@ -205,6 +205,23 @@ try {
   )
   await runtime.mountScheduled()
 
+  // Exercise the real npm AWiki consumer in the assembled Host, without a network check.
+  const distribution = ctx.get('desktopDistribution')
+  const awiki = ctx.get('awiki')
+  if (!distribution || !awiki) throw new Error('assembled profile is missing the AWiki Desktop update capability')
+  for (let attempt = 0; attempt < 100 && awiki.getDesktopUpdate()?.tenantId === undefined; attempt++) {
+    await new Promise(resolve => setTimeout(resolve, 20))
+  }
+  const tenantView = awiki.getTenantRegistryView()
+  const activeTenant = tenantView.tenants.find(tenant => tenant.tenantId === tenantView.activeTenantId)
+  const desktopUpdate = awiki.getDesktopUpdate()
+  if (desktopUpdate?.schemaVersion !== 2 || desktopUpdate.currentVersion !== runtime.updates.currentVersion
+    || desktopUpdate.tenantId !== activeTenant?.tenantId || desktopUpdate.policyOrigin !== activeTenant?.backendBaseUrl
+    || desktopUpdate.tenantGeneration !== tenantView.generation) {
+    throw new Error('assembled AWiki consumer did not bind the Desktop update service to its active tenant')
+  }
+  console.log('verify-profile-boot: actual AWiki consumer accepted the tenant-bound Desktop v2 service')
+
   if (ctx.get('desktopPnpm') === undefined) {
     throw new Error('assembled desktop profile is missing the desktop pnpm Host capability')
   }

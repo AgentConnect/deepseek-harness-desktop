@@ -1,6 +1,8 @@
 import { MessageChannel } from 'node:worker_threads'
 import { expect, it, vi } from 'vitest'
 import { HostRpc } from '../src/host-rpc.ts'
+import { MAX_VERSION_RESPONSE_BYTES, checkForDesktopUpdate } from '../src/update-checker.ts'
+import { china, desktopPolicy } from './fixtures/desktop-update-policy.ts'
 import { bindNativeRuntime, createHostRuntime, runtimeSnapshot } from '../src/host-runtime-bridge.ts'
 import type { DesktopRuntime, DesktopShellSpec, DesktopTrayItem } from '../src/runtime.ts'
 
@@ -58,5 +60,73 @@ it('preserves the Web URL and authentication while projecting shell and tray cal
     expect(await response.json()).toEqual({ version: '2.0.8-beta.1' })
     await stopShell()
     expect(disposeShell).toHaveBeenCalledOnce()
+  } finally { await release(); parent.close(); child.close(); port1.close(); port2.close() }
+})
+
+
+it('checks tenant generation through the real Host channel after a native dialog is already open', async () => {
+  const { port1, port2 } = new MessageChannel()
+  const [parent, child] = [port1, port2].map(port => new HostRpc({
+    send: value => port.postMessage(value),
+    listen: receive => { port.on('message', receive); return () => { port.off('message', receive) } },
+  })) as [HostRpc, HostRpc]
+  let guard!: () => boolean | Promise<boolean>
+  let dismiss!: () => void
+  let generation = 1
+  const native = { platform: 'darwin', locale: 'en', updates: {
+    isPackaged: true, canDownload: false, currentVersion: '2.2.1', statePath: '/tmp/tenant-updates',
+    showManualCheckResult: async (_result: unknown, isCurrent: typeof guard) => {
+      guard = isCurrent
+      await new Promise<void>(resolve => { dismiss = resolve })
+    },
+  } } as unknown as DesktopRuntime
+  const release = bindNativeRuntime(parent, native)
+  try {
+    const runtime = createHostRuntime(child, runtimeSnapshot(native))
+    const dialog = runtime.updates.showManualCheckResult({ status: 'update-available',
+      currentVersion: '2.2.1', latestVersion: '2.2.2', downloadPageUrl: 'https://awiki.ai/downloads/dsh-awiki/' },
+    () => generation === 1)
+    await vi.waitFor(() => expect(guard).toBeTypeOf('function'))
+    expect(await guard()).toBe(true)
+    generation = 2
+    expect(await guard()).toBe(false)
+    dismiss()
+    await dialog
+    // The completed dialog cannot retain a callable Host guard.
+    expect(await guard()).toBe(false)
+  } finally { dismiss?.(); await release(); parent.close(); child.close(); port1.close(); port2.close() }
+})
+
+
+it('preserves policy response origins and rejects oversized replies before crossing the Host bridge', async () => {
+  const { port1, port2 } = new MessageChannel()
+  const [parent, child] = [port1, port2].map(port => new HostRpc({
+    send: value => port.postMessage(value),
+    listen: receive => { port.on('message', receive); return () => { port.off('message', receive) } },
+  })) as [HostRpc, HostRpc]
+  const request = vi.fn(async () => Response.json(desktopPolicy(china.policyOrigin, ['2.2.2'])))
+  const native = { platform: 'darwin', locale: 'en', updates: {
+    isPackaged: true, canDownload: false, currentVersion: '2.2.1', statePath: '/tmp/tenant-updates', request,
+  } } as unknown as DesktopRuntime
+  const release = bindNativeRuntime(parent, native)
+  try {
+    const runtime = createHostRuntime(child, runtimeSnapshot(native))
+    const check = () => checkForDesktopUpdate({ currentVersion: '2.2.1', tenant: china, request: runtime.updates.request })
+    expect(await check()).toMatchObject({ status: 'update-available', latestVersion: '2.2.2' })
+    for (const metadata of [{ url: 'https://foreign.example/policy', redirected: false },
+      { url: `${china.policyOrigin}/policy`, redirected: true }]) {
+      request.mockImplementation(async () => {
+        const response = Response.json(desktopPolicy(china.policyOrigin, ['9.0.0']))
+        Object.defineProperties(response, { url: { value: metadata.url }, redirected: { value: metadata.redirected } })
+        return response
+      })
+      expect(await check()).toBeNull()
+    }
+    const cancel = vi.fn()
+    request.mockImplementation(async () => new Response(new ReadableStream({
+      start(controller) { controller.enqueue(new Uint8Array(MAX_VERSION_RESPONSE_BYTES + 1)) }, cancel,
+    })))
+    expect(await check()).toBeNull()
+    expect(cancel).toHaveBeenCalledOnce()
   } finally { await release(); parent.close(); child.close(); port1.close(); port2.close() }
 })

@@ -1,25 +1,16 @@
 /** Headless version checks against the public DSH Desktop release service. */
 
-import {
-  assertDesktopInstallationId,
-  DESKTOP_INSTALLATION_ID_HEADER,
-  type DesktopInstallationId,
-} from './desktop-installation-id.ts'
+import type { DesktopTenantContext } from './distribution.ts'
 
-/** Public endpoint returning the latest DSH Desktop version for a requested channel. */
-export const DESKTOP_VERSION_ENDPOINT = 'https://www.dshdesktop.cn/api/desktop/version'
-
-/** Header carrying the installed Desktop version to the fixed version endpoint. */
-export const DESKTOP_CURRENT_VERSION_HEADER = 'X-DSH-Desktop-Version'
-
-/** Header selecting an isolated Desktop release stream. */
+/** Existing installer artifact channels; tenant policy uses stable/prerelease. */
+export type DesktopReleaseChannel = 'stable' | 'beta'
 export const DESKTOP_RELEASE_CHANNEL_HEADER = 'X-DSH-Desktop-Channel'
 
-/** Release streams supported by the Desktop service. */
-export type DesktopReleaseChannel = 'stable' | 'beta'
+/** Resolved only beneath the active tenant; artifact URLs may use a shared host. */
+export const DESKTOP_VERSION_PATH = '/user-service/v1/server-info?client_platform=dsh'
 
 /** Maximum response body bytes accepted from the version service. */
-export const MAX_VERSION_RESPONSE_BYTES = 4 * 1024
+export const MAX_VERSION_RESPONSE_BYTES = 64 * 1024
 
 /** Strictly parsed SemVer components. Numeric components remain strings to avoid overflow. */
 export interface ParsedSemVer {
@@ -40,32 +31,31 @@ export interface ParsedSemVer {
 /** Fetch-compatible request function used by the headless checker. */
 export type UpdateRequest = (url: string, init: RequestInit) => Promise<Response>
 
-/** Inputs for one channel-scoped version check. */
+/** Inputs for one Desktop release check. */
 export interface UpdateCheckOptions {
+  readonly tenant?: DesktopTenantContext
+  readonly minimumRevision?: number
   /** Installed application version, expressed as canonical SemVer. */
   readonly currentVersion: string
-  /** Release stream that must be returned by the service. */
-  readonly channel: DesktopReleaseChannel
-  /** Channel of the installed application when explicitly switching streams. */
-  readonly currentChannel?: DesktopReleaseChannel
-  /** Treat a different older version as selectable for an explicit channel switch. */
-  readonly allowDowngrade?: boolean
   /** Caller-owned cancellation signal; the checker does not create its own timeout. */
   readonly signal?: AbortSignal
   /** Optional fetch implementation for a host adapter or test. */
   readonly request?: UpdateRequest
-  /** Installation UUID attached only to the fixed version-check endpoint. */
-  readonly installationId?: DesktopInstallationId
 }
 
-/** Successful comparison returned by the stable version service. */
+/** Successful comparison with the selected Desktop distribution. */
 export type UpdateCheckResult = {
   /** Whether the service reports a version newer than the installed application. */
-  readonly status: 'up-to-date' | 'update-available'
-  /** Canonical installed version, including any prerelease identifiers. */
+  readonly status: 'up-to-date' | 'update-available' | 'no-release' | 'unavailable'
+  /** Canonical installed Desktop version. */
   readonly currentVersion: string
-  /** Canonical latest stable version returned by the service. */
+  /** Canonical latest eligible version returned by the service. */
   readonly latestVersion: string
+  readonly bundledVersions?: Readonly<{ plugin: string; modelProxy?: string }>
+  readonly downloadPageUrl?: string
+  readonly policyRevision?: number
+  /** Validated response retained only in this tenant's cache. */
+  readonly policy?: string
 }
 
 const SEMVER_PATTERN =
@@ -108,29 +98,25 @@ export function compareSemVerVersions(left: string, right: string): number | nul
 }
 
 /**
- * Check the fixed DSH Desktop version endpoint for a release in one channel.
+ * Check the active tenant's policy for a release in the installed channel.
  * @param options - installed version, caller-owned signal, and optional request adapter.
  * @returns a successful comparison, or null when any request or validation step fails.
  */
 export async function checkForDesktopUpdate(
   options: UpdateCheckOptions,
 ): Promise<UpdateCheckResult | null> {
-  const current = parseCanonicalChannelVersion(
-    options.currentVersion,
-    options.currentChannel ?? options.channel,
-  )
-  if (current === null) return null
-
-  let headers: HeadersInit
+  const current = parseCanonicalVersion(options.currentVersion)
+  if (current === null || options.tenant === undefined) return null
+  let endpoint: string
   try {
-    headers = desktopVersionRequestHeaders(options.installationId, current.version, options.channel)
-  } catch {
-    return null
-  }
+    const origin = new URL(options.tenant.policyOrigin)
+    if (origin.protocol !== 'https:' || origin.origin !== options.tenant.policyOrigin) return null
+    endpoint = new URL(DESKTOP_VERSION_PATH, origin).href
+  } catch { return null }
 
   const init: RequestInit = {
     method: 'GET',
-    headers,
+    headers: { Accept: 'application/json' },
     cache: 'no-store',
     redirect: 'error',
     ...(options.signal === undefined ? {} : { signal: options.signal }),
@@ -139,11 +125,14 @@ export async function checkForDesktopUpdate(
 
   let response: Response
   try {
-    response = await request(DESKTOP_VERSION_ENDPOINT, init)
+    response = await request(endpoint, init)
   } catch {
     return null
   }
-  if (response.status !== 200) return null
+  try {
+    if (response.status !== 200 || response.redirected
+      || (response.url !== '' && new URL(response.url).origin !== options.tenant.policyOrigin)) return null
+  } catch { return null }
 
   let body: string
   try {
@@ -152,48 +141,57 @@ export async function checkForDesktopUpdate(
     return null
   }
 
-  const latest = parseVersionResponse(body, options.channel)
-  if (latest === null) return null
-  const comparison = compareParsedSemVer(latest, current)
-  return {
-    status: comparison > 0 || (options.allowDowngrade === true && comparison !== 0)
-      ? 'update-available'
-      : 'up-to-date',
-    currentVersion: current.version,
-    latestVersion: latest.version,
-  }
+  return parseDesktopPolicy(body, options)
 }
 
-/** Backward-compatible stable-channel entry point for existing callers. */
-export function checkForStableUpdate(
-  options: Omit<UpdateCheckOptions, 'channel'>,
-): Promise<UpdateCheckResult | null> {
-  return checkForDesktopUpdate({ ...options, channel: 'stable' })
-}
-
-/** Build the complete header set for the fixed version-check request only. */
-export function desktopVersionRequestHeaders(
-  installationId?: string,
-  currentVersion?: string,
-  channel?: DesktopReleaseChannel,
-): Readonly<Record<string, string>> {
-  const headers: Record<string, string> = { Accept: 'application/json' }
-  if (channel !== undefined) headers[DESKTOP_RELEASE_CHANNEL_HEADER] = channel
-  if (currentVersion !== undefined) {
-    const parsed = channel === undefined
-      ? parseCanonicalChannelVersion(currentVersion, 'stable')
-      : parseCanonicalSupportedVersion(currentVersion)
-    if (parsed === null) {
-      throw new Error(channel === undefined
-        ? 'Desktop current version must be canonical stable SemVer.'
-        : 'Desktop current version must be canonical SemVer.')
+/** Re-validate cached and network responses with identical tenant/channel rules. */
+export function parseDesktopPolicy(body: string, options: UpdateCheckOptions): UpdateCheckResult | null {
+  try {
+    const current = parseCanonicalVersion(options.currentVersion)
+    const value: unknown = JSON.parse(body)
+    if (current === null || options.tenant === undefined || !isRecord(value) || value.schema_version !== 1) return null
+    const policy = value.client_versions
+    if (!isRecord(policy) || policy.schema_version !== 1 || policy.channel !== 'stable'
+      || policy.policy_origin !== options.tenant.policyOrigin || !Number.isSafeInteger(policy.policy_revision)
+      || (policy.policy_revision as number) < Math.max(1, options.minimumRevision ?? 1)
+      || typeof policy.published_at !== 'string' || !Number.isFinite(Date.parse(policy.published_at))
+      || !isRecord(policy.products) || !isRecord(policy.products.dsh)) return null
+    const base = { currentVersion: current.version, latestVersion: current.version,
+      policyRevision: policy.policy_revision as number, policy: body }
+    const desktop = policy.products.dsh.desktop
+    if (desktop === undefined || desktop === null || (isRecord(desktop) && desktop.enabled === false)) {
+      return { ...base, status: 'unavailable' }
     }
-    headers[DESKTOP_CURRENT_VERSION_HEADER] = parsed.version
-  }
-  if (installationId !== undefined) {
-    headers[DESKTOP_INSTALLATION_ID_HEADER] = assertDesktopInstallationId(installationId)
-  }
-  return headers
+    if (!isRecord(desktop) || desktop.enabled !== true || !isRecord(desktop.channels)) return null
+    let publishedChannels = 0
+    const candidates: Array<{ version: ParsedSemVer; downloadPageUrl: string; bundledVersions: { plugin: string; modelProxy?: string } }> = []
+    for (const channel of ['stable', 'prerelease'] as const) {
+      const release = desktop.channels[channel]
+      if (release === undefined || release === null) continue
+      publishedChannels++
+      if (!isRecord(release) || release.distribution_id !== 'awiki-dsh-desktop' || release.channel !== channel
+        || typeof release.version !== 'string' || !isRecord(release.bundled_versions)
+        || typeof release.bundled_versions.plugin !== 'string' || parseCanonicalVersion(release.bundled_versions.plugin) === null
+        || typeof release.download_page_url !== 'string') return null
+      const version = parseCanonicalVersion(release.version)
+      if (version === null || (version.prerelease.length > 0) !== (channel === 'prerelease')) return null
+      const page = new URL(release.download_page_url)
+      if (page.protocol !== 'https:' || page.username !== '' || page.password !== '' || page.origin !== options.tenant.policyOrigin) return null
+      const modelProxy = release.bundled_versions.model_proxy
+      if (modelProxy !== undefined && modelProxy !== null && (typeof modelProxy !== 'string' || parseCanonicalVersion(modelProxy) === null)) return null
+      if (current.prerelease.length === 0 && channel === 'prerelease') continue
+      candidates.push({ version, downloadPageUrl: page.href, bundledVersions: {
+        plugin: release.bundled_versions.plugin,
+        ...typeof modelProxy === 'string' ? { modelProxy } : {},
+      } })
+    }
+    if (publishedChannels === 0) return null
+    candidates.sort((a, b) => compareParsedSemVer(b.version, a.version))
+    const latest = candidates[0]
+    if (latest === undefined) return { ...base, status: 'no-release' }
+    return { ...base, status: compareParsedSemVer(latest.version, current) > 0 ? 'update-available' : 'up-to-date',
+      latestVersion: latest.version.version, downloadPageUrl: latest.downloadPageUrl, bundledVersions: latest.bundledVersions }
+  } catch { return null }
 }
 
 async function defaultRequest(url: string, init: RequestInit): Promise<Response> {
@@ -228,38 +226,6 @@ async function readLimitedBody(response: Response): Promise<string> {
   } finally {
     reader.releaseLock()
   }
-}
-
-function parseVersionResponse(body: string, expectedChannel: DesktopReleaseChannel): ParsedSemVer | null {
-  let value: unknown
-  try {
-    value = JSON.parse(body)
-  } catch {
-    return null
-  }
-  if (!isRecord(value) || typeof value.version !== 'string') return null
-  if (expectedChannel === 'beta' && value.channel !== 'beta') return null
-  if (value.channel !== undefined && value.channel !== expectedChannel) return null
-  return parseCanonicalChannelVersion(value.version, expectedChannel)
-}
-
-function parseCanonicalChannelVersion(
-  input: string,
-  channel: DesktopReleaseChannel,
-): ParsedSemVer | null {
-  const parsed = parseCanonicalVersion(input)
-  if (parsed === null) return null
-  if (channel === 'stable') return parsed.prerelease.length === 0 ? parsed : null
-  return parsed.prerelease.length === 2
-    && parsed.prerelease[0] === 'beta'
-    && isNumeric(parsed.prerelease[1]!)
-    ? parsed
-    : null
-}
-
-function parseCanonicalSupportedVersion(input: string): ParsedSemVer | null {
-  return parseCanonicalChannelVersion(input, 'stable')
-    ?? parseCanonicalChannelVersion(input, 'beta')
 }
 
 function parseCanonicalVersion(input: string): ParsedSemVer | null {

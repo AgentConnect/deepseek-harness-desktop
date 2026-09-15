@@ -244,9 +244,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@awiki/dsh-plugin@npm:0.3.11":
-  version: 0.3.11
-  resolution: "@awiki/dsh-plugin@npm:0.3.11"
+"@awiki/dsh-plugin@npm:0.3.12":
+  version: 0.3.12
+  resolution: "@awiki/dsh-plugin@npm:0.3.12"
   dependencies:
     "@awiki/im-core-node": "npm:0.2.7"
     "@deepseek-ai/schemastery": "npm:^3.18.1"
@@ -279,7 +279,7 @@ __metadata:
   peerDependenciesMeta:
     "@deepseek-ai/dsh-workspace":
       optional: true
-  checksum: 10c0/802f3d301d9eb56f2f9e112b093707c631aeb6f9e81b5993ecf1c53a6cbacbdfe7f9bd03a763e83066f38de27fd77dbd1d4fb172e148f53a129b90b34f28f6dd
+  checksum: 10c0/6a01ab7e9ade92e36790c9e4f97c900e8382cce4a7016eebb7e7d21fcc1b21a033ec88049ca98e345197e2923df57623463613d8262f9caf7540e6e041ccf00b
   languageName: node
   linkType: hard
 
@@ -9120,7 +9120,7 @@ __metadata:
     "@agent-network-protocol/dsh-anp-identity": "npm:0.1.3"
     "@agents-anywhere/dsh-bridge-next": "file:../vendor/agents-anywhere/agents-anywhere-dsh-bridge-next-0.1.0-dev.0.desktop.c00df092c98b2.rcda81994.tgz"
     "@awiki/dsh-model-proxy": "npm:0.1.7"
-    "@awiki/dsh-plugin": "npm:0.3.11"
+    "@awiki/dsh-plugin": "npm:0.3.12"
     "@base-ui/react": "npm:^1.7.0"
     "@deepseek-ai/cordis": "npm:4.0.2"
     "@deepseek-ai/cordis-plugin-group": "npm:1.0.2"
@@ -9320,7 +9320,7 @@ __metadata:
     "@agent-network-protocol/dsh-anp-identity": "npm:0.1.3"
     "@agents-anywhere/dsh-bridge-next": "file:../vendor/agents-anywhere/agents-anywhere-dsh-bridge-next-0.1.0-dev.0.desktop.c00df092c98b2.rcda81994.tgz"
     "@awiki/dsh-model-proxy": "npm:0.1.7"
-    "@awiki/dsh-plugin": "npm:0.3.11"
+    "@awiki/dsh-plugin": "npm:0.3.12"
     "@base-ui/react": "npm:^1.7.0"
     "@deepseek-ai/cordis": "npm:4.0.2"
     "@deepseek-ai/cordis-plugin-group": "npm:1.0.2"

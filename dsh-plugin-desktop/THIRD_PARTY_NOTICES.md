@@ -12,7 +12,7 @@ the package names, versions, and licenses for transparency.
 | @agents-anywhere/dsh-bridge-next | 0.1.0-dev.0.desktop.c00df092c98b2.rcda81994 | MIT |
 | @anthropic-ai/sdk | 0.123.0 | MIT |
 | @awiki/dsh-model-proxy | 0.1.7 | MIT |
-| @awiki/dsh-plugin | 0.3.11 | MIT |
+| @awiki/dsh-plugin | 0.3.12 | MIT |
 | @awiki/im-core-node | 0.2.7 | Apache-2.0 |
 | @awiki/im-core-node-darwin-arm64 | 0.2.7 | Apache-2.0 |
 | @awiki/im-core-node-darwin-x64 | 0.2.7 | Apache-2.0 |
