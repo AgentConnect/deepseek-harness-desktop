@@ -9,11 +9,11 @@ import {
   type LocaleSettings,
 } from '@deepseek-ai/dsh-client-locale'
 import type {} from '@deepseek-ai/dsh-host-webserver'
+import type {} from '@deepseek-ai/dsh-client-connection'
 import {
   THEME_SETTINGS_NAMESPACE,
   type ThemeSettings,
 } from '@deepseek-ai/dsh-client-ui-theme'
-import { settingsNamespace } from '@deepseek-ai/dsh-settings'
 import {
   handleRendererBootRequest,
   RENDERER_BOOT_REPORT_PATH,
@@ -59,13 +59,13 @@ export const name = 'desktop-shell'
 
 /** Services required before the shell can register its renderer generation. */
 /** Services required by the desktop shell; `desktopRuntime` is probed, not required. */
-export const inject = ['webServer', 'webRuntime', 'appExit', 'settings']
+export const inject = ['webServer', 'webRuntime', 'connection', 'appExit', 'settings']
 
 /** Standard settings namespace shared by tray and configuration surfaces. */
-export const DESKTOP_SETTINGS_NAMESPACE = settingsNamespace('dsh-desktop')
+export const DESKTOP_SETTINGS_NAMESPACE = 'dsh-desktop'
 
-const UI_THEME_SETTINGS_NAMESPACE = settingsNamespace(THEME_SETTINGS_NAMESPACE)
-const UI_LOCALE_SETTINGS_NAMESPACE = settingsNamespace(LOCALE_SETTINGS_NAMESPACE)
+const UI_THEME_SETTINGS_NAMESPACE = THEME_SETTINGS_NAMESPACE
+const UI_LOCALE_SETTINGS_NAMESPACE = LOCALE_SETTINGS_NAMESPACE
 
 /** Desktop settings presented by the standard settings service. */
 export interface DesktopSettings {
@@ -175,6 +175,11 @@ export function apply(ctx: Context, config: Config): void {
     on(event: 'webserver/index-inject', listener: (table: ReturnType<typeof desktopBootRecoveryInjections>[number][]) => void): void
   }
   indexInjectionEvents.on('webserver/index-inject', table => {
+    const desktopSearch = new URL(desktopRendererUrl(ctx.webServer.port, config.mode, runtime.platform)).search
+    table.push({
+      kind: 'script', placement: 'head',
+      text: `globalThis.__DSH_DESKTOP_SEARCH__=${JSON.stringify(desktopSearch)}`,
+    })
     table.push(...desktopBootRecoveryInjections())
   })
   const desktopSettings = ctx.get('desktopSettingsController')
@@ -288,18 +293,18 @@ export function apply(ctx: Context, config: Config): void {
   }
   ctx.on('settings/updated', (namespace, next) => {
     if (namespace !== UI_LOCALE_SETTINGS_NAMESPACE) return
-    runtime.setLocalePreference((next as LocaleSettings).preference)
+    runtime.setLocalePreference(desktopLocale((next as LocaleSettings).preference))
   })
   ctx.effect(
     () => runtime.schedule({
       ...config,
-      url: desktopRendererUrl(ctx.webServer.port, config.mode, runtime.platform),
+      url: ctx.connection.authenticatedUrl(desktopRendererUrl(ctx.webServer.port, config.mode, runtime.platform)),
       productName: 'DSH Desktop',
       windowTitle: 'DeepSeek Harness Desktop',
       iconPath,
       trayIcons,
       readLocalePreference: () => {
-        return (ctx.settings.get(UI_LOCALE_SETTINGS_NAMESPACE) as LocaleSettings | undefined)?.preference
+        return desktopLocale((ctx.settings.get(UI_LOCALE_SETTINGS_NAMESPACE) as LocaleSettings | undefined)?.preference)
       },
       readThemeSource: () => {
         const theme = ctx.settings.get(UI_THEME_SETTINGS_NAMESPACE) as ThemeSettings | undefined
@@ -313,4 +318,9 @@ export function apply(ctx: Context, config: Config): void {
     }),
     'dsh-plugin-desktop: native shell generation',
   )
+}
+
+/** Native shell supports the two shipped locales; other web locales use OS default. */
+function desktopLocale(value: string | undefined): 'zh' | 'en' | undefined {
+  return value === 'zh' || value === 'en' ? value : undefined
 }

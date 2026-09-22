@@ -1,3 +1,4 @@
+import type { ILayout, MainPanelId, PanelInfo } from '@deepseek-ai/dsh-client-ui-layout/client'
 /** Advanced-shell panel state shared by the root slot and layout-service adapter. */
 export interface DesktopLayoutSnapshot {
   /** Preferred sidebar width; zero means the compact rail. */
@@ -63,7 +64,30 @@ function clamp(value: number, min: number, max: number): number {
 }
 
 /** Small observable panel controller used by the advanced root registration. */
-export class DesktopLayoutState {
+export class DesktopLayoutState implements ILayout {
+  private navigation = new AbortController()
+  private panelInfo: PanelInfo = Object.freeze({ activePanelId: null })
+  private rightbarFullscreen = false
+
+  getPanelInfo(): PanelInfo { return this.panelInfo }
+  isRightbarFullscreen(): boolean { return this.rightbarFullscreen }
+  selectPanel(panelId: MainPanelId | null): void {
+    this.navigation.abort()
+    this.panelInfo = Object.freeze({ activePanelId: panelId })
+    this.publish({ ...this.snapshot })
+  }
+  beginNavigation(): AbortSignal {
+    this.navigation.abort()
+    this.navigation = new AbortController()
+    return this.navigation.signal
+  }
+  dispose(): void { this.navigation.abort() }
+  openRightbar(track: boolean, fullscreen: boolean): void {
+    this.rightbarFullscreen = fullscreen
+    this.publish({ ...this.snapshot, details: track ? this.snapshot.details || DETAILS_DEFAULT : 0 })
+  }
+  closeRightbar(): void { this.rightbarFullscreen = false; this.closeDetails() }
+
   private snapshot: DesktopLayoutSnapshot = Object.freeze({
     sidebar: SIDEBAR_DEFAULT,
     details: 0,

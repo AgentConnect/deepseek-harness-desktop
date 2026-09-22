@@ -1,74 +1,118 @@
 {
-  "schemaVersion": 1,
-  "purpose": "Desktop bundled runtime build inputs; exact published npm packages",
+  "schemaVersion": 2,
+  "channel": "singapore-test",
+  "published": false,
+  "purpose": "新加坡固定源码测试组合；未发布 npm；Desktop 与独立插件共用",
   "archive": {
-    "url": "https://github.com/AgentConnect/deepseek-harness-desktop/releases/download/desktop-build-inputs-20260909-cbc10d3dbeb9924f/desktop-runtime-inputs-cbc10d3dbeb9924f.tar.gz",
-    "sha256": "cbc10d3dbeb9924ff5256fe0e1791322b0e09f8d4599c1e4d08789cf8759b60e",
-    "sizeBytes": 19840240
+    "url": "https://anpclaw.com/downloads/singapore-full-20260922/plugins/runtime-inputs-5c9de30a9ca0efe3.tar.gz",
+    "sha256": "5c9de30a9ca0efe3025a7231e4c81f6d8b1b031cdbe6b58df00a4bd001976647",
+    "sizeBytes": 99886359
   },
   "packages": [
     {
       "name": "@agent-network-protocol/anp-identity",
-      "version": "0.2.1",
-      "file": "agent-network-protocol-anp-identity-0.2.1.tgz",
-      "sha256": "8462229234cedd73163c53cd2c2235c93c7f710cd8647aafac3d978a81239d4c",
-      "sourceCommit": "4fec5e9c740318ddc308fcb368478d679b33cb67"
-    },
-    {
-      "name": "@agent-network-protocol/anp-identity-darwin-arm64",
-      "version": "0.2.1",
-      "file": "agent-network-protocol-anp-identity-darwin-arm64-0.2.1.tgz",
-      "sha256": "aabf27d82fecc3e8ff2882ba73d3c3248bd8e52c4ac46c5c708ce7f9ff1ef558",
-      "sourceCommit": "4fec5e9c740318ddc308fcb368478d679b33cb67"
-    },
-    {
-      "name": "@agent-network-protocol/anp-identity-darwin-x64",
-      "version": "0.2.1",
-      "file": "agent-network-protocol-anp-identity-darwin-x64-0.2.1.tgz",
-      "sha256": "c1716f0d384731c1f3dd84b6a72ba0217d87ed9769daab8c81904f8ea9bfe5fc",
-      "sourceCommit": "4fec5e9c740318ddc308fcb368478d679b33cb67"
-    },
-    {
-      "name": "@agent-network-protocol/anp-identity-linux-arm64-gnu",
-      "version": "0.2.1",
-      "file": "agent-network-protocol-anp-identity-linux-arm64-gnu-0.2.1.tgz",
-      "sha256": "988b7af99a4218e2c6a78bc41d0c05a367d0e9dee0a7b676f00dc09c99761a29",
-      "sourceCommit": "4fec5e9c740318ddc308fcb368478d679b33cb67"
+      "version": "0.2.4-sg.20260922.1",
+      "sha256": "479b6cfa79f131cad2662b19a4e6b2312f2f6b8bbc35a8839f049dfb8fcaf2d6",
+      "sourceCommit": "65a79d2644a065942004fad6272ea8b8b6b792f4",
+      "file": "agent-network-protocol-anp-identity-0.2.4-sg.20260922.1.tgz"
     },
     {
       "name": "@agent-network-protocol/anp-identity-linux-x64-gnu",
-      "version": "0.2.1",
-      "file": "agent-network-protocol-anp-identity-linux-x64-gnu-0.2.1.tgz",
-      "sha256": "c051143711e06e3eff685a17d7cc061020544a8f04336df7ea5141320e8fa9de",
-      "sourceCommit": "4fec5e9c740318ddc308fcb368478d679b33cb67"
+      "version": "0.2.4-sg.20260922.1",
+      "sha256": "98f69b2d8e9c01056b5ea865440b05f199fa157b91f65aef045ec268bbc1cb71",
+      "sourceCommit": "65a79d2644a065942004fad6272ea8b8b6b792f4",
+      "file": "agent-network-protocol-anp-identity-linux-x64-gnu-0.2.4-sg.20260922.1.tgz"
+    },
+    {
+      "name": "@awiki/im-core-node",
+      "version": "0.2.8-sg.20260922.1",
+      "sha256": "5cb1d7676e2517990d7678b915aa7c45bc9688e7268626827dcf85bcd2a9c2ba",
+      "sourceCommit": "479c3301116f5f99d36a2543ebbb2379abe44269",
+      "file": "awiki-im-core-node-0.2.8-sg.20260922.1.tgz"
+    },
+    {
+      "name": "@awiki/im-core-node-linux-x64-gnu",
+      "version": "0.2.8-sg.20260922.1",
+      "sha256": "c60e3cc1fb87708023f61853cea82d19e0228a973e1af91185edc84ca07a1f8f",
+      "sourceCommit": "479c3301116f5f99d36a2543ebbb2379abe44269",
+      "file": "awiki-im-core-node-linux-x64-gnu-0.2.8-sg.20260922.1.tgz"
+    },
+    {
+      "name": "@agent-network-protocol/anp-identity-darwin-arm64",
+      "version": "0.2.4-sg.20260922.1",
+      "sha256": "5c910b0634d09efad2c455a6d619fba61062211b255767148dc5b3f37e4c232f",
+      "sourceCommit": "65a79d2644a065942004fad6272ea8b8b6b792f4",
+      "file": "agent-network-protocol-anp-identity-darwin-arm64-0.2.4-sg.20260922.1.tgz"
+    },
+    {
+      "name": "@awiki/im-core-node-darwin-arm64",
+      "version": "0.2.8-sg.20260922.1",
+      "sha256": "9a2212d697873cd9a9443e112f5eab8134327e26ccb066e8d2793d7cb847f051",
+      "sourceCommit": "479c3301116f5f99d36a2543ebbb2379abe44269",
+      "file": "awiki-im-core-node-darwin-arm64-0.2.8-sg.20260922.1.tgz"
+    },
+    {
+      "name": "@agent-network-protocol/anp-identity-darwin-x64",
+      "version": "0.2.4-sg.20260922.1",
+      "sha256": "227f0c90d7a6b72c5ad19417af20bc5a2b19b9a15cc01060d90ae9aa0b3bfc58",
+      "sourceCommit": "65a79d2644a065942004fad6272ea8b8b6b792f4",
+      "file": "agent-network-protocol-anp-identity-darwin-x64-0.2.4-sg.20260922.1.tgz"
+    },
+    {
+      "name": "@awiki/im-core-node-darwin-x64",
+      "version": "0.2.8-sg.20260922.1",
+      "sha256": "36296c111cf098b1077c8e713b88245aa647c1f81c7a1097fbc32f60ab493ba4",
+      "sourceCommit": "479c3301116f5f99d36a2543ebbb2379abe44269",
+      "file": "awiki-im-core-node-darwin-x64-0.2.8-sg.20260922.1.tgz"
+    },
+    {
+      "name": "@agent-network-protocol/anp-identity-linux-arm64-gnu",
+      "version": "0.2.4-sg.20260922.1",
+      "sha256": "f035efa14eb207632cdaf0be00361158e760f27f7b6c06504c22c3cf1cf931b0",
+      "sourceCommit": "65a79d2644a065942004fad6272ea8b8b6b792f4",
+      "file": "agent-network-protocol-anp-identity-linux-arm64-gnu-0.2.4-sg.20260922.1.tgz"
+    },
+    {
+      "name": "@awiki/im-core-node-linux-arm64-gnu",
+      "version": "0.2.8-sg.20260922.1",
+      "sha256": "4b7b510bb4d44ffdd084010ef900cbe9984090412d2b8817fc71984349b2d498",
+      "sourceCommit": "479c3301116f5f99d36a2543ebbb2379abe44269",
+      "file": "awiki-im-core-node-linux-arm64-gnu-0.2.8-sg.20260922.1.tgz"
     },
     {
       "name": "@agent-network-protocol/anp-identity-win32-x64-msvc",
-      "version": "0.2.1",
-      "file": "agent-network-protocol-anp-identity-win32-x64-msvc-0.2.1.tgz",
-      "sha256": "4a49ef75e7d3e101ddfe49f6d4e9dae9c1e72255c3ba6d1b2d657cfe5caf4a56",
-      "sourceCommit": "4fec5e9c740318ddc308fcb368478d679b33cb67"
+      "version": "0.2.4-sg.20260922.1",
+      "sha256": "972eb673bdc0cba82bf9b5b066d1f4443540632646cde39dd104a7050a42c141",
+      "sourceCommit": "65a79d2644a065942004fad6272ea8b8b6b792f4",
+      "file": "agent-network-protocol-anp-identity-win32-x64-msvc-0.2.4-sg.20260922.1.tgz"
+    },
+    {
+      "name": "@awiki/im-core-node-win32-x64-msvc",
+      "version": "0.2.8-sg.20260922.1",
+      "sha256": "69877c92f1f77f098135bf224e7114965b9e2ed05d48ed58473a8336ed7e102d",
+      "sourceCommit": "479c3301116f5f99d36a2543ebbb2379abe44269",
+      "file": "awiki-im-core-node-win32-x64-msvc-0.2.8-sg.20260922.1.tgz"
     },
     {
       "name": "@agent-network-protocol/dsh-anp-identity",
-      "version": "0.1.1",
-      "file": "agent-network-protocol-dsh-anp-identity-0.1.1.tgz",
-      "sha256": "7e6e84723cbf9f6d37ae83accc46b9a210d0956a9df84ae1bd2fd1f08e694b30",
-      "sourceCommit": "4fec5e9c740318ddc308fcb368478d679b33cb67"
-    },
-    {
-      "name": "@awiki/dsh-model-proxy",
-      "version": "0.1.6",
-      "file": "awiki-dsh-model-proxy-0.1.6.tgz",
-      "sha256": "0a099f954a148585e5163e8ce02fcae8c14e8689342998c3f641409591683b76",
-      "sourceCommit": "243449cfb8123addb187b5405d164fbbbac7c56b"
+      "version": "0.1.4-sg.20260922.2",
+      "sha256": "ce659c220c76cd93778ead83a3bf252efbc3b709dcf40b32ca3fdee29ca0c5d4",
+      "sourceCommit": "fcbc77f25c0b4c1bd8c4f4c70f143d1863dac65c",
+      "file": "agent-network-protocol-dsh-anp-identity-0.1.4-sg.20260922.2.tgz"
     },
     {
       "name": "@awiki/dsh-plugin",
-      "version": "0.3.10",
-      "file": "awiki-dsh-plugin-0.3.10.tgz",
-      "sha256": "282a2bf03b471f4c1386bca090f7125107574f696413ef6f2d0a105817d119b3",
-      "sourceCommit": "243449cfb8123addb187b5405d164fbbbac7c56b"
+      "version": "0.3.13-sg.20260922.2",
+      "sha256": "823944857b8d36e04ed9c6606214d97fa423d96912b7699f430f267100f5be7c",
+      "sourceCommit": "c5c0128c7fa9ad05f6353417c23b7c7aab6fa2b5",
+      "file": "awiki-dsh-plugin-0.3.13-sg.20260922.2.tgz"
+    },
+    {
+      "name": "@awiki/dsh-model-proxy",
+      "version": "0.1.8-sg.20260922.2",
+      "sha256": "7bfa379d7186d616859a4e8f54c648c939246e4cba12da51c414ed7bd69da3ce",
+      "sourceCommit": "c5c0128c7fa9ad05f6353417c23b7c7aab6fa2b5",
+      "file": "awiki-dsh-model-proxy-0.1.8-sg.20260922.2.tgz"
     }
   ]
 }

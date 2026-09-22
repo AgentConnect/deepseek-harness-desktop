@@ -1,9 +1,8 @@
 /** Windows guard for upstream agent presets that require unsupported PTY inspection. */
 
 import type { Context } from '@deepseek-ai/cordis'
+import { RemoteError } from '@deepseek-ai/dsh-typert-protocol'
 import AgentPresets, {
-  PresetExistsError,
-  UnknownPresetError,
   type AgentPreset,
 } from '@deepseek-ai/dsh-agent-presets'
 
@@ -28,18 +27,18 @@ export class WindowsAgentPresets extends AgentPresets {
     if (id !== WINDOWS_UNSUPPORTED_PRESET) return await super.resolve(id)
     const preset = (await super.list()).find(candidate => candidate.id === id)
     if (preset !== undefined) return preset
-    throw new UnknownPresetError(id, (await this.list()).map(candidate => candidate.id))
+    throw new RemoteError('agent-preset/not-found', `Preset ${id} is unavailable on Windows`, { agentPreset: id, available: (await this.list()).map(candidate => candidate.id) })
   }
 
   override async recompose(agentCtx: Context, id: string): Promise<AgentPreset> {
     if (id === WINDOWS_UNSUPPORTED_PRESET) {
-      throw new UnknownPresetError(id, (await this.list()).map(candidate => candidate.id))
+      throw new RemoteError('agent-preset/not-found', `Preset ${id} is unavailable on Windows`, { agentPreset: id, available: (await this.list()).map(candidate => candidate.id) })
     }
     return await super.recompose(agentCtx, id)
   }
 
   override async copy(from: string, id: string, name?: string): Promise<void> {
-    if (id === WINDOWS_UNSUPPORTED_PRESET) throw new PresetExistsError(id)
+    if (id === WINDOWS_UNSUPPORTED_PRESET) throw new RemoteError('agent-preset/invalid', `Preset ${id} is reserved on Windows`, { agentPreset: id, reason: 'reserved Windows preset' })
     await super.copy(from, id, name)
   }
 }

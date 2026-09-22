@@ -99,6 +99,18 @@ describe('installProfilePackageResolver', () => {
     expect(harness.overlay).toHaveBeenCalledWith('dsh-plugin-desktop', expect.any(Object))
   })
 
+  it.each(['file:///C:/Users/test/profile/', 'file:///C:/Users/test/profile/cordis.yml'])(
+    'resolves browser module imports from the profile anchor %s', (parentURL) => {
+      const profileBaseUrl = 'file:///C:/Users/test/profile/package.json'
+      harness.sources.set('dsh-plugin-desktop', 'install')
+      installProfilePackageResolver(profileBaseUrl)
+      const nextResolve = vi.fn((_specifier: string, context: { parentURL?: string }) => context)
+      const resolved = harness.resolve?.('dsh-plugin-desktop/client', { parentURL }, nextResolve) as { parentURL: string }
+      expect(resolved.parentURL).toMatch(/\/lib\/index\.js$/u)
+      expect(harness.overlay).toHaveBeenCalledWith('dsh-plugin-desktop', expect.any(Object))
+    },
+  )
+
   it('also recognizes the Loader native dynamic-import fallback', () => {
     const profileBaseUrl = 'file:///C:/Users/test/profile/package.json'
     installProfilePackageResolver(profileBaseUrl)

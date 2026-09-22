@@ -1,0 +1,12 @@
+diff --git a/lib/bin.js b/lib/bin.js
+--- a/lib/bin.js
++++ b/lib/bin.js
+@@ -26,7 +26,7 @@
+ */
+ const collect = (value, previous = []) => [...previous, value];
+ function rejectElectronProfile(program, profile) {
+-	if (profile.toLowerCase() === "desktop") program.error("error: profile \"desktop\" is managed exclusively by the Electron application");
++	if (profile.toLowerCase() === "desktop" && process.env.DSH_DESKTOP_CLI !== "1") program.error("error: profile \"desktop\" is managed exclusively by the Electron application");
+ }
+ /** The launcher's own help text; each app prints its own. */
+ const HELP_EXAMPLES = `

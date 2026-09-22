@@ -234,8 +234,8 @@ try {
   }
 
   const expectedUrl = `http://127.0.0.1:${String(ctx.webServer.port)}/?dsh-desktop-mode=advanced&dsh-desktop-platform=win32`
-  if (mountedSpec?.url !== expectedUrl) {
-    throw new Error(`desktop plugin produced an unexpected renderer URL: ${String(mountedSpec?.url)}`)
+  if (mountedSpec?.url !== ctx.connection.authenticatedUrl(expectedUrl)) {
+    throw new Error('desktop plugin produced an unexpected authenticated renderer URL')
   }
   if (mountedSpec?.mode !== 'advanced') {
     throw new Error(`desktop plugin produced an unexpected shell mode: ${String(mountedSpec?.mode)}`)
@@ -258,11 +258,16 @@ try {
   if (profileMenu?.submenu?.()[0]?.label() !== 'desktop') {
     throw new Error('assembled desktop profile is missing the active profile tray submenu')
   }
-  const response = await fetch(expectedUrl)
+  const login = await fetch(mountedSpec.url, { redirect: 'manual' })
+  if (login.status !== 303) throw new Error('renderer token did not establish a browser session')
+  const cookie = login.headers.get('set-cookie')?.split(';')[0]
+  if (!cookie) throw new Error('renderer login did not return a cookie')
+  const response = await fetch(expectedUrl, {headers:{cookie}})
   const html = await response.text()
   if (response.status !== 200) {
     throw new Error(`assembled Web root returned HTTP ${String(response.status)}`)
   }
+  if (!html.includes('globalThis.__DSH_DESKTOP_SEARCH__') || !html.includes('dsh-desktop-mode=advanced')) throw new Error('authenticated renderer lost Desktop environment')
   const bootMatch = html.match(/(?:window\.__DSH_BOOT__|globalThis\["__DSH_BOOT__"\]) = (\{.*?\})<\/script>/u)
   if (bootMatch?.[1] === undefined) {
     throw new Error('assembled Web root is missing window.__DSH_BOOT__')

@@ -1,7 +1,7 @@
 /** Profile-relative package resolution for Electron's restricted Node runtime. */
 
 import Module, { registerHooks } from 'node:module'
-import { dirname } from 'node:path'
+import { dirname, join } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { unpackedAsarPath } from './packaged-runtime-path.ts'
 import {
@@ -51,6 +51,11 @@ export function installProfilePackageResolver(
 ): () => void {
   const profileManifestPath = fileURLToPath(profileBaseUrl)
   const profileDirectory = dirname(profileManifestPath)
+  const profileAnchors = new Set([
+    profileBaseUrl,
+    pathToFileURL(profileDirectory + '/').href,
+    pathToFileURL(join(profileDirectory, 'cordis.yml')).href,
+  ])
 
   // ClientModuleRegistry intentionally uses createRequire(ctx.baseUrl) to
   // resolve each browser bundle from the config tree. Node's ESM resolve hook
@@ -100,7 +105,7 @@ export function installProfilePackageResolver(
       // URL for the native dynamic-import fallback, and recognize the Profile
       // manifest anchor used by Electron's internal loader as the same boundary.
       const fromLoader = context.parentURL === LOADER_ENTRY_URL
-        || context.parentURL === profileBaseUrl
+        || (context.parentURL !== undefined && profileAnchors.has(context.parentURL))
       const packageName = fromLoader ? packageNameFromSpecifier(specifier) : undefined
       if (packageName !== undefined) {
         const overlay = resolveOverlayPackage(packageName, {

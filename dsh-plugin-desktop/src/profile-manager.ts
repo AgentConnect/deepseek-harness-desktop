@@ -168,7 +168,7 @@ function existingProfile(name: string, home: string): DesktopProfileSummary {
 
 /** Describe one profile that upstream app-boot will lazily initialize. */
 function virtualProfile(name: typeof DEFAULT_PROFILE_NAME | typeof WEB_PROFILE_NAME, home: string): DesktopProfileSummary {
-  const bundles = PROFILE_TEMPLATES.web
+  const bundles = PROFILE_TEMPLATES.web?.bundles
   if (bundles === undefined) {
     throw new Error(`${BIN_NAME}: installed dsh-app-boot has no web profile template`)
   }
@@ -190,7 +190,7 @@ function virtualProfile(name: typeof DEFAULT_PROFILE_NAME | typeof WEB_PROFILE_N
  */
 export function createDesktopWebProfile(home: string, name: string): DesktopProfileSummary {
   assertDesktopProfileName(name)
-  const template = PROFILE_TEMPLATES.web
+  const template = PROFILE_TEMPLATES.web?.bundles
   if (template === undefined) {
     throw new Error(`${BIN_NAME}: installed dsh-app-boot has no web profile template`)
   }

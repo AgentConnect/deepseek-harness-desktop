@@ -1,8 +1,7 @@
 diff --git a/cordis.patch.yml b/cordis.patch.yml
-index 61151bd..d9d4a7e 100644
 --- a/cordis.patch.yml
 +++ b/cordis.patch.yml
-@@ -138,7 +138,7 @@
+@@ -155,7 +155,7 @@
        name: '@deepseek-ai/dsh-web-app'
        inject: [webStartup]
        config:
@@ -12,18 +11,17 @@ index 61151bd..d9d4a7e 100644
          surfaceContext: true
          trustedHosts: !!js ctx.webStartup.trustedHosts
 diff --git a/lib/index.js b/lib/index.js
-index 2857270..b27f4df 100644
 --- a/lib/index.js
 +++ b/lib/index.js
-@@ -49,6 +49,7 @@ function launchedThroughSsh(ctx) {
- }
+@@ -43,6 +43,7 @@
+ const ALL_INTERFACES_HOST = "0.0.0.0";
  const BROWSER_OPENER_MODULE = import.meta.resolve("open");
  const BROWSER_OPENER_PROGRAM = `
 +for (const name of Object.keys(process.env)) if (name.toUpperCase() === 'ELECTRON_RUN_AS_NODE') delete process.env[name]
  try {
    const { default: open } = await import(${JSON.stringify(BROWSER_OPENER_MODULE)})
    const launcher = await open(process.argv[1])
-@@ -122,7 +123,10 @@ function spawnBrowserLauncher(url) {
+@@ -122,7 +123,10 @@
  		"--",
  		url
  	], {

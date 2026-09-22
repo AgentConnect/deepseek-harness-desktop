@@ -4,7 +4,6 @@ import type { Context } from '@deepseek-ai/cordis'
 import type { LocaleId } from '@deepseek-ai/dsh-client-locale'
 import type { WebRoute } from '@deepseek-ai/dsh-host-webserver'
 import type { ThemePreference } from '@deepseek-ai/dsh-client-ui-theme'
-import { settingsNamespace } from '@deepseek-ai/dsh-settings'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   apply,
@@ -113,6 +112,7 @@ function createHarness(platform: DesktopRuntime['platform'] = 'darwin'): PluginH
   }
   const ctx = {
     desktopRuntime: runtime,
+    connection: { authenticatedUrl: (url: string) => url },
     webServer: {
       host: '127.0.0.1',
       port: 43120,
@@ -145,11 +145,11 @@ function createHarness(platform: DesktopRuntime['platform'] = 'darwin'): PluginH
     notify: async (next, prev) => { await watcher?.(next, prev) },
     notifyLocale: (preference) => {
       localePreference = preference
-      for (const listener of settingsUpdated) listener(settingsNamespace('locale'), { preference })
+      for (const listener of settingsUpdated) listener('locale', { preference })
     },
     notifyTheme: (preference) => {
       themePreference = preference
-      for (const listener of settingsUpdated) listener(settingsNamespace('ui-theme'), { preference })
+      for (const listener of settingsUpdated) listener('ui-theme', { preference })
     },
   }
 }
@@ -230,6 +230,24 @@ describe('desktop Host plugin', () => {
 
     await harness.shell()?.requestModeChange('advanced')
     expect(harness.update).toHaveBeenCalledWith({ mode: 'advanced' })
+  })
+
+  it('authenticates the renderer and preserves mode markers across the login redirect', () => {
+    const harness = createHarness()
+    const authenticate = vi.fn(() => 'http://127.0.0.1:43120/?token=test-only')
+    Object.assign(harness.ctx.connection, { authenticatedUrl: authenticate })
+    apply(harness.ctx, { ...config, mode: 'advanced' })
+    expect(authenticate).toHaveBeenCalledWith('http://127.0.0.1:43120/?dsh-desktop-mode=advanced&dsh-desktop-platform=darwin')
+    expect(harness.shell()?.url).toBe('http://127.0.0.1:43120/?token=test-only')
+    const call = vi.mocked(harness.ctx.on).mock.calls.find(([event]) => event === 'webserver/index-inject')
+    const table: { kind: string; placement: string; text: string }[] = []
+    const injectIndex = call?.[1] as unknown as (table: object[]) => void
+    injectIndex(table)
+    expect(table[0]).toEqual({
+      kind: 'script', placement: 'head',
+      text: 'globalThis.__DSH_DESKTOP_SEARCH__="?dsh-desktop-mode=advanced&dsh-desktop-platform=darwin"',
+    })
+    expect(JSON.stringify(table)).not.toContain('test-only')
   })
 
   it('forwards same-origin renderer boot reports through the Host route', async () => {

@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react'
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import type { PropsRenderSlots, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 import type {} from './contracts.ts'
+import type {} from '@deepseek-ai/dsh-client-ui-session/client'
 import type { DesktopClientPlatform } from './environment.ts'
 import {
   computeDesktopColumns, DesktopLayoutState, MACOS_SIDEBAR_COLLAPSED,
@@ -17,20 +18,17 @@ export interface AdvancedFrameInjected {
 
 /** Full advanced root slot props. */
 export type AdvancedFrameProps = PropsRuntime<'root'>
-  & PropsRenderSlots<'sidebar' | 'conversation' | 'details' | 'shell.overlay'>
+  & PropsRenderSlots<'sidebar' | 'main' | 'rightbar' | 'shell.overlay'>
   & AdvancedFrameInjected
 
 /** Desktop-owned transparent frame around the unchanged product surfaces. */
-export function AdvancedFrame({ layout, platform, renderSlot, useSessions }: AdvancedFrameProps) {
+export function AdvancedFrame({ layout, platform, renderSlot }: AdvancedFrameProps) {
   const subscribeLayout = useCallback((listener: () => void) => layout.subscribe(listener), [layout])
   const readLayout = useCallback(() => layout.getSnapshot(), [layout])
   const panels = useSyncExternalStore(subscribeLayout, readLayout)
   const frameRef = useRef<HTMLDivElement>(null)
   const [viewport, setViewport] = useState(() => window.innerWidth)
-  const detailsSession = useSessions((state) => {
-    const current = state.current
-    return current !== undefined && state.byId[current]?.blank === false ? current : undefined
-  })
+
 
   useEffect(() => {
     const element = frameRef.current
@@ -53,21 +51,12 @@ export function AdvancedFrame({ layout, platform, renderSlot, useSessions }: Adv
   const narrow = viewport < SIDEBAR_AUTO_COLLAPSE
   useEffect(() => { layout.setNarrow(narrow) }, [layout, narrow])
 
-  const previousSession = useRef(detailsSession)
-  useLayoutEffect(() => {
-    if (detailsSession === undefined) return
-    if (previousSession.current !== undefined && previousSession.current !== detailsSession) {
-      layout.closeDetails()
-    }
-    previousSession.current = detailsSession
-  }, [detailsSession, layout])
-
   const collapsed = narrow ? !panels.narrowExpanded : panels.sidebar === 0
   const sidebarPreference = collapsed ? 0 : panels.sidebar === 0 ? SIDEBAR_DEFAULT : panels.sidebar
   const columns = computeDesktopColumns(
     viewport,
     sidebarPreference,
-    detailsSession === undefined ? 0 : panels.details,
+    panels.details,
     platform === 'darwin' ? MACOS_SIDEBAR_COLLAPSED : SIDEBAR_COLLAPSED,
   )
   // macOS keeps a wider native rail around the centered upstream sidebar,
@@ -112,8 +101,8 @@ export function AdvancedFrame({ layout, platform, renderSlot, useSessions }: Adv
           {renderSlot('sidebar', { collapsed, width: sidebarOwnerWidth })}
         </div>
       </aside>
-      <main className="dshDesktopConversationSurface">{renderSlot('conversation', {})}</main>
-      <aside className="dshDesktopDetailsSurface">{renderSlot('details', {})}</aside>
+      <main className="dshDesktopConversationSurface">{renderSlot('main', {}, { entryKey: layout.getPanelInfo().activePanelId ?? 'conversation' })}</main>
+      <aside className="dshDesktopDetailsSurface">{renderSlot('rightbar', { width: columns.details, viewportWidth: viewport, canShow: viewport - columns.sidebar >= 700 })}</aside>
       <div className="dshDesktopOverlay" data-shell-overlay>
         {renderSlot('shell.overlay', {})}
       </div>
@@ -126,7 +115,7 @@ export function AdvancedFrame({ layout, platform, renderSlot, useSessions }: Adv
           onEnd={onDragEnd}
         />
       )}
-      {columns.details > 0 && (
+      {columns.details > 0 && !layout.isRightbarFullscreen() && (
         <ResizeHandle
           side="details"
           left={viewport - columns.details}

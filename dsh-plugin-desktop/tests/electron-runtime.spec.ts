@@ -1103,7 +1103,7 @@ describe('Electron desktop runtime', () => {
         appExecutable: process.execPath,
         electronVersion: '43.4.0',
         profileName: 'desktop',
-        productVersion: '2.1.0-rc.8',
+        productVersion: '2.2.2-sg.20260922.1',
         profileDir: expect.stringMatching(/profiles[\\/]+desktop$/u),
         homeDir: expect.stringContaining('dsh-desktop-user-data'),
         installRecoveryStatePath: expect.stringMatching(/[\\/]plugin-install-recovery[\\/]state\.json$/u),
@@ -1140,7 +1140,7 @@ describe('Electron desktop runtime', () => {
     expect(diagnostics.export).toHaveBeenCalledWith(
       expect.stringContaining('dsh-desktop-user-data'),
       expect.objectContaining({
-        appVersion: '2.1.0-rc.8',
+        appVersion: '2.2.2-sg.20260922.1',
         crashDumpsDir: expect.stringMatching(/[\\/]Crashpad$/u),
       }),
     )
@@ -1359,26 +1359,26 @@ describe('Electron desktop runtime', () => {
     vi.spyOn(process, 'platform', 'get').mockReturnValue('darwin')
     const { ElectronDesktopRuntime } = await import('../src/electron-runtime.ts')
     const runtime = new ElectronDesktopRuntime(async () => {})
-    const result = { status: 'update-available' as const, currentVersion: '2.1.0-rc.8', latestVersion: '2.1.0' }
+    const result = { status: 'update-available' as const, currentVersion: '2.1.0-rc.8', latestVersion: '2.1.0', downloadPageUrl: 'https://anpclaw.com/downloads/singapore-full-20260922/' }
     electron.dialog.showMessageBox.mockResolvedValueOnce({ response: 1, checkboxChecked: false })
     await runtime.updates.showManualCheckResult(result)
     expect(electron.shell.openExternal).not.toHaveBeenCalled()
     electron.dialog.showMessageBox.mockResolvedValueOnce({ response: 0, checkboxChecked: false })
     await runtime.updates.showManualCheckResult(result)
-    expect(electron.shell.openExternal).toHaveBeenCalledWith('https://awiki.me/downloads/dsh-awiki/')
+    expect(electron.shell.openExternal).toHaveBeenCalledWith('https://anpclaw.com/downloads/singapore-full-20260922/')
     expect(electron.net.fetch).not.toHaveBeenCalled()
     expect(childProcess.spawn).not.toHaveBeenCalled()
     expect(runtime.updates).not.toHaveProperty('downloadAndOpen')
     expect(runtime.updates).not.toHaveProperty('confirmDownload')
   })
 
-  it('offers the known download page even when version checking fails', async () => {
+  it('does not guess a download page when version checking fails', async () => {
     const { ElectronDesktopRuntime } = await import('../src/electron-runtime.ts')
     const runtime = new ElectronDesktopRuntime(async () => {})
     electron.dialog.showMessageBox.mockResolvedValueOnce({ response: 1, checkboxChecked: false })
     await runtime.updates.showManualCheckResult(null)
     expect(electron.dialog.showMessageBox).toHaveBeenLastCalledWith(expect.objectContaining({
-      type: 'warning', buttons: ['Visit Download Page', 'Close'],
+      type: 'warning', buttons: ['Close'],
     }))
     expect(electron.net.fetch).not.toHaveBeenCalled()
   })

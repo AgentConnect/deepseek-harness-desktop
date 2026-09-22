@@ -171,7 +171,15 @@ async function loadWithInstallRecovery(
  */
 export async function runDesktopDshCli(
   environment: NodeJS.ProcessEnv = process.env,
-  load: (url: string) => Promise<unknown> = url => import(url),
+  load: (url: string) => Promise<unknown> = async url => {
+    const { runCli } = await import(url) as { runCli: () => Promise<void> }
+    const previous = process.env.DSH_DESKTOP_CLI
+    process.env.DSH_DESKTOP_CLI = '1'
+    try { await runCli() } finally {
+      if (previous === undefined) delete process.env.DSH_DESKTOP_CLI
+      else process.env.DSH_DESKTOP_CLI = previous
+    }
+  },
   argv: string[] = process.argv,
 ): Promise<void> {
   const profileName = takeDefaultProfile(environment)

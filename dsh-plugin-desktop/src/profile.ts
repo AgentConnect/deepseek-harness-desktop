@@ -9,6 +9,7 @@ import type { PatchOptions } from '@deepseek-ai/cordis-plugin-include'
 import {
   composeEntries,
   healProfilesModuleFallback,
+  DEFAULT_PROFILE_PATCH_RELOAD,
   initProfile,
   loadOptionalPatches,
   loadOverlayPatches,
@@ -191,7 +192,7 @@ export function readDesktopShellMode(config: SettingsFileConfig): DesktopShellMo
 
 /** Resolve the public Web template once and reject an incompatible DSH release. */
 function requiredWebBundles(): string[] {
-  const bundles = PROFILE_TEMPLATES.web
+  const bundles = PROFILE_TEMPLATES.web?.bundles
   if (bundles === undefined) {
     throw new Error(`${BIN_NAME}: installed dsh-app-boot has no web profile template`)
   }
@@ -420,7 +421,7 @@ function loadRecoveryFilteredProfile(
     if (template === undefined) {
       throw new Error(`${BIN_NAME}: profile ${JSON.stringify(profileName)} does not exist`)
     }
-    initProfile(profileDir, template)
+    initProfile(profileDir, template.bundles, template.patchReload)
   }
   const manifest = readProfileManifest(BIN_NAME, profileDir)
   const rawBundles = (manifest.dsh?.profile as { bundles?: unknown } | undefined)?.bundles
@@ -489,6 +490,7 @@ function loadRecoveryFilteredProfile(
       dir: profileDir,
       layers,
       patchPath,
+      patchReload: manifest.dsh?.profile?.patchReload ?? DEFAULT_PROFILE_PATCH_RELOAD,
       patches: existsSync(patchPath) ? loadOverlayPatches(BIN_NAME, patchPath) : [],
     },
     packageSourceOverrides: awikiCompatibility.preferredSources,
@@ -716,7 +718,6 @@ export function prepareDesktopProfile(
     : resolveProfileDir(profileName, home)
   const workspaceChanged = reconcileProfilePnpmWorkspace(profileDir)
   const requiresDependencyMigration = profileDependencyMigrationRequired(profileDir, workspaceChanged, platform)
-  healProfilesModuleFallback(INSTALL_ANCHOR, home)
   // `plugin-management` is the community market's user-facing scope. Startup
   // recovery has its own state file so switching to another provider cannot
   // reapply a stale community-market disable, while a recovery disable always
@@ -1017,3 +1018,8 @@ export function desktopInstallAnchor(): string {
 
 /** Preserve the public manifest type in the declaration graph used by plugin tooling. */
 export type DesktopProfileManifest = ProfileManifest
+
+/** Await upstream profile module preparation before booting a desktop generation. */
+export async function healDesktopProfileModules(home: string, profile?: Profile): Promise<void> {
+  await healProfilesModuleFallback({ installAnchor: INSTALL_ANCHOR, home, ...(profile ? { profile } : {}) })
+}

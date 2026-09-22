@@ -1,4 +1,4 @@
-import type { ClientContext } from '@deepseek-ai/dsh-client-runtime/client'
+import type { Context as ClientContext } from '@deepseek-ai/cordis'
 import type {} from '@deepseek-ai/dsh-client-ui-theme/client'
 import type {} from './contracts.ts'
 import type { DesktopClientEnvironment } from './environment.ts'
@@ -45,12 +45,20 @@ export function applyAdvancedShell(ctx: ClientContext, environment: DesktopClien
     }
   }, 'desktop: theme presenter')
 
+  ctx.effect(() => {
+    const dispose = ctx.slots.provideRoot({ hooks: { panelInfo: {
+      getSnapshot: () => desktopLayout.getPanelInfo(),
+      subscribe: listener => desktopLayout.subscribe(listener),
+    } } })
+    return () => { desktopLayout.dispose(); dispose() }
+  }, 'desktop: main panel navigation')
+
   ctx.effect(() => ctx.slots.register({
     name: 'root',
     children: {
       'sidebar': { kind: 'single', scope: 'root' },
-      'conversation': { kind: 'single', scope: 'session-maybe' },
-      'details': { kind: 'single', scope: 'session' },
+      'main': { kind: 'keyed', scope: 'root' },
+      'rightbar': { kind: 'single', scope: 'root' },
       'shell.overlay': { kind: 'list', scope: 'root' },
     },
     inject: () => ({ layout: desktopLayout, platform: environment.platform }),

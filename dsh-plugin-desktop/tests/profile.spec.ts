@@ -31,7 +31,7 @@ function installWebClient(
   manifest: Record<string, unknown> = {},
 ): string {
   const webDir = join(home, 'profiles', 'web')
-  const bundles = PROFILE_TEMPLATES.web
+  const bundles = PROFILE_TEMPLATES.web?.bundles
   if (bundles === undefined) throw new Error('test requires the shipped Web template')
   initProfile(webDir, bundles)
   const packageDir = join(webDir, 'node_modules', ...packageName.split('/'))
@@ -271,7 +271,7 @@ virtualStoreDirMaxLength: 120
     expect(prepared.requiresDependencyMigration).toBe(true)
     expect(prepared.awikiCompatibilityFallback).toMatchObject({
       source: 'install',
-      rejectedPluginVersion: '0.3.10',
+      rejectedPluginVersion: '0.3.13-sg.20260922.2',
       rejectedModelProxyVersion: '0.2.0',
     })
     expect(Object.fromEntries(prepared.packageSourceOverrides)).toEqual({
@@ -631,7 +631,7 @@ virtualStoreDirMaxLength: 60
   it('boots a selected Web profile without overriding its compatibility UI rows', () => {
     const home = temporaryHome()
     const webDir = join(home, 'profiles', 'web')
-    const bundles = PROFILE_TEMPLATES.web
+    const bundles = PROFILE_TEMPLATES.web?.bundles
     if (bundles === undefined) throw new Error('test requires the shipped Web template')
     initProfile(webDir, bundles)
     writeFileSync(join(webDir, 'cordis.patch.yml'), [

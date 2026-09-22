@@ -84,6 +84,7 @@ import {
   desktopInstallAnchor,
   prepareDesktopProfile,
   type SkippedOptionalEntry,
+  healDesktopProfileModules,
 } from './profile.ts'
 import { clearDesktopProfileCheckpoint, DesktopProfileCheckpoint } from './profile-checkpoint.ts'
 import { materializeProfile, ProfileMaterializationError } from './profile-materializer.ts'
@@ -704,6 +705,7 @@ async function start(): Promise<void> {
         }
       },
     }
+    await healDesktopProfileModules(homeDir)
     let prepared = prepareDesktopProfile(
       process.env.DSH_TELEMETRY_DISABLED,
       homeDir,
@@ -927,6 +929,7 @@ async function start(): Promise<void> {
       prepared.bareModuleBaseUrl,
       prepared.packageSourceOverrides,
     )
+    await healDesktopProfileModules(homeDir, prepared.profile)
     const ctx = await boot(
       BIN_NAME,
       prepared.rootConfig,
