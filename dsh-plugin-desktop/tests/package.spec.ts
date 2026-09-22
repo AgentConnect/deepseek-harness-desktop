@@ -97,6 +97,7 @@ describe('published package surface', () => {
       'AWIKI-COMMERCIAL-LICENSE.md',
       'awiki-commercial-license.json',
     ]))
+    expect(manifest.build?.mac?.x64ArchFiles).toContain('@deepseek-ai/node-addon-system-darwin-*/**')
     expect(manifest.build?.mac?.x64ArchFiles).toContain('@awiki/im-core-node-darwin-*/**')
     expect(manifest.build?.mac?.x64ArchFiles).toContain('@agent-network-protocol/anp-identity-darwin-*/**')
   })
