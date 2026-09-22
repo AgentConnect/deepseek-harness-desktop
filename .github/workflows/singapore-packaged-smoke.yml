@@ -1,0 +1,87 @@
+name: Singapore packaged startup
+on:
+  workflow_dispatch:
+  push:
+    branches: [test/singapore-full-20260922]
+    paths: ['.github/workflows/singapore-packaged-smoke.yml']
+permissions:
+  contents: read
+  actions: read
+jobs:
+  macos:
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [macos-15, macos-15-intel]
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Wait for the exact signed candidate
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh run watch 35725358987 --repo AgentConnect/deepseek-harness-desktop --interval 30 --exit-status
+      - uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ github.token }}
+          run-id: 35725358987
+          name: dsh-desktop-macos-universal-signed-notarized
+          path: candidate
+      - name: Verify and start the signed packaged app
+        shell: bash
+        run: |
+          set -euo pipefail
+          mount="$RUNNER_TEMP/singapore-desktop-mount"
+          mkdir "$mount"
+          hdiutil attach candidate/*.dmg -mountpoint "$mount" -nobrowse -readonly
+          trap 'hdiutil detach "$mount"' EXIT
+          codesign --verify --deep --strict "$mount/DSH Desktop.app"
+          xcrun stapler validate "$mount/DSH Desktop.app"
+          python3 scripts/singapore-packaged-smoke.py --exe "$mount/DSH Desktop.app/Contents/MacOS/DSH Desktop" --receipt receipt/startup.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: desktop-startup-${{ matrix.runner }}
+          path: receipt/*.json
+          if-no-files-found: error
+  windows:
+    strategy:
+      fail-fast: false
+      matrix:
+        kind: [installer, portable]
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ github.token }}
+          run-id: 35725362723
+          name: dsh-desktop-windows-x64-${{ matrix.kind }}-unsigned
+          path: candidate
+      - name: Install or extract the exact candidate and start it
+        shell: pwsh
+        env:
+          PACKAGE_KIND: ${{ matrix.kind }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $target = Join-Path $env:RUNNER_TEMP 'singapore-desktop-installed'
+          if ($env:PACKAGE_KIND -eq 'installer') {
+            $setup = (Get-ChildItem candidate/*Setup.exe).FullName
+            $result = Start-Process -FilePath $setup -ArgumentList @('/S', "/D=$target") -Wait -PassThru
+            if ($result.ExitCode -ne 0) { throw "installer exit: $($result.ExitCode)" }
+          } else {
+            Expand-Archive -Path (Get-ChildItem candidate/*Portable.zip).FullName -DestinationPath $target
+          }
+          $exe = Get-ChildItem -Path $target -Filter 'DSH Desktop.exe' -Recurse | Select-Object -First 1
+          if (-not $exe) { throw 'installed application is missing' }
+          python scripts/singapore-packaged-smoke.py --exe $exe.FullName --receipt receipt/startup.json
+          if ($LASTEXITCODE -ne 0) { throw 'packaged application startup failed' }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: desktop-startup-windows-${{ matrix.kind }}
+          path: receipt/*.json
+          if-no-files-found: error
