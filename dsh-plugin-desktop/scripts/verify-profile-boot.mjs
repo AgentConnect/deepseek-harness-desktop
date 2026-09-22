@@ -4,6 +4,7 @@ import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } f
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { spawnSync } from 'node:child_process'
 import { boot } from '@deepseek-ai/dsh-app-boot'
 import { provideCmdline } from '@deepseek-ai/dsh-cmdline'
 import {
@@ -19,7 +20,25 @@ import { DesktopProfileService } from '../lib/profile-service.js'
 const BIN_NAME = 'dsh-plugin-desktop-profile-smoke'
 const HOST_SERVICE_PLUGIN_NAME = 'dsh-desktop-host-services-smoke-plugin'
 const HOST_SERVICE_PROBE_KEY = 'desktopHostServiceProbe'
-const home = mkdtempSync(join(tmpdir(), 'dsh-desktop-profile-'))
+// Native SQLite handles can outlive Cordis disposal. Remove the disposable
+// profile only after the worker exits so Windows has released all file locks.
+const workerFlag = '--profile-smoke-worker'
+if (!process.argv.includes(workerFlag)) {
+  const workerHome = mkdtempSync(join(tmpdir(), 'dsh-desktop-profile-'))
+  let result
+  try {
+    result = spawnSync(process.execPath, [fileURLToPath(import.meta.url), ...process.argv.slice(2), workerFlag], {
+      env: { ...process.env, DSH_PROFILE_SMOKE_HOME: workerHome },
+      stdio: 'inherit',
+    })
+    if (result.error) throw result.error
+  } finally {
+    rmSync(workerHome, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 })
+  }
+  process.exit(result.status ?? 1)
+}
+const home = process.env.DSH_PROFILE_SMOKE_HOME
+if (!home) throw new Error('profile smoke worker requires its parent-owned temporary home')
 const originalDshHome = process.env.DSH_HOME
 const identityEnvironment = {
   DSH_AWIKI_STATE_ROOT: join(home, 'awiki'),
@@ -330,7 +349,6 @@ try {
   await ctx?.fiber.dispose()
   releasePackageResolver?.()
   pnpmRuntime?.dispose()
-  rmSync(home, { recursive: true, force: true })
   for (const [key, value] of Object.entries(originalIdentityEnvironment)) {
     if (value === undefined) delete process.env[key]
     else process.env[key] = value
