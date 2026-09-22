@@ -501,11 +501,11 @@ function loadRecoveryFilteredProfile(
   }
 }
 
-/** Resolve the agent presets shipped by the matching dsh CLI dependency. */
+/** Resolve presets from the matching Harness preset package. */
 export function shippedPresetRoot(moduleUrl: string = import.meta.url): string {
   const require = createRequire(moduleUrl)
   return unpackedAsarPath(
-    join(dirname(require.resolve('@deepseek-ai/dsh/package.json')), 'config', 'agent-presets'),
+    join(dirname(require.resolve('@deepseek-ai/dsh-agent-presets/package.json')), 'presets'),
   )
 }
 
