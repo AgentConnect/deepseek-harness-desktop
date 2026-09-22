@@ -216,3 +216,5 @@ This project is licensed under the [MIT License](LICENSE).
    <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=anywhere-labs/deepseek-harness-desktop&type=date&legend=top-left&sealed_token=BRTkOyC4czCEkIyFb5-QxrsC-kaDotBJ8tsjxrWs-UGfmBqfRCXSwieZPlVTCYOjJVEZ29uLvmBjAPREB524J5dPN1jk-UA7ajFdLdrbjumJqoOBeGWmig" />
  </picture>
 </a>
+
+Singapore test packaging also runs `yarn workspace dsh-plugin-desktop verify:profile --browser` after installing the pinned Playwright Chromium. This uses an isolated profile and blocks external browser requests; `PLAYWRIGHT_EXECUTABLE_PATH` can select an existing Chromium for a local headless check.

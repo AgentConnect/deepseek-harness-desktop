@@ -32,6 +32,12 @@ jobs:
       - run: node scripts/prepare-runtime-inputs.mjs
       - run: yarn install --immutable
       - run: yarn workspace dsh-plugin-desktop check:win-package
+      - name: Check browser boot and reload with the pinned native combination
+        run: |
+          yarn workspace dsh-community-market build
+          yarn workspace dsh-plugin-desktop build
+          yarn workspace dsh-plugin-desktop exec playwright install chromium
+          yarn workspace dsh-plugin-desktop verify:profile --browser
       - name: Build and verify unsigned NSIS installer
         env:
           DSH_PACKAGE_CHECK_ALREADY_RAN: '1'

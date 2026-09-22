@@ -64,7 +64,6 @@ export const inject = [
   'sessions',
   'theme',
   'workspaces',
-  'uiWorkspace',
   'uiRenderer',
 ]
 
@@ -78,16 +77,20 @@ export function apply(ctx: ClientContext): void {
     () => startRendererBootReporter(ctx.loader),
     'dsh-plugin-desktop: renderer boot health report',
   )
-  ctx.effect(
-    () => installWorkspaceFolderDrop({
-      create: input => ctx.workspaces.create(input),
-      startSession: workspaceId => { ctx.uiWorkspace.startSession(workspaceId) },
-      ...(environment.platform === 'win32'
-        ? { validateDirectory: (path: string) => requestDesktopDirectoryValidation(path) }
-        : {}),
-    }),
-    'dsh-plugin-desktop: workspace folder drop',
-  )
+  // The workspace UI consumes our layout service. Mount its drop handler in
+  // a child injection so the layout provider can activate before its consumer.
+  ctx.inject(['uiWorkspace'], (workspaceContext) => {
+    workspaceContext.effect(
+      () => installWorkspaceFolderDrop({
+        create: input => workspaceContext.workspaces.create(input),
+        startSession: workspaceId => { workspaceContext.uiWorkspace.startSession(workspaceId) },
+        ...(environment.platform === 'win32'
+          ? { validateDirectory: (path: string) => requestDesktopDirectoryValidation(path) }
+          : {}),
+      }),
+      'dsh-plugin-desktop: workspace folder drop',
+    )
+  })
   if (environment.platform === 'win32') {
     ctx.effect(
       () => installDesktopDirectoryPickerBridge(),

@@ -218,3 +218,5 @@ Discord：[加入 DSH Desktop 社区](https://discord.gg/TJeGqKRNM)
    <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=anywhere-labs/deepseek-harness-desktop&type=date&legend=top-left&sealed_token=BRTkOyC4czCEkIyFb5-QxrsC-kaDotBJ8tsjxrWs-UGfmBqfRCXSwieZPlVTCYOjJVEZ29uLvmBjAPREB524J5dPN1jk-UA7ajFdLdrbjumJqoOBeGWmig" />
  </picture>
 </a>
+
+新加坡测试打包另行执行 `yarn workspace dsh-plugin-desktop verify:profile --browser`，需要先安装固定版本 Playwright 的 Chromium。检查使用隔离 profile，并禁止浏览器发起外部请求；本地可用 `PLAYWRIGHT_EXECUTABLE_PATH` 指定已安装的 Chromium。

@@ -37,6 +37,12 @@ jobs:
           key: yarn-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('yarn.lock', '.yarnrc.yml') }}
       - run: node scripts/prepare-runtime-inputs.mjs
       - run: yarn install --immutable
+      - name: Check browser boot and reload with the pinned native combination
+        run: |
+          yarn workspace dsh-community-market build
+          yarn workspace dsh-plugin-desktop build
+          yarn workspace dsh-plugin-desktop exec playwright install chromium
+          yarn workspace dsh-plugin-desktop verify:profile --browser
       - name: Materialize App Store Connect API key
         shell: bash
         env:

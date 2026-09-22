@@ -33,6 +33,8 @@ const originalIdentityEnvironment = Object.fromEntries(
 Object.assign(process.env, identityEnvironment)
 process.env.DSH_HOME = home
 let ctx
+let browser
+let rendererReport
 let releasePackageResolver
 let pnpmRuntime
 let mountedSpec
@@ -107,6 +109,7 @@ try {
       runtime.setLocalePreference(mountedSpec.readLocalePreference())
       nativeThemeSource = mountedSpec.readThemeSource()
     },
+    reportRendererBoot(value) { rendererReport = value },
     show() {},
     registerTrayItem(item) {
       trayItems.push(item)
@@ -288,7 +291,42 @@ try {
   ]) {
     if (ids.has(id)) throw new Error(`assembled advanced Web graph unexpectedly includes ${id}`)
   }
+
+  if (process.argv.includes('--browser')) {
+    const { chromium } = await import('playwright')
+    browser = await chromium.launch({
+      headless: true,
+      ...(process.env.PLAYWRIGHT_EXECUTABLE_PATH
+        ? { executablePath: process.env.PLAYWRIGHT_EXECUTABLE_PATH }
+        : {}),
+    })
+    const page = await browser.newPage({ viewport: { width: 1280, height: 840 } })
+    const errors = []
+    page.on('pageerror', error => errors.push(error.message))
+    // This smoke must never invoke an external model, payment or user service.
+    await page.route('**/*', route => new URL(route.request().url()).hostname === '127.0.0.1'
+      ? route.continue() : route.abort())
+    await page.goto(ctx.connection.authenticatedUrl(expectedUrl), { waitUntil: 'domcontentloaded' })
+    for (let generation = 0; generation < 2; generation++) {
+      for (let i = 0; i < 120 && rendererReport === undefined; i++) {
+        await new Promise(resolve => setTimeout(resolve, 250))
+      }
+      if (rendererReport?.status !== 'healthy' || errors.length > 0) {
+        throw new Error(`Desktop browser boot failed: ${JSON.stringify({ rendererReport, errors })}`)
+      }
+      await page.locator('.dshDesktopFrame').waitFor({ state: 'visible' })
+      if (generation === 0) {
+        rendererReport = undefined
+        await page.reload({ waitUntil: 'domcontentloaded' })
+      }
+    }
+    if (process.env.DSH_BROWSER_SMOKE_SCREENSHOT) {
+      await page.screenshot({ path: process.env.DSH_BROWSER_SMOKE_SCREENSHOT })
+    }
+    console.log('Desktop browser boot and authenticated reload passed; no external requests allowed.')
+  }
 } finally {
+  await browser?.close()
   await ctx?.fiber.dispose()
   releasePackageResolver?.()
   pnpmRuntime?.dispose()
