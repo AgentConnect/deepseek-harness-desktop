@@ -5,50 +5,50 @@ __metadata:
   version: 10
   cacheKey: 10c0
 
-"@agent-network-protocol/anp-identity-darwin-arm64@npm:0.2.2":
-  version: 0.2.2
-  resolution: "@agent-network-protocol/anp-identity-darwin-arm64@npm:0.2.2"
+"@agent-network-protocol/anp-identity-darwin-arm64@npm:0.2.3":
+  version: 0.2.3
+  resolution: "@agent-network-protocol/anp-identity-darwin-arm64@npm:0.2.3"
   conditions: os=darwin & cpu=arm64
   languageName: node
   linkType: hard
 
-"@agent-network-protocol/anp-identity-darwin-x64@npm:0.2.2":
-  version: 0.2.2
-  resolution: "@agent-network-protocol/anp-identity-darwin-x64@npm:0.2.2"
+"@agent-network-protocol/anp-identity-darwin-x64@npm:0.2.3":
+  version: 0.2.3
+  resolution: "@agent-network-protocol/anp-identity-darwin-x64@npm:0.2.3"
   conditions: os=darwin & cpu=x64
   languageName: node
   linkType: hard
 
-"@agent-network-protocol/anp-identity-linux-arm64-gnu@npm:0.2.2":
-  version: 0.2.2
-  resolution: "@agent-network-protocol/anp-identity-linux-arm64-gnu@npm:0.2.2"
+"@agent-network-protocol/anp-identity-linux-arm64-gnu@npm:0.2.3":
+  version: 0.2.3
+  resolution: "@agent-network-protocol/anp-identity-linux-arm64-gnu@npm:0.2.3"
   conditions: os=linux & cpu=arm64 & libc=glibc
   languageName: node
   linkType: hard
 
-"@agent-network-protocol/anp-identity-linux-x64-gnu@npm:0.2.2":
-  version: 0.2.2
-  resolution: "@agent-network-protocol/anp-identity-linux-x64-gnu@npm:0.2.2"
+"@agent-network-protocol/anp-identity-linux-x64-gnu@npm:0.2.3":
+  version: 0.2.3
+  resolution: "@agent-network-protocol/anp-identity-linux-x64-gnu@npm:0.2.3"
   conditions: os=linux & cpu=x64 & libc=glibc
   languageName: node
   linkType: hard
 
-"@agent-network-protocol/anp-identity-win32-x64-msvc@npm:0.2.2":
-  version: 0.2.2
-  resolution: "@agent-network-protocol/anp-identity-win32-x64-msvc@npm:0.2.2"
+"@agent-network-protocol/anp-identity-win32-x64-msvc@npm:0.2.3":
+  version: 0.2.3
+  resolution: "@agent-network-protocol/anp-identity-win32-x64-msvc@npm:0.2.3"
   conditions: os=win32 & cpu=x64
   languageName: node
   linkType: hard
 
-"@agent-network-protocol/anp-identity@npm:0.2.2":
-  version: 0.2.2
-  resolution: "@agent-network-protocol/anp-identity@npm:0.2.2"
+"@agent-network-protocol/anp-identity@npm:0.2.3":
+  version: 0.2.3
+  resolution: "@agent-network-protocol/anp-identity@npm:0.2.3"
   dependencies:
-    "@agent-network-protocol/anp-identity-darwin-arm64": "npm:0.2.2"
-    "@agent-network-protocol/anp-identity-darwin-x64": "npm:0.2.2"
-    "@agent-network-protocol/anp-identity-linux-arm64-gnu": "npm:0.2.2"
-    "@agent-network-protocol/anp-identity-linux-x64-gnu": "npm:0.2.2"
-    "@agent-network-protocol/anp-identity-win32-x64-msvc": "npm:0.2.2"
+    "@agent-network-protocol/anp-identity-darwin-arm64": "npm:0.2.3"
+    "@agent-network-protocol/anp-identity-darwin-x64": "npm:0.2.3"
+    "@agent-network-protocol/anp-identity-linux-arm64-gnu": "npm:0.2.3"
+    "@agent-network-protocol/anp-identity-linux-x64-gnu": "npm:0.2.3"
+    "@agent-network-protocol/anp-identity-win32-x64-msvc": "npm:0.2.3"
   dependenciesMeta:
     "@agent-network-protocol/anp-identity-darwin-arm64":
       optional: true
@@ -60,15 +60,15 @@ __metadata:
       optional: true
     "@agent-network-protocol/anp-identity-win32-x64-msvc":
       optional: true
-  checksum: 10c0/56deffdba5471814b70fc6e04195bbe66b6c490fa7893199daba122f90b7ba7088295c93cd4a2a88b20c44d537c691660a30c4f138d4287e96d7b20dd205903b
+  checksum: 10c0/19d0be372932612a5f4e036d90ca8ae453edf0be50451ce0cfa6c20d0dfe6aef06638addeaf9518f9d4a926efb313a39ed7fa3ee515ec1dd738298a0b028101f
   languageName: node
   linkType: hard
 
-"@agent-network-protocol/dsh-anp-identity@npm:0.1.3":
-  version: 0.1.3
-  resolution: "@agent-network-protocol/dsh-anp-identity@npm:0.1.3"
+"@agent-network-protocol/dsh-anp-identity@npm:0.1.4":
+  version: 0.1.4
+  resolution: "@agent-network-protocol/dsh-anp-identity@npm:0.1.4"
   dependencies:
-    "@agent-network-protocol/anp-identity": "npm:0.2.2"
+    "@agent-network-protocol/anp-identity": "npm:0.2.3"
     "@deepseek-ai/schemastery": "npm:^3.18.1"
     proper-lockfile: "npm:^4.1.2"
     zod: "npm:^4.6.2"
@@ -102,7 +102,7 @@ __metadata:
       optional: true
     react:
       optional: true
-  checksum: 10c0/4ae27d580d7b7c570d9a2491e1f89f15ca386632591d0b7f6a0c9a606ee78d34fe5bc704ee8ec8acdcd17c141762bbded1d8bed33e19bfecad73b69aa554be03
+  checksum: 10c0/6e429dee9983605dfd624a680e023b6d18e03f30eb444e1d4743afe31bb3e68c325f0099399360679d40c43ca87f2031071de120f4d15da4b3ffee392749dea2
   languageName: node
   linkType: hard
 
@@ -219,13 +219,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@awiki/dsh-model-proxy@npm:0.1.7":
-  version: 0.1.7
-  resolution: "@awiki/dsh-model-proxy@npm:0.1.7"
+"@awiki/dsh-model-proxy@npm:0.1.11":
+  version: 0.1.11
+  resolution: "@awiki/dsh-model-proxy@npm:0.1.11"
   dependencies:
     "@deepseek-ai/schemastery": "npm:^3.18.1"
   peerDependencies:
-    "@awiki/dsh-plugin": ^0.3.11
+    "@awiki/dsh-plugin": ^0.3.16
     "@deepseek-ai/cordis": ^4.0.2
     "@deepseek-ai/dsh-agent-default-model": 0.1.5-rc.2
     "@deepseek-ai/dsh-anonymous-user-id": 0.1.5-rc.2
@@ -240,20 +240,20 @@ __metadata:
     "@deepseek-ai/dsh-llm-deepseek": 0.1.5-rc.2
     "@deepseek-ai/dsh-settings": 0.1.5-rc.2
     react: ^18.2.0
-  checksum: 10c0/68a59dc3dcbc8f1e39f6d0690739eba64e746b291d645b2bc95ab54b63f2fca1b2d35df90066490bc9ed1349bf46785685c4cdcc1f9094ed3d5a798e2b172385
+  checksum: 10c0/d6edb2ef5c5f45d65155da332f87f160d198fd7150d3902b08428b8256e67ac3a8e690151843374bf5e16896f9a8e3e8e0a2673692f1ab0dde2d005f927007c6
   languageName: node
   linkType: hard
 
-"@awiki/dsh-plugin@npm:0.3.12":
-  version: 0.3.12
-  resolution: "@awiki/dsh-plugin@npm:0.3.12"
+"@awiki/dsh-plugin@npm:0.3.16":
+  version: 0.3.16
+  resolution: "@awiki/dsh-plugin@npm:0.3.16"
   dependencies:
-    "@awiki/im-core-node": "npm:0.2.7"
+    "@awiki/im-core-node": "npm:0.2.8"
     "@deepseek-ai/schemastery": "npm:^3.18.1"
     semver: "npm:7.8.5"
     zod: "npm:^4.4.3"
   peerDependencies:
-    "@agent-network-protocol/dsh-anp-identity": 0.1.3
+    "@agent-network-protocol/dsh-anp-identity": 0.1.4
     "@deepseek-ai/cordis": ^4.0.2
     "@deepseek-ai/dsh-agent": 0.1.5-rc.2
     "@deepseek-ai/dsh-agent-default-model": 0.1.5-rc.2
@@ -279,54 +279,54 @@ __metadata:
   peerDependenciesMeta:
     "@deepseek-ai/dsh-workspace":
       optional: true
-  checksum: 10c0/6a01ab7e9ade92e36790c9e4f97c900e8382cce4a7016eebb7e7d21fcc1b21a033ec88049ca98e345197e2923df57623463613d8262f9caf7540e6e041ccf00b
+  checksum: 10c0/cc9786c7046eae52cb9b8a61917d21c0d42a902b4b9178b7dd2fe8d633a5545a920a566ecc436a746e8e341643823d81cc019b0133bc109a1e26f796149a883d
   languageName: node
   linkType: hard
 
-"@awiki/im-core-node-darwin-arm64@npm:0.2.7":
-  version: 0.2.7
-  resolution: "@awiki/im-core-node-darwin-arm64@npm:0.2.7"
+"@awiki/im-core-node-darwin-arm64@npm:0.2.8":
+  version: 0.2.8
+  resolution: "@awiki/im-core-node-darwin-arm64@npm:0.2.8"
   conditions: os=darwin & cpu=arm64
   languageName: node
   linkType: hard
 
-"@awiki/im-core-node-darwin-x64@npm:0.2.7":
-  version: 0.2.7
-  resolution: "@awiki/im-core-node-darwin-x64@npm:0.2.7"
+"@awiki/im-core-node-darwin-x64@npm:0.2.8":
+  version: 0.2.8
+  resolution: "@awiki/im-core-node-darwin-x64@npm:0.2.8"
   conditions: os=darwin & cpu=x64
   languageName: node
   linkType: hard
 
-"@awiki/im-core-node-linux-arm64-gnu@npm:0.2.7":
-  version: 0.2.7
-  resolution: "@awiki/im-core-node-linux-arm64-gnu@npm:0.2.7"
+"@awiki/im-core-node-linux-arm64-gnu@npm:0.2.8":
+  version: 0.2.8
+  resolution: "@awiki/im-core-node-linux-arm64-gnu@npm:0.2.8"
   conditions: os=linux & cpu=arm64 & libc=glibc
   languageName: node
   linkType: hard
 
-"@awiki/im-core-node-linux-x64-gnu@npm:0.2.7":
-  version: 0.2.7
-  resolution: "@awiki/im-core-node-linux-x64-gnu@npm:0.2.7"
+"@awiki/im-core-node-linux-x64-gnu@npm:0.2.8":
+  version: 0.2.8
+  resolution: "@awiki/im-core-node-linux-x64-gnu@npm:0.2.8"
   conditions: os=linux & cpu=x64 & libc=glibc
   languageName: node
   linkType: hard
 
-"@awiki/im-core-node-win32-x64-msvc@npm:0.2.7":
-  version: 0.2.7
-  resolution: "@awiki/im-core-node-win32-x64-msvc@npm:0.2.7"
+"@awiki/im-core-node-win32-x64-msvc@npm:0.2.8":
+  version: 0.2.8
+  resolution: "@awiki/im-core-node-win32-x64-msvc@npm:0.2.8"
   conditions: os=win32 & cpu=x64
   languageName: node
   linkType: hard
 
-"@awiki/im-core-node@npm:0.2.7":
-  version: 0.2.7
-  resolution: "@awiki/im-core-node@npm:0.2.7"
+"@awiki/im-core-node@npm:0.2.8":
+  version: 0.2.8
+  resolution: "@awiki/im-core-node@npm:0.2.8"
   dependencies:
-    "@awiki/im-core-node-darwin-arm64": "npm:0.2.7"
-    "@awiki/im-core-node-darwin-x64": "npm:0.2.7"
-    "@awiki/im-core-node-linux-arm64-gnu": "npm:0.2.7"
-    "@awiki/im-core-node-linux-x64-gnu": "npm:0.2.7"
-    "@awiki/im-core-node-win32-x64-msvc": "npm:0.2.7"
+    "@awiki/im-core-node-darwin-arm64": "npm:0.2.8"
+    "@awiki/im-core-node-darwin-x64": "npm:0.2.8"
+    "@awiki/im-core-node-linux-arm64-gnu": "npm:0.2.8"
+    "@awiki/im-core-node-linux-x64-gnu": "npm:0.2.8"
+    "@awiki/im-core-node-win32-x64-msvc": "npm:0.2.8"
   dependenciesMeta:
     "@awiki/im-core-node-darwin-arm64":
       optional: true
@@ -338,7 +338,7 @@ __metadata:
       optional: true
     "@awiki/im-core-node-win32-x64-msvc":
       optional: true
-  checksum: 10c0/7297fdcb1c66a5a42a1f43aa5bd1a7110e2b88180e596baa6bb4c775a3b1be79d12a30844e2d1283288f5467c2be73657176bac34bf7c231901ff075f1862926
+  checksum: 10c0/419671477383247fb5ab43e7042db55362726388523ed1d5bd2bb499b70c7fcf69fb5293d187c993e188d4f846de96b98b7cb8f15aa0d592377817439662a127
   languageName: node
   linkType: hard
 
@@ -9117,10 +9117,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "dsh-plugin-desktop-beta@workspace:dsh-plugin-desktop-beta"
   dependencies:
-    "@agent-network-protocol/dsh-anp-identity": "npm:0.1.3"
+    "@agent-network-protocol/dsh-anp-identity": "npm:0.1.4"
     "@agents-anywhere/dsh-bridge-next": "file:../vendor/agents-anywhere/agents-anywhere-dsh-bridge-next-0.1.0-dev.0.desktop.c00df092c98b2.rcda81994.tgz"
-    "@awiki/dsh-model-proxy": "npm:0.1.7"
-    "@awiki/dsh-plugin": "npm:0.3.12"
+    "@awiki/dsh-model-proxy": "npm:0.1.11"
+    "@awiki/dsh-plugin": "npm:0.3.16"
     "@base-ui/react": "npm:^1.7.0"
     "@deepseek-ai/cordis": "npm:4.0.2"
     "@deepseek-ai/cordis-plugin-group": "npm:1.0.2"
@@ -9317,10 +9317,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "dsh-plugin-desktop@workspace:dsh-plugin-desktop"
   dependencies:
-    "@agent-network-protocol/dsh-anp-identity": "npm:0.1.3"
+    "@agent-network-protocol/dsh-anp-identity": "npm:0.1.4"
     "@agents-anywhere/dsh-bridge-next": "file:../vendor/agents-anywhere/agents-anywhere-dsh-bridge-next-0.1.0-dev.0.desktop.c00df092c98b2.rcda81994.tgz"
-    "@awiki/dsh-model-proxy": "npm:0.1.7"
-    "@awiki/dsh-plugin": "npm:0.3.12"
+    "@awiki/dsh-model-proxy": "npm:0.1.11"
+    "@awiki/dsh-plugin": "npm:0.3.16"
     "@base-ui/react": "npm:^1.7.0"
     "@deepseek-ai/cordis": "npm:4.0.2"
     "@deepseek-ai/cordis-plugin-group": "npm:1.0.2"

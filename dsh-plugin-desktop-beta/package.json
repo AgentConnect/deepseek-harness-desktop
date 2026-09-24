@@ -136,10 +136,10 @@
     "verify:awiki-updates": "node --test scripts/awiki-update-contract.test.mjs scripts/awiki-direct-candidate.test.mjs && node scripts/verify-awiki-update-runtime.mjs"
   },
   "dependencies": {
-    "@agent-network-protocol/dsh-anp-identity": "0.1.3",
+    "@agent-network-protocol/dsh-anp-identity": "0.1.4",
     "@agents-anywhere/dsh-bridge-next": "file:../vendor/agents-anywhere/agents-anywhere-dsh-bridge-next-0.1.0-dev.0.desktop.c00df092c98b2.rcda81994.tgz",
-    "@awiki/dsh-model-proxy": "0.1.7",
-    "@awiki/dsh-plugin": "0.3.12",
+    "@awiki/dsh-model-proxy": "0.1.11",
+    "@awiki/dsh-plugin": "0.3.16",
     "@deepseek-ai/cordis": "4.0.2",
     "@deepseek-ai/cordis-plugin-group": "1.0.2",
     "@deepseek-ai/cordis-plugin-include": "1.0.7",
