@@ -700,6 +700,15 @@ describe('published package surface', () => {
     expect(main).toContain('lifecycleStartupFailureReason(cause, runtime)')
   })
 
+  it('keeps AWiki compatibility recovery local and delegates tenant policy to DSH', () => {
+    const main = readFileSync(new URL('src/main.ts', packageRoot), 'utf8')
+
+    expect(main).toContain('await requestAwikiCompatibilityRecovery(')
+    expect(main).toContain("if (choice === 'terminal') runtime.openTerminal()")
+    expect(main).not.toContain('discoverDesktopAwikiUpdate')
+    expect(main).not.toContain('executeDesktopAwikiUpdate')
+  })
+
   it('keeps compatibility Profile selection separate from requested and failed recovery', () => {
     const main = readFileSync(new URL('src/main.ts', packageRoot), 'utf8')
     const recoveryUi = readFileSync(new URL('src/native-ui/recovery/App.tsx', packageRoot), 'utf8')

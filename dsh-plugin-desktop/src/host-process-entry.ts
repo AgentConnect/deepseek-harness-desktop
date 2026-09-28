@@ -1,4 +1,3 @@
-import { createHostAwikiUpdates } from './host-awiki-updates.ts'
 /** Utility-process entrypoint. No BrowserWindow or Electron main APIs are imported here. */
 import { createLaunchEnvironmentSnapshot, type LaunchEnvironmentLayerInput } from '@deepseek-ai/dsh-launch-environment'
 import { HostRpc } from './host-rpc.ts'
@@ -41,7 +40,7 @@ rpc.handle('boot', async args => {
     prepareCertificate: () => rpc.call('certificate'),
   })
   inspectServices = await bootDesktopHost(options, runtime, browser, lan,
-    value => { host = value }, code => { void rpc.call('quit', [code]).catch(() => {}) }, createHostAwikiUpdates(rpc))
+    value => { host = value }, code => { void rpc.call('quit', [code]).catch(() => {}) })
   if (stopping) { await host?.fiber.dispose(); throw new Error('DSH Host stopped during startup') }
   await runtime.mountScheduled()
   return { pid: process.pid }

@@ -1,6 +1,5 @@
 /** Launcher-backed controller for the private Desktop settings API. */
 
-import { randomBytes } from 'node:crypto'
 import type {
   DesktopMarketProvider,
   DesktopMarketSnapshot,
@@ -8,9 +7,6 @@ import type {
 import type { DesktopProfileSummary } from './profile-manager.ts'
 import type { DesktopProfiles } from './profile-service.ts'
 import type {
-  DesktopAwikiUpdateApplyResponse,
-  DesktopAwikiUpdateCheckResponse,
-  DesktopAwikiVersionsView,
   DesktopMarketSelectResponse,
   DesktopDeveloperToolsToggleResponse,
   DesktopDiagnosticsExportResponse,
@@ -26,17 +22,6 @@ import type {
   DesktopSettingsWebView,
   DesktopTerminalOpenResponse,
 } from './desktop-settings-contract.ts'
-import type { DesktopAwikiUpdateDiscovery } from './awiki-update-discovery.ts'
-import type { DesktopAwikiProfileVersions } from './awiki-profile-upgrade.ts'
-
-const AWIKI_UPDATE_PREVIEW_TTL_MS = 5 * 60 * 1000
-const MAX_AWIKI_UPDATE_PREVIEWS = 4
-
-interface DesktopAwikiUpdatePreview {
-  readonly current: DesktopAwikiVersionsView
-  readonly target: DesktopAwikiProfileVersions
-  readonly expiresAt: number
-}
 
 /** Launcher capabilities used without exposing their filesystem roots. */
 export interface DesktopSettingsControllerBootstrap {
@@ -63,15 +48,6 @@ export interface DesktopSettingsControllerBootstrap {
   toggleDeveloperTools(): void
   /** Export diagnostics through the launcher-owned privacy flow. */
   exportDiagnostics(): void | Promise<void>
-  /** Discover one trusted stable AWiki pair without mutating the Profile. */
-  checkAwikiUpdate(): Promise<DesktopAwikiUpdateDiscovery>
-  /** Prepare one exact update after the Renderer confirms its opaque preview. */
-  prepareAwikiUpgrade(
-    current: DesktopAwikiVersionsView,
-    target: DesktopAwikiProfileVersions,
-  ): DesktopSettingsPostResponse<DesktopAwikiUpdateApplyResponse>
-  /** Injectable clock for preview expiry tests. */
-  readonly now?: () => number
 }
 
 /** A persisted response plus work that must run only after `res.end()`. */
@@ -114,7 +90,6 @@ function projectMarket(
  */
 export class DesktopSettingsController {
   private readonly effectiveMarket: DesktopMarketProvider
-  private readonly awikiUpdatePreviews = new Map<string, DesktopAwikiUpdatePreview>()
 
   constructor(private readonly bootstrap: DesktopSettingsControllerBootstrap) {
     this.effectiveMarket = bootstrap.readMarket().effective
@@ -234,45 +209,6 @@ export class DesktopSettingsController {
     return Object.freeze({ accepted: true })
   }
 
-  /** Check the fixed npm packages and mint authority only for an eligible update. */
-  async checkAwikiUpdate(): Promise<DesktopAwikiUpdateCheckResponse> {
-    const result = await this.bootstrap.checkAwikiUpdate()
-    if (result.status !== 'available') return Object.freeze(result)
-    const now = (this.bootstrap.now ?? Date.now)()
-    this.pruneAwikiUpdatePreviews(now)
-    while (this.awikiUpdatePreviews.size >= MAX_AWIKI_UPDATE_PREVIEWS) {
-      const oldest = this.awikiUpdatePreviews.keys().next().value as string | undefined
-      if (oldest === undefined) break
-      this.awikiUpdatePreviews.delete(oldest)
-    }
-    const previewId = randomBytes(32).toString('base64url')
-    this.awikiUpdatePreviews.set(previewId, {
-      current: result.current,
-      target: result.target,
-      expiresAt: now + AWIKI_UPDATE_PREVIEW_TTL_MS,
-    })
-    return Object.freeze({ ...result, previewId })
-  }
-
-  /** Consume one short-lived exact preview and defer mutation until after HTTP response. */
-  applyAwikiUpdate(
-    previewId: string,
-  ): DesktopSettingsPostResponse<DesktopAwikiUpdateApplyResponse> {
-    const now = (this.bootstrap.now ?? Date.now)()
-    this.pruneAwikiUpdatePreviews(now)
-    const preview = this.awikiUpdatePreviews.get(previewId)
-    if (preview === undefined) {
-      throw new Error('dsh-plugin-desktop: AWiki update preview expired or was already used')
-    }
-    this.awikiUpdatePreviews.delete(previewId)
-    return this.bootstrap.prepareAwikiUpgrade(preview.current, preview.target)
-  }
-
-  private pruneAwikiUpdatePreviews(now: number): void {
-    for (const [previewId, preview] of this.awikiUpdatePreviews) {
-      if (preview.expiresAt <= now) this.awikiUpdatePreviews.delete(previewId)
-    }
-  }
 }
 
 declare module '@deepseek-ai/cordis' {

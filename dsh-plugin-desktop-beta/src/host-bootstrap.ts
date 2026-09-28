@@ -1,4 +1,3 @@
-import type { DesktopAwikiUpdates } from './host-awiki-updates.ts'
 /** Headless bootstrap for the Beta isolated Host experiment. */
 import { boot, resolveProfileDir } from '@deepseek-ai/dsh-app-boot'
 import { provideCmdline } from '@deepseek-ai/dsh-cmdline'
@@ -50,7 +49,6 @@ export interface DesktopHostOptions {
 export async function bootDesktopHost(options: DesktopHostOptions, runtime: DesktopRuntime,
   browserAccess: DesktopBrowserAccess, lanHttps: DesktopLanHttpsRuntime,
   bindHost: (host: DesktopStartupGenerationHost) => void, requestQuit: (code: number) => void,
-  awikiUpdates?: DesktopAwikiUpdates,
 ): Promise<() => { aaRuntime: boolean; aaOnboarding: boolean }> {
   const { prepared, profilePreferences, homeDir, activeProfileName, pluginManagementStatePath,
     selectionStatePath, marketUserDataDir, releaseUserDataLocations, desktopLaunchEnvironment,
@@ -184,11 +182,6 @@ export async function bootDesktopHost(options: DesktopHostOptions, runtime: Desk
           prepared.market.effective,
         )
         hostCtx.provide('desktopSettingsController', new DesktopSettingsController({
-          checkAwikiUpdate: () => awikiUpdates ? awikiUpdates.checkAwikiUpdate() : Promise.reject(new Error('AWiki update supervisor unavailable')),
-          prepareAwikiUpgrade: (current, target) => {
-            if (!awikiUpdates) throw new Error('AWiki update supervisor unavailable')
-            return awikiUpdates.prepareAwikiUpgrade(current, target)
-          },
           profiles: hostCtx.desktopProfiles,
           readMarket,
           readAa: () => ({ requested: currentProfilePreferences.aaEnabled === true, effective: prepared.aaEnabled }),

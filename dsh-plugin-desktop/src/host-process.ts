@@ -1,4 +1,3 @@
-import { bindAwikiUpdates, type DesktopAwikiUpdates } from './host-awiki-updates.ts'
 /** Electron owns the child lifetime; the child owns the unchanged DSH Web server. */
 import { serializeHostEnvironment } from './host-launch-environment.ts'
 import { utilityProcess } from 'electron'
@@ -11,7 +10,6 @@ import type { DesktopStartupGenerationHost } from './startup-generation.ts'
 import type { DesktopLanHttpsRuntimeOptions } from './lan-https-runtime.ts'
 
 export interface IsolatedHostOptions {
-  awikiUpdates?: DesktopAwikiUpdates
   host: DesktopHostOptions
   runtime: DesktopRuntime
   rendererToken: string
@@ -33,7 +31,6 @@ export async function startIsolatedDesktopHost(options: IsolatedHostOptions): Pr
     listen: receive => { child.on('message', receive); return () => { child.removeListener('message', receive) } },
   }, 120_000)
   const releaseNative = bindNativeRuntime(rpc, options.runtime)
-  const releaseAwiki = options.awikiUpdates ? bindAwikiUpdates(rpc, options.awikiUpdates) : () => {}
   rpc.handle('certificate', () => options.prepareCertificate())
   rpc.handle('quit', ([code]) => { setImmediate(() => options.requestQuit(code)) })
   let stopping = false
@@ -62,7 +59,6 @@ export async function startIsolatedDesktopHost(options: IsolatedHostOptions): Pr
       })
       await Promise.race([exit, timeoutExit])
     }
-    releaseAwiki()
     await releaseNative()
     rpc.close()
   })()

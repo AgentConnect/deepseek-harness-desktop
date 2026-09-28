@@ -89,6 +89,15 @@ it.each([false, true])('boots a separate Web Host with client plugins (AA enable
     await authentication.body?.cancel()
     expect(authentication.status).toBe(303)
     const cookie = authentication.headers.get('set-cookie')!.split(';')[0]!
+    // The authenticated Host must not retain an alternate plugin-upgrade entrypoint.
+    for (const path of ['/api/desktop/awiki/check-update', '/api/desktop/awiki/apply-update']) {
+      const retired = await fetch(new URL(path, spec.url), {
+        method: 'POST', headers: { ...headers, Cookie: cookie, Origin: new URL(spec.url).origin,
+          'Content-Type': 'application/json' }, body: '{}',
+      })
+      await retired.body?.cancel()
+      expect(retired.status).toBe(404)
+    }
     const response = await fetch(spec.url, { headers: { ...headers, Cookie: cookie } })
     expect(response.status).toBe(200)
     const html = await response.text()

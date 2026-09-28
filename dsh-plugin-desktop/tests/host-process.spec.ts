@@ -41,3 +41,16 @@ it('reports unexpected Host exit without automatically relaunching or replaying 
   await f.host().fiber.dispose()
   expect(f.child.kill).not.toHaveBeenCalled()
 })
+
+it.each(['awiki:check', 'awiki:apply'])('rejects removed plugin upgrade RPC %s', async method => {
+  const f = fixture()
+  await startIsolatedDesktopHost(f.options)
+  try {
+    f.child.emit('message', { kind: 'call', id: 100, method, args: [] })
+    await new Promise<void>(resolve => { setImmediate(resolve) })
+    expect(f.child.postMessage).toHaveBeenCalledWith({
+      kind: 'result', id: 100, error: `Unknown Host operation: ${method}`,
+    })
+    expect(f.onFailure).not.toHaveBeenCalled()
+  } finally { await f.host().fiber.dispose() }
+})
