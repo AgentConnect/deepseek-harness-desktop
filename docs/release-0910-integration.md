@@ -19,6 +19,8 @@
 
 这份映射说明按能力处理冲突的理由；保留双方 Git 祖先关系不代表所有旧文件逐字保留。独立 Host 是新版引入的能力，因此不能仅重放旧提交后忽略新进程的桥接接口。
 
+实际合并还保留了 Release 的上海下载页地址、旧版本授权附录、Profile 优先选择候选插件组合的回归用例及手动更新可靠性说明。补回两种 Desktop 的 `./distribution` 导出及构建入口，以免保留源文件却丢失已公开的子路径；新增实际导入构建产物的测试。新版 Mac universal 清单已含相同四个 AWiki/Identity 原生文件，移除自动合并造成的重复项，没有改变原生包清单或依赖锁。
+
 ## 当前实现与安全检查
 
 - 不兼容的 AWiki 插件组合在启动处停止，显示安装内置兼容版本的命令。用户可打开当前 Profile 的 DSH Terminal 或退出；对话框失败时记录错误并退出。
@@ -35,6 +37,7 @@
 - 随后补充旧 HTTP 入口的认证 POST 返回 404：stable/beta 各 2 项 Host 集成用例通过；RPC 拒绝已移除方法由 Host 单元测试覆盖。
 - stable/beta `verify:awiki-updates`：各 4 项契约测试及实际插件 v2 / Host / Identity / Model Proxy peer 校验通过。
 - `check:desktop-variants`：185 个共享源文件一致。
+- 历史合并后的补充检查：stable/beta 再次 build/typecheck 通过；package/兼容性两个测试文件分别 49 passed / 1 Windows-only skipped、53 passed / 1 Windows-only skipped；两种版本的可靠性矩阵均验证 7 个操作、18 个故障契约。`./distribution` 子路径可从实际构建产物导入。
 - 初次聚焦检查在构建前执行，缺少生成的 client/Host 文件导致 2 项失败；构建后重跑通过。初次 layout 因 submodule 尚未初始化失败，固定 submodule 初始化后，最终 `check:layout` 通过：双语文档、依赖方向、stable/beta 各 265 个 runtime 包、185 个共享源文件和工作区布局均一致。
 
 未执行生产 System Test 或 DSH Web 全量 E2E：本次变更属于 Desktop 启动/设置/本机进程边界，未修改跨服务或插件 Web 业务协议；使用拥有这些入口的 Desktop 单元和实际 Host 集成测试。未重建 Windows/macOS 安装包、签名、公证或执行 GUI 人工验收；这仍是源码 review PR，不作为新的生产发布验收。

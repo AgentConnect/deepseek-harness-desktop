@@ -74,6 +74,14 @@ const dshResolution = (name: string): unknown =>
   workspaceManifest.resolutions?.[`${name}@npm:${runtimeVersion}`]
 
 describe('published package surface', () => {
+  it('exposes the tenant distribution contract through the built public subpath', async () => {
+    expect(manifest.exports?.['./distribution']).toEqual({
+      types: './lib/types/distribution.d.ts', default: './lib/distribution.js',
+    })
+    const distribution = await import(`${manifest.name}/distribution`)
+    expect(distribution.DESKTOP_DISTRIBUTION_ID).toBe('awiki-dsh-desktop')
+  })
+
   it('keeps the private workspace version-neutral and versions the Beta package', () => {
     expect(workspaceManifest.version).toBeUndefined()
     expect(manifest.version).toBe('2.2.0-beta.1')

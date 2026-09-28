@@ -72,6 +72,14 @@ const dshResolution = (name: string): unknown =>
   workspaceManifest.resolutions?.[`${name}@npm:${runtimeVersion}`]
 
 describe('published package surface', () => {
+  it('exposes the tenant distribution contract through the built public subpath', async () => {
+    expect(manifest.exports?.['./distribution']).toEqual({
+      types: './lib/types/distribution.d.ts', default: './lib/distribution.js',
+    })
+    const distribution = await import(`${manifest.name}/distribution`)
+    expect(distribution.DESKTOP_DISTRIBUTION_ID).toBe('awiki-dsh-desktop')
+  })
+
   it('runs desktop and community market typechecks from the root command', () => {
     expect(workspaceManifest.scripts?.typecheck)
       .toBe('yarn workspace dsh-plugin-desktop typecheck && yarn workspace dsh-plugin-desktop-beta typecheck && yarn workspace dsh-community-market typecheck')

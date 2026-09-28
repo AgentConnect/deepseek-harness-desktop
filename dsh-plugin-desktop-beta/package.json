@@ -71,7 +71,11 @@
       "types": "./lib/types/updates.d.ts",
       "default": "./lib/updates.js"
     },
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./distribution": {
+      "types": "./lib/types/distribution.d.ts",
+      "default": "./lib/distribution.js"
+    }
   },
   "files": [
     "build/app-icon.png",
