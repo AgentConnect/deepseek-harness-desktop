@@ -26,7 +26,7 @@ No separate Node.js or Harness core download is required. The installer is large
 
 ## Does DSH Desktop modify official Harness?
 
-No. The repository pins an unmodified official Harness checkout. Compatibility mode runs the upstream default Web client. Advanced mode adds Desktop-owned layout and native window presentation through plugins without editing upstream source.
+No. The repository pins an unmodified official Harness checkout. Compatibility mode runs the upstream default Web client below an independent overlay frame. Extended and enhanced modes each install their own Desktop-owned root registration through the plugin/profile composition boundary while retaining the official slot occupants. None of these modes edits upstream source.
 
 ## Is data stored locally?
 
@@ -42,8 +42,8 @@ No plugins are copied automatically. Each profile has its own bundle and depende
 
 ## How are updates installed?
 
-Check the active AWiki tenant from Settings or the tray, open its download page, install the complete package manually, and restart. Stable installations only use stable releases; RC installations can upgrade to newer RC or stable releases. Failed requests retain only verified results from that tenant. Missing policy never falls back to another tenant.
+Packaged applications check updates for the active AWiki tenant. Stable builds select stable releases; prerelease builds compare stable and prerelease channels. Only newer versions are recommended. Settings and the tray share the result. Switching tenants clears the previous recommendation, and an already-open dialog cannot open the former tenant’s download page. Network failures may retain that tenant’s verified cache; missing policy is shown as unavailable. Users visit the active tenant’s download page, choose an installer, install it manually, and reopen the app.
 
 ## Where can I download the app or report a problem?
 
-Download from the DSH Desktop entry on your current tenant’s website. Check the [troubleshooting section](user-guide.en.md#troubleshooting) first. If the problem remains, open a [GitHub Issue](https://github.com/anywhere-labs/deepseek-harness-desktop/issues/new/choose) with the operating system, app version, reproduction steps, and error details.
+Download from the [project download page](https://www.dshdesktop.cn/) or the [latest GitHub Release](https://github.com/anywhere-labs/deepseek-harness-desktop/releases/latest). Check the [troubleshooting section](user-guide.en.md#troubleshooting) first. If the problem remains, open a [GitHub Issue](https://github.com/anywhere-labs/deepseek-harness-desktop/issues/new/choose) with the operating system, app version, reproduction steps, and error details.

@@ -12,8 +12,8 @@ import {
 } from 'node:fs'
 import { createHash, randomUUID } from 'node:crypto'
 import { basename, dirname, join, win32 } from 'node:path'
-import { DESKTOP_INSTALL_RECOVERY_STATE_ENV } from './install-recovery.ts'
 import { assertDesktopProfileName } from './profile-manager.ts'
+import { PNPM_IGNORE_MINIMUM_RELEASE_AGE } from './pnpm-policy.ts'
 
 const RUN_AS_NODE = 'ELECTRON_RUN_AS_NODE'
 const DEFAULT_PROFILE = 'DSH_DESKTOP_DEFAULT_PROFILE'
@@ -29,6 +29,7 @@ const WINDOWS_SHIM_DIRECTORY = 'DSH_DESKTOP_SHIM_DIRECTORY'
 const WINDOWS_POWERSHELL_WELCOME = 'DSH_DESKTOP_POWERSHELL_WELCOME'
 const WINDOWS_CMD_WELCOME = 'DSH_DESKTOP_CMD_WELCOME'
 const WINDOWS_SHELL_EXECUTABLE = 'DSH_DESKTOP_SHELL_EXECUTABLE'
+const WINDOWS_RECOVERY_COMMAND = 'DSH_DESKTOP_RECOVERY_COMMAND'
 const WINDOWS_GENERATED_ENVIRONMENT_KEYS = new Set([
   DEFAULT_PROFILE,
   WINDOWS_APP_EXECUTABLE,
@@ -41,6 +42,7 @@ const WINDOWS_GENERATED_ENVIRONMENT_KEYS = new Set([
   WINDOWS_POWERSHELL_WELCOME,
   WINDOWS_CMD_WELCOME,
   WINDOWS_SHELL_EXECUTABLE,
+  WINDOWS_RECOVERY_COMMAND,
 ])
 const STATE_DIRECTORY_MODE = 0o700
 const EXECUTABLE_FILE_MODE = 0o700
@@ -96,8 +98,6 @@ export interface DesktopTerminalOptions {
   profileDir: string
   /** Harness home exported as `DSH_HOME` inside the terminal. */
   homeDir: string
-  /** Desktop-private recovery WAL used by plugin installs from this terminal. */
-  installRecoveryStatePath: string
   /** Private directory receiving the generated terminal files. */
   stateDir: string
   /** Process launcher; production passes `node:child_process.spawn`. */
@@ -112,6 +112,8 @@ export interface DesktopTerminalOptions {
   windowsExecutableResolver?: DesktopTerminalExecutableResolver
   /** Reporter attached before the platform launcher can emit an asynchronous failure. */
   onLaunchError?: (cause: Error) => void
+  /** Optional recovery instruction, displayed as text and never executed. */
+  recoveryCommand?: string
 }
 
 /** Files and process created for one desktop terminal launch. */
@@ -270,7 +272,7 @@ function macPnpmShim(options: DesktopTerminalOptions): string {
       'npm_config_runtime=electron',
       `npm_config_target=${quoteSh(options.electronVersion)}`,
       `npm_config_disturl=${quoteSh(ELECTRON_HEADERS_URL)}`,
-      `exec ${quoteSh(options.appExecutable)} ${quoteSh(options.pnpmBinPath)} "$@"`,
+      `exec ${quoteSh(options.appExecutable)} ${quoteSh(options.pnpmBinPath)} ${PNPM_IGNORE_MINIMUM_RELEASE_AGE} "$@"`,
     ].join(' '),
     '',
   ].join('\n')
@@ -285,7 +287,7 @@ function windowsPnpmShim(): string {
     'set "npm_config_runtime=electron"',
     `set "npm_config_target=%${WINDOWS_ELECTRON_VERSION}%"`,
     `set "npm_config_disturl=${ELECTRON_HEADERS_URL}"`,
-    `"%${WINDOWS_APP_EXECUTABLE}%" "%${WINDOWS_PNPM_ENTRY}%" %*`,
+    `"%${WINDOWS_APP_EXECUTABLE}%" "%${WINDOWS_PNPM_ENTRY}%" ${PNPM_IGNORE_MINIMUM_RELEASE_AGE} %*`,
     'exit /b %errorlevel%',
     '',
   ].join('\r\n')
@@ -352,6 +354,10 @@ function macWelcome(
     `printf '  %s\\n' ${quoteSh(pluginAdd)}`,
     `printf '  %s\\n' ${quoteSh(pluginRemove)}`,
     `printf '  %s\\n' ${quoteSh(pluginUpdate)}`,
+    ...(options.recoveryCommand === undefined ? [] : [
+      `printf '%s\\n' ${quoteSh('AWiki recovery - run this command manually:')}`,
+      `printf '%s\\n' ${quoteSh(options.recoveryCommand)}`,
+    ]),
     `printf '%s\\n' ${quoteSh('Restart DSH Desktop after plugin changes.')}`,
     'case "${SHELL:-/bin/zsh}" in',
     '  */bash)',
@@ -395,6 +401,10 @@ function windowsWelcome(): string {
     `Write-Host '  ${pluginAdd}'`,
     `Write-Host '  ${pluginRemove}'`,
     `Write-Host '  ${pluginUpdate}'`,
+    `if ($env:${WINDOWS_RECOVERY_COMMAND}) {`,
+    `  Write-Host 'AWiki recovery - run this command manually:'`,
+    `  Write-Host $env:${WINDOWS_RECOVERY_COMMAND}`,
+    `}`,
     `Write-Host 'Restart DSH Desktop after plugin changes.'`,
     '',
   ].join('\r\n')
@@ -421,6 +431,8 @@ function windowsCmdWelcome(): string {
     `echo(  ${escapeBatchText(pluginAdd)}`,
     `echo(  ${escapeBatchText(pluginRemove)}`,
     `echo(  ${escapeBatchText(pluginUpdate)}`,
+    `if defined ${WINDOWS_RECOVERY_COMMAND} echo(AWiki recovery - run this command manually:`,
+    `if defined ${WINDOWS_RECOVERY_COMMAND} echo(!${WINDOWS_RECOVERY_COMMAND}!`,
     `echo(${escapeBatchText('Restart DSH Desktop after plugin changes.')}`,
     'endlocal & set "ELECTRON_RUN_AS_NODE="',
     '',
@@ -433,6 +445,7 @@ function prepareDesktopTerminalFiles(options: DesktopTerminalOptions): DesktopTe
     throw new Error(`dsh-plugin-desktop: terminal is unsupported on ${options.platform}`)
   }
   assertDesktopProfileName(options.profileName)
+  if (options.recoveryCommand !== undefined) assertScriptValue('recovery command', options.recoveryCommand)
   for (const [label, value] of [
     ['application executable', options.appExecutable],
     ['dsh bootstrap', options.dshBootstrapPath],
@@ -440,7 +453,6 @@ function prepareDesktopTerminalFiles(options: DesktopTerminalOptions): DesktopTe
     ['Electron version', options.electronVersion],
     ['profile directory', options.profileDir],
     ['Harness home', options.homeDir],
-    ['install recovery state', options.installRecoveryStatePath],
     ['state directory', options.stateDir],
     ['product version', options.productVersion],
   ] as const) assertScriptValue(label, value)
@@ -495,7 +507,6 @@ function terminalEnvironment(options: DesktopTerminalOptions, files: DesktopTerm
     if (
       normalized === RUN_AS_NODE
       || normalized === DSH_HOME
-      || normalized === DESKTOP_INSTALL_RECOVERY_STATE_ENV
     ) continue
     if (options.platform === 'win32' && WINDOWS_GENERATED_ENVIRONMENT_KEYS.has(normalized)) continue
     if (normalized === PATH) {
@@ -509,7 +520,6 @@ function terminalEnvironment(options: DesktopTerminalOptions, files: DesktopTerm
     ? files.shimDir
     : `${files.shimDir}${delimiter}${inheritedPath}`
   env[DSH_HOME] = options.homeDir
-  env[DESKTOP_INSTALL_RECOVERY_STATE_ENV] = options.installRecoveryStatePath
   if (options.platform === 'win32') {
     env[DEFAULT_PROFILE] = options.profileName
     env[WINDOWS_APP_EXECUTABLE] = options.appExecutable
@@ -670,6 +680,9 @@ function reportLaunchError(options: DesktopTerminalOptions, cause: Error): void 
 export function openDesktopTerminal(options: DesktopTerminalOptions): DesktopTerminalLaunch {
   const files = prepareDesktopTerminalFiles(options)
   const env = terminalEnvironment(options, files)
+  if (options.platform === 'win32' && options.recoveryCommand !== undefined) {
+    env[WINDOWS_RECOVERY_COMMAND] = options.recoveryCommand
+  }
   let command: string
   let args: string[]
   let detached = true
@@ -734,4 +747,27 @@ export function openDesktopTerminal(options: DesktopTerminalOptions): DesktopTer
     ...(windowsLauncherPath === undefined ? {} : { windowsLauncherPath }),
     child,
   }
+}
+
+/** Wait for the OS terminal broker handoff, not for the user's repair command. */
+export function waitForDesktopTerminalLaunch(child: ChildProcess, timeoutMs = 15_000): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const finish = (cause?: Error): void => {
+      clearTimeout(timer)
+      child.removeListener('error', onError)
+      child.removeListener('exit', onExit)
+      if (cause === undefined) resolve()
+      else reject(cause)
+    }
+    const onError = (cause: Error): void => { finish(cause) }
+    const onExit = (code: number | null, signal: NodeJS.Signals | null): void => {
+      finish(code === 0 ? undefined : new Error(`terminal launcher exited with ${code === null ? `signal ${signal ?? 'unknown'}` : `code ${String(code)}`}`))
+    }
+    const timer = setTimeout(() => {
+      finish(new Error('terminal launcher did not confirm opening; check the terminal before retrying'))
+    }, timeoutMs)
+    child.once('error', onError)
+    child.once('exit', onExit)
+    if (child.exitCode != null || child.signalCode != null) onExit(child.exitCode, child.signalCode)
+  })
 }

@@ -1,8 +1,8 @@
 # AWiki Commercial License Grant for DSH Desktop
 
-Effective date: August 24, 2026
+Effective date: August 25, 2026
 
-Grant ID: `AWIKI-DSH-DESKTOP-2026-08-24`
+Grant ID: `AWIKI-DSH-DESKTOP-2026-08-25`
 
 Licensor: Hangzhou Vector Consensus Technology Co., Ltd.
 
@@ -15,12 +15,12 @@ bundle, sign, notarize, test, and distribute the exact package versions listed
 below as part of official DSH Desktop source builds, installers, portable
 archives, updates, and pre-releases:
 
-- `@awiki/im-core-node@0.1.7`
-- `@awiki/im-core-node-darwin-arm64@0.1.7`
-- `@awiki/im-core-node-darwin-x64@0.1.7`
-- `@awiki/im-core-node-linux-arm64-gnu@0.1.7`
-- `@awiki/im-core-node-linux-x64-gnu@0.1.7`
-- `@awiki/im-core-node-win32-x64-msvc@0.1.7`
+- `@awiki/im-core-node@0.1.8`
+- `@awiki/im-core-node-darwin-arm64@0.1.8`
+- `@awiki/im-core-node-darwin-x64@0.1.8`
+- `@awiki/im-core-node-linux-arm64-gnu@0.1.8`
+- `@awiki/im-core-node-linux-x64-gnu@0.1.8`
+- `@awiki/im-core-node-win32-x64-msvc@0.1.8`
 
 Recipients of an official DSH Desktop distribution may install, execute, and
 use the covered packages as components of DSH Desktop without accepting the

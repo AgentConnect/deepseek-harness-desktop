@@ -1,0 +1,10 @@
+{
+  "sourceRepository": "https://github.com/AgentConnect/dsh-awiki",
+  "sourceCommit": "f2fdd7f6579320b78dc712fe5894a271da84e497",
+  "dshVersion": "0.1.5-rc.1",
+  "published": false,
+  "archives": {
+    "awiki-dsh-model-proxy-0.1.6.tgz": "9a05a632f764fbe632ddb560c3b88752c7f869975f19b5519492459f9a3b114b",
+    "awiki-dsh-plugin-0.3.10.tgz": "e00ee44fb649394a57a244214dcf7922f1bc2469efb180ab60ccaa9f9b07294f"
+  }
+}

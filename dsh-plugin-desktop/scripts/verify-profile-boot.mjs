@@ -1,6 +1,6 @@
 /** Headless smoke for the complete published DSH Web profile and renderer manifest. */
 
-import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -19,19 +19,36 @@ import { DesktopProfileService } from '../lib/profile-service.js'
 const BIN_NAME = 'dsh-plugin-desktop-profile-smoke'
 const HOST_SERVICE_PLUGIN_NAME = 'dsh-desktop-host-services-smoke-plugin'
 const HOST_SERVICE_PROBE_KEY = 'desktopHostServiceProbe'
+let ordinaryBrowserEnabled = false
+const BROWSER_ACCESS = Object.freeze({
+  get ordinaryBrowserEnabled() { return ordinaryBrowserEnabled },
+  rendererHeader: Object.freeze({
+    name: 'x-dsh-desktop-renderer',
+    value: Buffer.alloc(32, 4).toString('base64url'),
+  }),
+  setOrdinaryBrowserEnabled(enabled) { ordinaryBrowserEnabled = enabled },
+})
+const LAN_HTTPS_SNAPSHOT = Object.freeze({
+  state: 'inactive',
+  actualPort: null,
+  addresses: Object.freeze([]),
+  caFingerprint: null,
+  errorCode: null,
+})
+const LAN_HTTPS = Object.freeze({
+  caCertificate: null,
+  attach() {},
+  snapshot() { return LAN_HTTPS_SNAPSHOT },
+  async setEnabled() { return LAN_HTTPS_SNAPSHOT },
+  async stop() { return LAN_HTTPS_SNAPSHOT },
+})
 const home = mkdtempSync(join(tmpdir(), 'dsh-desktop-profile-'))
-const originalDshHome = process.env.DSH_HOME
-const identityEnvironment = {
-  DSH_AWIKI_STATE_ROOT: join(home, 'awiki'),
-  DSH_ANP_IDENTITY_STATE_ROOT: join(home, 'anp-identity'),
-  DSH_ANP_IDENTITY_ROOT_KEY_PROVIDER: 'local-file',
-  DSH_ANP_IDENTITY_ROOT_KEY_PROVIDER_ID: 'desktop-profile-smoke',
-}
-const originalIdentityEnvironment = Object.fromEntries(
-  Object.keys(identityEnvironment).map(key => [key, process.env[key]]),
-)
-Object.assign(process.env, identityEnvironment)
-process.env.DSH_HOME = home
+// Headless acceptance owns its identity state; never require a desktop keyring.
+process.env.DSH_AWIKI_STATE_ROOT = join(home, 'awiki')
+process.env.DSH_ANP_IDENTITY_STATE_ROOT = join(home, 'identity')
+process.env.DSH_ANP_IDENTITY_ROOT_KEY_PROVIDER = 'local-file'
+process.env.DSH_ANP_IDENTITY_ROOT_KEY_PROVIDER_ID = 'desktop-profile-smoke'
+
 let ctx
 let releasePackageResolver
 let pnpmRuntime
@@ -47,7 +64,19 @@ try {
     '  default: minimal',
     '',
   ].join('\n'))
-  const prepared = prepareDesktopProfile('1', home, 'win32')
+  const aaRequested = process.env.DSH_VERIFY_AA === '1'
+  const brokenAa = process.env.DSH_VERIFY_AA_BROKEN === '1'
+  if (brokenAa) {
+    const initial = prepareDesktopProfile('1', home, 'win32')
+    const brokenPackage = join(initial.profile.dir, 'node_modules', '@agents-anywhere', 'dsh-bridge-next')
+    mkdirSync(brokenPackage, { recursive: true })
+    writeFileSync(join(brokenPackage, 'package.json'), JSON.stringify({
+      name: '@agents-anywhere/dsh-bridge-next', version: '99.0.0',
+      dsh: { bundle: { patch: './missing.patch.yml' } },
+    }))
+  }
+  const prepared = prepareDesktopProfile('1', home, 'win32', undefined, undefined, undefined, { aaEnabled: aaRequested })
+  if (brokenAa && (!prepared.aaFailure || prepared.aaEnabled)) throw new Error('Broken AA bundle did not fail closed')
   const hostServicePluginDir = join(
     prepared.profile.dir,
     'node_modules',
@@ -69,6 +98,10 @@ try {
       }],
     },
     ...prepared.patches,
+    // Keep this headless probe independent of the operator's AA account.
+    ...(prepared.aaEnabled ? [{ id: 'agents-anywhere-bridge-next', config: {
+      dshHome: home, stateRoot: join(home, 'aa-smoke-state'),
+    } }] : []),
   ]
   const packageRoot = new URL('../', import.meta.url)
   const pnpmBinPath = fileURLToPath(new URL('node_modules/pnpm/bin/pnpm.mjs', packageRoot))
@@ -86,6 +119,7 @@ try {
   releasePackageResolver = installProfilePackageResolver(prepared.bareModuleBaseUrl)
   const runtime = {
     platform: 'win32',
+    windowsBuild: 22_631,
     locale: 'en',
     updates: {
       isPackaged: false,
@@ -129,7 +163,11 @@ try {
     prepared.rootConfig,
     patches,
     async (host) => {
+      // Match the public resolver path used by packaged Electron.
+      host.loader.internal = undefined
       host.provide(DSH_LAUNCH_ENVIRONMENT_KEY, createLaunchEnvironmentSnapshot([]))
+      host.provide('desktopBrowserAccess', BROWSER_ACCESS)
+      host.provide('desktopLanHttps', LAN_HTTPS)
       host.provide('desktopRuntime', runtime)
       host.provide('desktopPnpmBootstrap', {
         activeProfileName: 'desktop',
@@ -142,9 +180,6 @@ try {
         nodeShimPath: pnpmRuntime.nodeShimPath,
         clearEnvironmentPath: pnpmRuntime.clearEnvironmentPath,
         dshBootstrapPath: fileURLToPath(new URL('../lib/desktop-cli.js', import.meta.url)),
-        installRecoveryStatePath: join(home, 'plugin-install-recovery', 'state.json'),
-        generationId: 'profile-smoke-generation',
-        externalMarketInstallEnabled: prepared.market.effective === 'dsh-market',
       })
       await host.plugin(DesktopProfileService, {
         current: {
@@ -170,21 +205,22 @@ try {
   )
   await runtime.mountScheduled()
 
-  const identityHealth = await ctx.anpIdentity.health()
-  if (identityHealth.status !== 'ready') {
-    throw new Error(`assembled desktop profile has no ready native ANP Identity provider: ${JSON.stringify(identityHealth)}`)
+  // Exercise the real npm AWiki consumer in the assembled Host, without a network check.
+  const distribution = ctx.get('desktopDistribution')
+  const awiki = ctx.get('awiki')
+  if (!distribution || !awiki) throw new Error('assembled profile is missing the AWiki Desktop update capability')
+  for (let attempt = 0; attempt < 100 && awiki.getDesktopUpdate()?.tenantId === undefined; attempt++) {
+    await new Promise(resolve => setTimeout(resolve, 20))
   }
-  const tenantRegistry = ctx.awiki.getTenantRegistryView()
-  const chinaTenant = tenantRegistry.tenants.find(tenant => tenant.kind === 'built_in' && tenant.didHost === 'awiki.me')
-  if (chinaTenant?.backendBaseUrl !== 'https://awiki.me'
-    || chinaTenant.didHost !== 'awiki.me'
-    || tenantRegistry.activeTenantId !== chinaTenant.tenantId) {
-    throw new Error(`assembled desktop profile has an unexpected China tenant: ${JSON.stringify(tenantRegistry)}`)
+  const tenantView = awiki.getTenantRegistryView()
+  const activeTenant = tenantView.tenants.find(tenant => tenant.tenantId === tenantView.activeTenantId)
+  const desktopUpdate = awiki.getDesktopUpdate()
+  if (desktopUpdate?.schemaVersion !== 2 || desktopUpdate.currentVersion !== runtime.updates.currentVersion
+    || desktopUpdate.tenantId !== activeTenant?.tenantId || desktopUpdate.policyOrigin !== activeTenant?.backendBaseUrl
+    || desktopUpdate.tenantGeneration !== tenantView.generation) {
+    throw new Error('assembled AWiki consumer did not bind the Desktop update service to its active tenant')
   }
-  const awikiSession = await ctx.awiki.getSession()
-  if (awikiSession.ok !== true || awikiSession.value.status !== 'unregistered') {
-    throw new Error(`assembled desktop profile produced an unexpected AWiki session: ${JSON.stringify(awikiSession)}`)
-  }
+  console.log('verify-profile-boot: actual AWiki consumer accepted the tenant-bound Desktop v2 service')
 
   if (ctx.get('desktopPnpm') === undefined) {
     throw new Error('assembled desktop profile is missing the desktop pnpm Host capability')
@@ -198,27 +234,22 @@ try {
     throw new Error('assembled Windows profile is missing the agent preset roster')
   }
   const presetIds = (await agentPresets.list()).map(preset => preset.id)
-  if (presetIds.includes('minimal') || !presetIds.includes('standard')) {
+  if (!presetIds.includes('minimal') || !presetIds.includes('standard')) {
     throw new Error(`assembled Windows profile exposes unexpected presets: ${presetIds.join(', ')}`)
   }
-  if (agentPresets.defaultId !== 'standard') {
-    throw new Error(`assembled Windows profile selected unsupported default ${agentPresets.defaultId}`)
+  if (agentPresets.defaultId !== 'minimal') {
+    throw new Error(`assembled Windows profile selected unexpected default ${agentPresets.defaultId}`)
   }
-  const legacyPreset = await agentPresets.resolve('minimal')
-  if (legacyPreset.id !== 'minimal') {
-    throw new Error(`assembled Windows profile remapped legacy preset to ${legacyPreset.id}`)
+  const minimalPreset = await agentPresets.resolve('minimal')
+  if (minimalPreset.id !== 'minimal') {
+    throw new Error(`assembled Windows profile remapped minimal preset to ${minimalPreset.id}`)
   }
   const hostServiceProbe = ctx.get(HOST_SERVICE_PROBE_KEY)
   if (hostServiceProbe?.current?.name !== 'desktop'
     || hostServiceProbe.current.dir !== prepared.profile.dir
     || hostServiceProbe.pnpm?.serviceName !== 'desktopPnpm'
     || hostServiceProbe.pnpm.lookupRun !== 'function'
-    || hostServiceProbe.pnpm.run !== 'function'
-    || hostServiceProbe.pnpm.runPlugin !== 'function'
-    || hostServiceProbe.pnpm.installPlugin !== 'function'
-    || hostServiceProbe.pnpm.recoveredInstallReceiptIds !== 'function'
-    || hostServiceProbe.pnpm.acknowledgeRecoveredInstall !== 'function'
-    || hostServiceProbe.pnpm.rollbackPluginInstall !== 'function') {
+    || hostServiceProbe.pnpm.run !== 'function') {
     throw new Error(
       `profile-local Host service plugin produced an unexpected probe: ${JSON.stringify(hostServiceProbe)}`,
     )
@@ -233,12 +264,15 @@ try {
     throw new Error(`assembled Windows browse picker listed ${listing.path} instead of ${home}`)
   }
 
-  const expectedUrl = `http://127.0.0.1:${String(ctx.webServer.port)}/?dsh-desktop-mode=advanced&dsh-desktop-platform=win32`
+  const expectedUrl = `http://127.0.0.1:${String(ctx.webServer.port)}/?dsh-desktop-mode=advanced&dsh-desktop-platform=win32&dsh-desktop-version=2.0.0&dsh-desktop-material=off&dsh-desktop-mica=1`
   if (mountedSpec?.url !== expectedUrl) {
     throw new Error(`desktop plugin produced an unexpected renderer URL: ${String(mountedSpec?.url)}`)
   }
   if (mountedSpec?.mode !== 'advanced') {
     throw new Error(`desktop plugin produced an unexpected shell mode: ${String(mountedSpec?.mode)}`)
+  }
+  if (mountedSpec?.rendererAccessHeader !== BROWSER_ACCESS.rendererHeader) {
+    throw new Error('assembled profile did not preserve the launcher browser capability')
   }
   if (nativeThemeSource !== 'system') {
     throw new Error(`desktop plugin produced an unexpected native theme source: ${nativeThemeSource}`)
@@ -258,7 +292,54 @@ try {
   if (profileMenu?.submenu?.()[0]?.label() !== 'desktop') {
     throw new Error('assembled desktop profile is missing the active profile tray submenu')
   }
-  const response = await fetch(expectedUrl)
+  const unauthenticated = await fetch(expectedUrl, {
+    headers: {
+      [BROWSER_ACCESS.rendererHeader.name]: BROWSER_ACCESS.rendererHeader.value,
+    },
+  })
+  await unauthenticated.body?.cancel()
+  if (unauthenticated.status !== 401) {
+    throw new Error(
+      `assembled Web root accepted a renderer without browser authentication: HTTP ${String(unauthenticated.status)}`,
+    )
+  }
+  if (typeof mountedSpec?.authenticationUrl !== 'string') {
+    throw new Error('desktop plugin did not provide an authentication URL')
+  }
+  const authenticationUrl = new URL(mountedSpec.authenticationUrl)
+  const rendererUrl = new URL(expectedUrl)
+  const authenticationTokens = authenticationUrl.searchParams.getAll('token')
+  if (authenticationUrl.origin !== rendererUrl.origin
+    || authenticationUrl.pathname !== '/'
+    || authenticationUrl.hash !== ''
+    || [...authenticationUrl.searchParams.keys()].some(key => key !== 'token')
+    || authenticationTokens.length !== 1
+    || !/^[A-Za-z0-9_-]{43}$/u.test(authenticationTokens[0])) {
+    throw new Error(`desktop plugin produced an invalid authentication URL: ${authenticationUrl.href}`)
+  }
+  const exchange = await fetch(authenticationUrl, {
+    headers: {
+      [BROWSER_ACCESS.rendererHeader.name]: BROWSER_ACCESS.rendererHeader.value,
+    },
+    redirect: 'manual',
+  })
+  await exchange.body?.cancel()
+  if (exchange.status !== 303 || exchange.headers.get('location') !== '/') {
+    throw new Error(
+      `browser authentication exchange returned HTTP ${String(exchange.status)} instead of a root redirect`,
+    )
+  }
+  const setCookie = exchange.headers.get('set-cookie')
+  const cookie = setCookie?.split(';', 1)[0]
+  if (cookie === undefined || cookie.length === 0) {
+    throw new Error('browser authentication exchange did not mint a cookie')
+  }
+  const response = await fetch(expectedUrl, {
+    headers: {
+      [BROWSER_ACCESS.rendererHeader.name]: BROWSER_ACCESS.rendererHeader.value,
+      Cookie: cookie,
+    },
+  })
   const html = await response.text()
   if (response.status !== 200) {
     throw new Error(`assembled Web root returned HTTP ${String(response.status)}`)
@@ -269,13 +350,28 @@ try {
   }
   const graph = JSON.parse(bootMatch[1])
   const ids = new Set(graph.entries.map(entry => entry.id))
+  const aaEnabled = aaRequested && !brokenAa
+  if (ids.has('@agents-anywhere/dsh-bridge-next') !== aaEnabled) throw new Error('AA client graph does not match explicit selection')
+  if (aaEnabled && (!ctx.get('agentsAnywhereRuntime') || !ctx.get('agentsAnywhereOnboarding'))) {
+    throw new Error('AA Host services did not activate in the actual Desktop profile')
+  }
+  if (aaEnabled) {
+    const endpoint = join(home, 'agents-anywhere', 'bridge', 'endpoint.json')
+    if (!existsSync(endpoint)) throw new Error('AA did not publish its native DSH home endpoint')
+    const snapshot = await ctx.get('agentsAnywhereOnboarding').inspect()
+    if (snapshot.account) throw new Error('A fresh Profile inherited an AA account')
+  }
   for (const id of [
     'dsh-plugin-desktop',
     '@deepseek-ai/dsh-client-ui-conversation',
     '@deepseek-ai/dsh-client-ui-sidebar',
     '@deepseek-ai/dsh-client-ui-directory-picker-browse',
   ]) {
-    if (!ids.has(id)) throw new Error(`assembled advanced Web graph is missing ${id}`)
+    if (!ids.has(id)) {
+      throw new Error(
+        `assembled advanced Web graph is missing ${id}; received ${[...ids].sort().join(', ')}`,
+      )
+    }
   }
   for (const id of [
     '@deepseek-ai/dsh-client-ui-layout',
@@ -288,10 +384,4 @@ try {
   releasePackageResolver?.()
   pnpmRuntime?.dispose()
   rmSync(home, { recursive: true, force: true })
-  for (const [key, value] of Object.entries(originalIdentityEnvironment)) {
-    if (value === undefined) delete process.env[key]
-    else process.env[key] = value
-  }
-  if (originalDshHome === undefined) delete process.env.DSH_HOME
-  else process.env.DSH_HOME = originalDshHome
 }

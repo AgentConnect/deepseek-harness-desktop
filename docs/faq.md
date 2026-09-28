@@ -26,7 +26,7 @@ DSH Desktop 是面向 Windows 和 macOS 的开源 DeepSeek Harness 桌面客户�
 
 ## DSH Desktop 会修改官方 Harness 吗？
 
-不会。仓库固定一个未修改的官方 Harness 上游版本。兼容模式运行上游默认 Web client；高级模式通过 Desktop 自有插件增加桌面布局和原生窗口效果，不直接修改上游源码。
+不会。仓库固定一个未修改的官方 Harness 上游版本。兼容模式在独立 overlay frame 下运行上游默认 Web client；扩展窗口与增强模式分别通过插件/profile composition 边界安装各自的 Desktop root registration，并继续承载官方 slot occupant。所有模式都不会直接修改上游源码。
 
 ## 数据是否保存在本地？
 
@@ -42,8 +42,8 @@ Desktop Host、profile 和 DSH home 位于本机。是否向外部服务发送�
 
 ## 应用如何更新？
 
-从设置或托盘检查当前 AWiki 租户的版本，再前往该租户下载页面，手动安装完整安装包并重启。正式版只推荐正式版，RC 可升级到更新 RC 或正式版。网络失败保留同租户已验证结果；没有策略时不会改用其他租户。
+打包后的应用按当前 AWiki 租户检查更新。稳定版仅推荐正式版，预发布版会比较正式与预发布通道；只有更高版本才提示升级。设置与托盘共用更新结果，切换租户立即清除旧推荐，已打开的旧弹窗也不能打开旧租户下载页。网络失败可展示当前租户已验证的缓存；没有策略时显示暂无更新信息。用户前往当前租户下载页选择安装包，手动安装并重新打开应用。
 
 ## 在哪里下载和报告问题？
 
-从当前租户官网的“DSH Desktop”入口下载安装包。遇到问题时先查看[用户指南的排查部分](user-guide.md#排查)，仍无法解决再提交 [GitHub Issue](https://github.com/anywhere-labs/deepseek-harness-desktop/issues/new/choose)，并附上操作系统、应用版本、复现步骤和错误信息。
+从[项目下载页](https://www.dshdesktop.cn/)或[最新 GitHub Release](https://github.com/anywhere-labs/deepseek-harness-desktop/releases/latest)下载安装包。遇到问题时先查看[用户指南的排查部分](user-guide.md#排查)，仍无法解决再提交 [GitHub Issue](https://github.com/anywhere-labs/deepseek-harness-desktop/issues/new/choose)，并附上操作系统、应用版本、复现步骤和错误信息。

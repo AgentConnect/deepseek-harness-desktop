@@ -6,7 +6,6 @@ This repository owns the desktop product around an unmodified DeepSeek Harness c
 
 - Use Node.js `^22.19.0` or `>=24.0.0` and the root Yarn `4.18.0` release through Corepack.
 - Initialize the pinned upstream checkout with `git submodule update --init --recursive`.
-- Materialize the SHA-pinned bundled runtime with `node scripts/prepare-runtime-inputs.mjs`.
 - Install root dependencies with `corepack yarn install --immutable`.
 
 ## Build, run, and verify
@@ -16,6 +15,7 @@ This repository owns the desktop product around an unmodified DeepSeek Harness c
 - Run unit tests with `corepack yarn test`.
 - Run type checking with `corepack yarn typecheck`.
 - Run the complete headless gate with `corepack yarn check`.
+- Develop and validate Desktop feature changes in `dsh-plugin-desktop-beta/` first, then synchronize shared changes into `dsh-plugin-desktop/` while preserving declared variant differences. Before committing or pushing shared Desktop changes, run `corepack yarn check:desktop-variants` and validate both affected packages; neither package automatically inherits the other's source edits.
 - Run upstream operations through the root scripts, such as `corepack yarn upstream:build`.
 
 - `deepseek-harness/` is a pinned upstream Git submodule. Never edit files inside it from a desktop feature branch.

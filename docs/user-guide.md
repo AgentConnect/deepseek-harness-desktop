@@ -14,12 +14,13 @@ Profile 是一组 DSH bundle、依赖和 patch 的组合。托盘中的 **Profil
 
 切换 profile 不会把旧 profile 的插件偷偷复制到新 profile。要管理目标 profile，请在终端中显式写出 profile，或者在切换后使用终端里的默认命令。
 
-## 兼容模式与高级模式
+## 窗口模式与材质
 
-- **兼容模式**：使用上游默认 Web client 和 profile 自己的 layout/sidebar/conversation 组合。它适合希望尽量接近官方 Harness 的用户。
-- **高级模式**：在不改变上游 Web carrier 的前提下加入 Desktop 自有的 frame、布局、Mica/vibrancy 和原生拖动区域。它适合需要更完整桌面外观的用户。
+- **兼容模式**：保持 profile 的官方 layout/sidebar/conversation 组合完整，并把它放在独立的 36 像素 Desktop frame 下方。frame 可以拖动，图标操作仍可点击，官方 dialog 只会占用与 frame 无关的下方内容 viewport。
+- **扩展窗口**：安装 Desktop 自有 layout 与 sidebar surface，并在其中承载官方 sidebar、conversation 和 details occupant。36 像素顶部 frame 与左侧 sidebar surface 组成一个带圆角内拐角的倒 L 材质区域。
+- **增强模式**：保留独立 root registration 与紧凑内部 caption；macOS 使用 20 像素内容 inset 和 32 像素拖动区域，Windows 使用 32 像素 caption row，不复用扩展窗口的独立 frame。
 
-切换模式会重启应用，不会在正在运行的 renderer 中热替换 root slot 或窗口材质。Linux 只提供兼容模式。
+macOS 自定义窗口模式可以打开或关闭透明材质。Windows 可关闭材质；仅 Windows 11 build 22621 及以上在支持时显示 Mica。旧版 Windows 亚克力偏好会安全地按关闭处理，并在设置文件可写时自动迁移。切换模式或材质都会重启应用，不会在正在运行的 renderer 中热替换 root slot 或窗口材质。Linux 只提供兼容模式。
 
 ## 本地 Web 端口
 
@@ -30,7 +31,7 @@ dsh-desktop:
   port: 43189
 ```
 
-端口必须是 `0` 到 `65535` 之间的整数。修改后应用会有序重启，服务仍只监听 `127.0.0.1`。固定端口如果已被其他程序占用，Desktop 将无法启动；此时需要释放该端口，或把设置改回 `0` 或另一个空闲端口。
+端口必须是 `0` 到 `65535` 之间的整数。修改后应用会有序重启。服务默认只监听 `127.0.0.1`；只有在“桌面设置”中确认危险提示并明确允许局域网访问后，才会改为监听所有网络接口。固定端口如果已被其他程序占用，Desktop 将无法启动；此时需要释放该端口，或把设置改回 `0` 或另一个空闲端口。
 
 ## 插件管理
 
@@ -56,19 +57,17 @@ dsh plugin update
 
 ## 打开终端
 
-从托盘选择 **Open DSH Terminal**。macOS 会打开 Terminal，Windows 会优先使用 Windows Terminal，找不到时回退到 PowerShell 或命令提示符。
+可以从托盘、Desktop 设置或 Desktop frame 选择 **Open DSH Terminal**；设置中的旁边提供重启下拉菜单，可以普通重启或 **重启到恢复模式**，两种操作都必须确认。macOS 会打开 Terminal，Windows 会优先使用 Windows Terminal，找不到时回退到 PowerShell 或命令提示符。
 
 欢迎信息会显示：应用版本、当前 profile、profile 目录和 DSH home。Desktop 会在自己的 user-data 目录生成 `dsh`、`pnpm` 和 `node` 私有 shim，只对这个终端进程设置 PATH，不会修改系统 PATH 或用户 shell 配置。
 
 ## 更新
 
-打包应用在启动 60 秒后查询当前 AWiki 租户的 `/user-service/v1/server-info?client_platform=dsh`，之后每六小时检查一次。设置、托盘和后台共享查询；请求超时为 15 秒。各租户的 `products.dsh.desktop.channels` 分别维护 stable 与 prerelease。正式版只选 stable；RC 可升级到更新的 RC 或正式版，不推荐降级。
-
-托盘 **Check for Updates…** 显示检查结果，只有通过校验的当前租户下载页可以打开。用户从页面下载完整安装包，手动安装并重启；内置组件随整包更新，更新界面不提供 npm 命令。客户端不下载、启动或清理安装器。新安装仍默认中国；Global 用户在 AWiki 设置选择全球（硅谷）。升级保留既有租户、身份和本地数据。
-
-没有 AWiki 租户能力或本租户未发布时显示更新不可用，不回退到上海或上游更新源。缓存按租户、origin、发行标识和通道隔离；失败只保留同租户的已验证结果。切换开始即清除旧推荐，取消请求，迟到结果或已打开的旧对话框不能打开原租户链接。后台提醒同样按租户和通道隔离。
+打包后的应用按当前 AWiki 租户检查更新。稳定版仅推荐正式版，预发布版会比较正式与预发布通道；只有更高版本才提示升级。设置与托盘共用更新结果，切换租户立即清除旧推荐，已打开的旧弹窗也不能打开旧租户下载页。网络失败可展示当前租户已验证的缓存；没有策略时显示暂无更新信息。用户前往当前租户下载页选择安装包，手动安装并重新打开应用。
 
 ## 排查
+
+Desktop 的确认、警告与操作结果会打开独立、基于 shadcn 的桌面级模态窗口，而不是侵入官方页面的 overlay。恢复窗口会先展示进入原因，再提供 **插件管理**、**回滚**、**切换配置** 与 **诊断** 四个 Tab；它与新增 Profile 窗口顶部的 utility frame 都不会重复显示标题。
 
 - **应用能够进入托盘**：右键托盘图标，选择 **导出诊断信息…**。确认隐私提示后，Desktop 会生成 `diagnostics-*.zip` 并在文件管理器中显示它。
 - **应用持续闪退，无法进入托盘**：在 PowerShell 中直接运行安装后的程序并加上恢复参数。默认安装位置的命令如下；如果安装时修改过目录，请替换为实际的 EXE 路径。
@@ -77,7 +76,7 @@ dsh plugin update
   & "$env:LOCALAPPDATA\Programs\DSH Desktop\DSH Desktop.exe" --export-diagnostics
   ```
 
-  通过 npm 安装过桌面启动器时，也可以运行 `dsh-desktop --export-diagnostics`。这个命令不会启动 Host、profile、插件或窗口；完成后会在终端输出诊断 ZIP 的绝对路径。
+  通过 npm 安装时，稳定版可运行 `dsh-desktop --export-diagnostics`，Beta 可运行 `dsh-desktop-beta --export-diagnostics`。这个命令不会启动 Host、profile、插件或窗口；完成后会在终端输出诊断 ZIP 的绝对路径。
 - **诊断包内容**：包含最近的应用日志、本地 Crashpad `.dmp`、当前运行标记和 `system-info.txt`。系统信息会记录 Desktop、Electron、Node、平台和架构版本。日志会对可识别的认证凭据脱敏，但本地路径、工作区 ID、会话 ID 和崩溃时的内存片段仍可能存在。公开上传前必须检查；不适合公开的 dump 应通过可信渠道提供。
 - **窗口消失了**：先检查系统托盘，关闭窗口不是退出。
 - **插件没有出现**：确认命令作用于目标 profile，并重启应用。
