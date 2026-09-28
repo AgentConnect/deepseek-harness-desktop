@@ -1,12 +1,13 @@
 import { spawnSync, type ChildProcess, type SpawnOptions } from 'node:child_process'
 import { EventEmitter } from 'node:events'
-import { lstatSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
+import { existsSync, lstatSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { basename, dirname, join } from 'node:path'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   desktopTerminalStateDirectory,
   openDesktopTerminal,
+  waitForDesktopTerminalLaunch,
   type DesktopTerminalOptions,
   type DesktopTerminalSpawn,
 } from '../src/desktop-terminal.ts'
@@ -495,5 +496,66 @@ describe('desktop terminal environment', () => {
     expect(() => openDesktopTerminal(newline)).toThrow('must not contain NUL or newlines')
     expect(() => lstatSync(newline.stateDir)).toThrow()
     expect(harness.calls).toHaveLength(1)
+  })
+})
+
+describe('recovery terminal instructions and handoff', () => {
+  it('prints recovery text literally on macOS without executing it', () => {
+    const directory = temporaryDirectory()
+    const marker = join(directory, 'must-not-exist')
+    const command = `dsh plugin add @awiki/dsh-plugin@0.3.16; $(touch "${marker}") ' % !`
+    const harness = spawnHarness()
+    const options = { ...macOptions(join(directory, 'state'), harness.spawn), profileDir: directory, recoveryCommand: command }
+    const launch = openDesktopTerminal(options)
+    const script = readFileSync(launch.welcomePath, 'utf8')
+    // Execute only the real welcome portion; never open a GUI or interactive shell.
+    const welcome = script.slice(0, script.indexOf('case "${SHELL'))
+    const result = spawnSync('/bin/sh', ['-c', welcome], { encoding: 'utf8' })
+    expect(result.status).toBe(0)
+    expect(result.stdout).toContain(command)
+    expect(existsSync(marker)).toBe(false)
+    expect(harness.calls[0]?.args.join(' ')).not.toContain(command)
+    expect(harness.calls[0]?.options.shell).toBe(false)
+  })
+
+  it('passes Windows recovery text only through data environment for both shells', () => {
+    const harness = spawnHarness()
+    const stateDir = join(temporaryDirectory(), 'state')
+    const command = 'dsh plugin add @awiki/dsh-plugin@0.3.16 & %PATH% ! $()'
+    const options = { ...windowsOptions(stateDir, harness.spawn), recoveryCommand: command }
+    const launch = openDesktopTerminal(options)
+    expect(harness.calls[0]?.options.env?.DSH_DESKTOP_RECOVERY_COMMAND).toBe(command)
+    expect(harness.calls[0]?.args.join(' ')).not.toContain(command)
+    expect(harness.calls[0]?.options.shell).toBe(false)
+    expect(readFileSync(launch.welcomePath, 'utf8')).toContain('Write-Host $env:DSH_DESKTOP_RECOVERY_COMMAND')
+    expect(readFileSync(join(stateDir, 'welcome.cmd'), 'utf8')).toContain('echo(!DSH_DESKTOP_RECOVERY_COMMAND!')
+    const normal = spawnHarness()
+    openDesktopTerminal({ ...windowsOptions(stateDir, normal.spawn), environment: { dsh_desktop_recovery_command: command } })
+    expect(normal.calls[0]?.options.env?.DSH_DESKTOP_RECOVERY_COMMAND).toBeUndefined()
+    expect(normal.calls[0]?.options.env?.dsh_desktop_recovery_command).toBeUndefined()
+  })
+
+  it.each(['darwin', 'win32'] as const)('waits for a successful %s broker exit', async platform => {
+    const harness = spawnHarness()
+    const options = platform === 'darwin' ? macOptions : windowsOptions
+    const launch = openDesktopTerminal(options(join(temporaryDirectory(), 'state'), harness.spawn))
+    let complete = false
+    const ready = waitForDesktopTerminalLaunch(launch.child).then(() => { complete = true })
+    await Promise.resolve()
+    expect(complete).toBe(false)
+    harness.emitExit(0)
+    await ready
+    expect(complete).toBe(true)
+  })
+
+  it.each(['error', 'exit', 'timeout'] as const)('rejects a failed handoff: %s', async failure => {
+    const harness = spawnHarness()
+    const ready = waitForDesktopTerminalLaunch(harness.child, 5)
+    const rejected = expect(ready).rejects.toThrow(/launcher|failed/)
+    if (failure === 'error') harness.emitError(new Error('failed'))
+    if (failure === 'exit') harness.emitExit(1)
+    await rejected
+    expect(harness.child.listenerCount('error')).toBe(0)
+    expect(harness.child.listenerCount('exit')).toBe(0)
   })
 })

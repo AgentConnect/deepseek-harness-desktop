@@ -29,7 +29,7 @@
 - 保留原有租户策略、身份与密钥存储、聊天数据、账户恢复和桌面通用 Recovery。没有新增远程安装能力或允许升级的兼容后门。
 - 按已确认的 CI 规则，将新版继承的两个 workflow 的 PR/push 触发去掉，保留手动 workflow_dispatch；其他发行工作流的输入和权限不变。
 
-## 本次验证
+## 首轮整合验证（历史记录）
 
 - `corepack yarn install --immutable`：通过，未改依赖锁；现有 peer 警告保留。
 - stable/beta 各自 `build` 与 `typecheck`：通过。
@@ -41,3 +41,23 @@
 - 初次聚焦检查在构建前执行，缺少生成的 client/Host 文件导致 2 项失败；构建后重跑通过。初次 layout 因 submodule 尚未初始化失败，固定 submodule 初始化后，最终 `check:layout` 通过：双语文档、依赖方向、stable/beta 各 265 个 runtime 包、185 个共享源文件和工作区布局均一致。
 
 未执行生产 System Test 或 DSH Web 全量 E2E：本次变更属于 Desktop 启动/设置/本机进程边界，未修改跨服务或插件 Web 业务协议；使用拥有这些入口的 Desktop 单元和实际 Host 集成测试。未重建 Windows/macOS 安装包、签名、公证或执行 GUI 人工验收；这仍是源码 review PR，不作为新的生产发布验收。
+
+## Review 修正：终端交接与路由清单
+
+- stable/beta 的私有路由清单移除已退役的 AWiki 更新接口；保留认证访问返回 404 的 Host 检查。
+- 恢复命令传入终端欢迎文本，macOS 采用字面量 shell 引用，Windows 通过专用环境数据读取。
+  它不进入启动 argv，不自动执行，不改变 Profile 选择、插件安装和租户策略的所有权。
+- 启动恢复等待终端 broker 正常退出确认交接；同步异常、异步错误、非零退出及 15 秒超时
+  都回到可见的恢复对话框，由用户选择重试或退出。确认仅代表终端已交接，不代表插件修复完成。
+- Linux 等未支持平台没有打开终端按钮，不新增 Linux 发行支持。
+- 安全检查覆盖精确 Profile 绑定、仅显示命令、shell metacharacter 字面量、不继承旧 Windows
+  恢复环境值、失败后不自动退出，以及旧升级 HTTP/RPC 持续关闭。
+
+本轮复验：stable/beta 各 4 个恢复、Terminal、runtime、私有路由测试文件 154 项通过；
+各 3 个 Host/兼容性测试文件 11 项通过（含实际认证 Host 旧入口 404）。两版 build、
+typecheck、check:desktop-variants 与 check:layout 通过。全量 yarn check、Windows 真机 GUI
+和安装包重建未执行；这里是源码 review 验证，不是生产发布验收。首次私有路由测试在旧实现
+复现 2 项失败；修复后通过。Windows 欢迎脚本原有 ASCII 门禁捕获新增标点问题，已改为 ASCII
+并复验；双语文档更新后同步了 i18n 哈希记录。
+
+本节描述相对首轮整合的修正，不改写已发布 v2.2.3 的来源记录。

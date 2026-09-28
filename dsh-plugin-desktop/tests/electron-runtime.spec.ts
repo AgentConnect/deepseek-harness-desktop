@@ -1,3 +1,4 @@
+import { EventEmitter } from 'node:events'
 import { readFileSync, unlinkSync } from 'node:fs'
 import { basename, dirname, join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -2023,6 +2024,37 @@ describe('Electron desktop runtime', () => {
       detail: 'disk is full',
     }))
     expect(stderr).toHaveBeenCalledWith(expect.stringContaining('failed to export diagnostics: disk is full'))
+  })
+
+  it.each(['darwin', 'win32'] as const)('passes recovery instructions and waits for %s handoff', async platform => {
+    vi.spyOn(process, 'platform', 'get').mockReturnValue(platform)
+    Object.defineProperty(process.versions, 'electron', { configurable: true, value: '43.4.0' })
+    try {
+      const { ElectronDesktopRuntime } = await import('../src/electron-runtime.ts')
+      const runtime = new ElectronDesktopRuntime(async () => {})
+      const root = electron.app.getPath('userData')
+      runtime.configureTerminal({ profileName: 'desktop', profileDir: join(root, 'profiles', 'desktop'), homeDir: root })
+      const child = new EventEmitter()
+      terminal.open.mockReturnValueOnce({ child })
+      const command = 'dsh plugin add @awiki/dsh-plugin@0.3.16 @awiki/dsh-model-proxy@0.1.11'
+      let ended = false
+      const opening = runtime.openRecoveryTerminal(command).then(() => { ended = true })
+      await Promise.resolve()
+      expect(ended).toBe(false)
+      expect(terminal.open).toHaveBeenCalledWith(expect.objectContaining({ recoveryCommand: command, profileName: 'desktop' }))
+      child.emit('exit', 0, null)
+      await opening
+      expect(ended).toBe(true)
+      const failed = new EventEmitter()
+      terminal.open.mockReturnValueOnce({ child: failed })
+      const failure = expect(runtime.openRecoveryTerminal(command)).rejects.toThrow('code 1')
+      failed.emit('exit', 1, null)
+      await failure
+      terminal.open.mockImplementationOnce(() => { throw new Error('cannot open') })
+      await expect(runtime.openRecoveryTerminal(command)).rejects.toThrow('cannot open')
+    } finally {
+      delete (process.versions as { electron?: string }).electron
+    }
   })
 
   it('shows native errors for synchronous and asynchronous terminal launch failures', async () => {

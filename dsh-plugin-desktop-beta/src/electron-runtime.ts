@@ -13,7 +13,7 @@ import { RemoteControlOffer, remoteControlOfferCopy } from './remote-control-off
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { desktopTerminalStateDirectory, openDesktopTerminal } from './desktop-terminal.ts'
+import { desktopTerminalStateDirectory, openDesktopTerminal, waitForDesktopTerminalLaunch, type DesktopTerminalLaunch } from './desktop-terminal.ts'
 import { showDesktopMessageBox } from './desktop-dialog-window.ts'
 import { packagedDependencyPath } from './packaged-runtime-path.ts'
 import { ElectronShellGeneration } from './electron-shell-generation.ts'
@@ -361,31 +361,46 @@ export class ElectronDesktopRuntime implements DesktopRuntime {
   /** @inheritdoc */
   openTerminal(): void {
     try {
-      const spec = this.terminalSpec
-      if (spec === undefined) {
-        throw new Error('dsh-plugin-desktop: terminal profile is not configured')
-      }
-      const electronVersion = process.versions.electron
-      if (electronVersion === undefined) {
-        throw new Error('dsh-plugin-desktop: terminal requires the Electron runtime version')
-      }
-      openDesktopTerminal({
-        platform: this.platform,
-        appExecutable: process.execPath,
-        dshBootstrapPath: fileURLToPath(new URL('./desktop-cli.js', import.meta.url)),
-        pnpmBinPath: packagedDependencyPath(import.meta.url, 'pnpm/bin/pnpm.mjs'),
-        electronVersion,
-        profileName: spec.profileName,
-        productVersion: PRODUCT_VERSION,
-        profileDir: spec.profileDir,
-        homeDir: spec.homeDir,
-        stateDir: desktopTerminalStateDirectory(app.getPath('userData'), spec.profileName),
-        spawn,
-        onLaunchError: cause => { this.reportTerminalLaunchError(cause) },
-      })
+      this.launchTerminal(undefined, cause => { this.reportTerminalLaunchError(cause) })
     } catch (cause) {
       this.reportTerminalLaunchError(cause)
     }
+  }
+
+  /** Keep startup recovery alive until the terminal broker confirms its handoff. */
+  async openRecoveryTerminal(command: string): Promise<void> {
+    // The recovery dialog owns failures and retry. Do not open a second dialog.
+    const launch = this.launchTerminal(command, () => {})
+    await waitForDesktopTerminalLaunch(launch.child)
+  }
+
+  private launchTerminal(
+    recoveryCommand: string | undefined,
+    onLaunchError: (cause: Error) => void,
+  ): DesktopTerminalLaunch {
+    const spec = this.terminalSpec
+    if (spec === undefined) {
+      throw new Error('dsh-plugin-desktop: terminal profile is not configured')
+    }
+    const electronVersion = process.versions.electron
+    if (electronVersion === undefined) {
+      throw new Error('dsh-plugin-desktop: terminal requires the Electron runtime version')
+    }
+    return openDesktopTerminal({
+      platform: this.platform,
+      appExecutable: process.execPath,
+      dshBootstrapPath: fileURLToPath(new URL('./desktop-cli.js', import.meta.url)),
+      pnpmBinPath: packagedDependencyPath(import.meta.url, 'pnpm/bin/pnpm.mjs'),
+      electronVersion,
+      profileName: spec.profileName,
+      productVersion: PRODUCT_VERSION,
+      profileDir: spec.profileDir,
+      homeDir: spec.homeDir,
+      stateDir: desktopTerminalStateDirectory(app.getPath('userData'), spec.profileName),
+      spawn,
+      onLaunchError,
+      ...(recoveryCommand === undefined ? {} : { recoveryCommand }),
+    })
   }
 
   /** @inheritdoc */

@@ -265,3 +265,10 @@ corepack.cmd yarn dist:win-portable
 - 共享 carrier 使用 HTTP 与 WebSocket，而不是 Electron IPC；默认只绑定 loopback，并支持经过明确确认的全接口局域网监听。替换 carrier 需要上游 DSH 提供 transport 扩展点，不属于该独立包的范围。
 - Beta 使用固定官方 release 源码构建的 DSH `0.1.5-rc.2` 运行时分发包；桌面构建解析这些包接口，不直接链接源码 checkout。历史会话由上游迁移到 V3，自动转换旧 PTC 事件和 `code` 预设引用并保留原日志，桌面端不再生成预设别名。旧运行时无法读取 V3 会话。扩展和增强模式接入右侧 Sidebar 的文档预览、分栏和全屏，并通过 keyed `main` 槽位支持独立于会话选择的全局插件面板。
 - `package:dir` 是用于 smoke 的未封装产物。`dist:win` 会额外生成未签名的 NSIS 测试安装包，但不会建立 Authenticode 身份或 SmartScreen 信誉。安装与升级行为、原生通知与终端、Windows ACL sandbox，以及每台目标机器上的原生材质外观仍属于目标平台验证边界。
+
+### AWiki 兼容性恢复的终端交接
+
+恢复对话框与当前 Profile 的 DSH Terminal 都保留精确的 `dsh plugin add` 命令。
+命令仅作为文字显示，由用户手动执行；不会自动修改 Profile，也不进入进程的 shell 参数。
+系统终端启动程序确认成功后 Desktop 才退出；启动失败或 15 秒内没有确认时，恢复对话框
+显示错误并允许重试或退出。不支持内置终端的平台不显示打开按钮，仍显示操作说明。

@@ -264,3 +264,10 @@ corepack.cmd yarn dist:win-portable
 - 该项目同时固定到已发布的 DSH `0.1.5-rc.2` family 及其对应的官方 `deepseek-harness/` release 源码。产品构建使用 `upstream.json` 记录并提交到仓库的官方 profile 运行时包，不会直接链接源码 checkout。
 - DSH `0.1.5-rc.2` 会将受支持的历史会话迁移至 V3，并保留原始日志。升级后写入的会话无法由旧版 `0.1.2-rc.1` 运行时读取。
 - `package:dir` 是用于 smoke 的未封装产物。`dist:win` 会额外生成未签名的 NSIS 测试安装包，但不会建立 Authenticode 身份或 SmartScreen 信誉。安装与升级行为、原生通知与终端、Windows ACL sandbox，以及每台目标机器上的原生材质外观仍属于目标平台验证边界。
+
+### AWiki 兼容性恢复的终端交接
+
+恢复对话框与当前 Profile 的 DSH Terminal 都保留精确的 `dsh plugin add` 命令。
+命令仅作为文字显示，由用户手动执行；不会自动修改 Profile，也不进入进程的 shell 参数。
+系统终端启动程序确认成功后 Desktop 才退出；启动失败或 15 秒内没有确认时，恢复对话框
+显示错误并允许重试或退出。不支持内置终端的平台不显示打开按钮，仍显示操作说明。

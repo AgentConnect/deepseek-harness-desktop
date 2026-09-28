@@ -1,6 +1,6 @@
 /** DSH Desktop executable: minimal Electron bootstrap around the Host Cordis root. */
 
-import { requestAwikiCompatibilityRecovery } from './awiki-compatibility-recovery.ts'
+import { recoverAwikiCompatibility } from './awiki-compatibility-recovery.ts'
 import { startIsolatedDesktopHost } from './host-process.ts'
 import { app, dialog, crashReporter, safeStorage, shell } from 'electron'
 import { randomUUID } from 'node:crypto'
@@ -1407,13 +1407,13 @@ async function start(): Promise<void> {
       startupStage = 'profile-composition'
       lifecycleRecorder.transitionStartupStage(startupStage)
       const locale = desktopLocaleFromLanguageTag(app.getLocale())
-      const choice = await requestAwikiCompatibilityRecovery(
+      await recoverAwikiCompatibility(
         awikiFallback,
         locale,
         electronLogger,
         options => dialog.showMessageBox(options),
+        command => runtime.openRecoveryTerminal(command),
       )
-      if (choice === 'terminal') runtime.openTerminal()
       await shutdown.request(0)
       return
     }
