@@ -711,8 +711,8 @@ describe('published package surface', () => {
   it('keeps AWiki compatibility recovery local and delegates tenant policy to DSH', () => {
     const main = readFileSync(new URL('src/main.ts', packageRoot), 'utf8')
 
-    expect(main).toContain('await requestAwikiCompatibilityRecovery(')
-    expect(main).toContain("if (choice === 'terminal') runtime.openTerminal()")
+    expect(main).toContain('await recoverAwikiCompatibility(')
+    expect(main).toContain('command => runtime.openRecoveryTerminal(command)')
     expect(main).not.toContain('discoverDesktopAwikiUpdate')
     expect(main).not.toContain('executeDesktopAwikiUpdate')
   })
@@ -778,7 +778,7 @@ describe('published package surface', () => {
 
   it('fixes the installed application identity', () => {
     expect(workspaceManifest.version).toBeUndefined()
-    expect(manifest.version).toBe('2.2.3')
+    expect(manifest.version).toBe('2.2.4')
     expect(manifest.build?.productName).toBe('DSH Desktop')
     expect(manifest.build?.appId).toBe('ai.deepseek.dsh.desktop')
     expect(manifest.build?.asar).toBe(false)

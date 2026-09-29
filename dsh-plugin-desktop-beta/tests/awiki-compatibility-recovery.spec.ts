@@ -3,7 +3,7 @@ import { recoverAwikiCompatibility, requestAwikiCompatibilityRecovery } from '..
 
 const fallback = {
   source: 'install' as const,
-  pluginVersion: '0.3.16', modelProxyVersion: '0.1.11',
+  pluginVersion: '0.3.17', modelProxyVersion: '0.1.11',
   rejectedPluginVersion: '0.3.2', rejectedModelProxyVersion: '0.1.2',
 }
 
@@ -15,7 +15,7 @@ describe('AWiki local compatibility recovery', () => {
     expect(showMessageBox).toHaveBeenCalledOnce()
     expect(showMessageBox).toHaveBeenCalledWith(expect.objectContaining({
       type: 'warning', defaultId: 0, cancelId: 1, noLink: true,
-      detail: expect.stringContaining('dsh plugin add @awiki/dsh-plugin@0.3.16 @awiki/dsh-model-proxy@0.1.11'),
+      detail: expect.stringContaining('dsh plugin add @awiki/dsh-plugin@0.3.17 @awiki/dsh-model-proxy@0.1.11'),
     }))
     expect(logger.error).not.toHaveBeenCalled()
   })
@@ -44,7 +44,7 @@ describe('AWiki recovery terminal handoff', () => {
     const recovery = recoverAwikiCompatibility(fallback, 'zh', { error: vi.fn() }, show, open, platform)
       .then(() => { ended = true })
     await vi.waitFor(() => { expect(open).toHaveBeenCalledOnce() })
-    expect(open).toHaveBeenCalledWith('dsh plugin add @awiki/dsh-plugin@0.3.16 @awiki/dsh-model-proxy@0.1.11')
+    expect(open).toHaveBeenCalledWith('dsh plugin add @awiki/dsh-plugin@0.3.17 @awiki/dsh-model-proxy@0.1.11')
     expect(ended).toBe(false)
     complete()
     await recovery
@@ -61,7 +61,7 @@ describe('AWiki recovery terminal handoff', () => {
       detail: expect.stringContaining('launcher failed'),
       buttons: ['Open DSH Terminal', 'Exit'],
     }))
-    expect(show.mock.calls[1]?.[0].detail).toContain('@awiki/dsh-plugin@0.3.16')
+    expect(show.mock.calls[1]?.[0].detail).toContain('@awiki/dsh-plugin@0.3.17')
   })
 
   it('exits after launch failure only when the user chooses exit', async () => {
@@ -79,7 +79,7 @@ describe('AWiki recovery terminal handoff', () => {
     expect(open).not.toHaveBeenCalled()
     expect(show).toHaveBeenCalledWith(expect.objectContaining({
       buttons: ['Exit'], cancelId: 0,
-      detail: expect.stringContaining('@awiki/dsh-plugin@0.3.16'),
+      detail: expect.stringContaining('@awiki/dsh-plugin@0.3.17'),
     }))
   })
 })
