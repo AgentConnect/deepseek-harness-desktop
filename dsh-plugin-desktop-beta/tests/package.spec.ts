@@ -789,8 +789,8 @@ describe('published package surface', () => {
   it('keeps AWiki compatibility recovery local and delegates tenant policy to DSH', () => {
     const main = readFileSync(new URL('src/main.ts', packageRoot), 'utf8')
 
-    expect(main).toContain('await requestAwikiCompatibilityRecovery(')
-    expect(main).toContain("if (choice === 'terminal') runtime.openTerminal()")
+    expect(main).toContain('await recoverAwikiCompatibility(')
+    expect(main).toContain('command => runtime.openRecoveryTerminal(command)')
     expect(main).not.toContain('discoverDesktopAwikiUpdate')
     expect(main).not.toContain('executeDesktopAwikiUpdate')
   })
