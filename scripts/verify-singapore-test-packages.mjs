@@ -13,12 +13,10 @@ for (const variant of ['dsh-plugin-desktop', 'dsh-plugin-desktop-beta']) {
   for (const entry of manifest.packages) {
     if (entry.os && !entry.os.includes(process.platform)) continue
     if (entry.cpu && process.platform !== 'darwin' && !entry.cpu.includes(process.arch)) continue
-    let folder = dirname(require.resolve(entry.name))
-    while (!existsSync(join(folder, 'package.json'))) {
-      const parent = dirname(folder)
-      if (parent === folder) throw new Error(`Package root missing: ${entry.name}`)
-      folder = parent
-    }
+    const folder = require.resolve.paths(entry.name)
+      .map(base => join(base, entry.name))
+      .find(base => existsSync(join(base, 'package.json')))
+    if (folder === undefined) throw new Error(`Package root missing: ${entry.name}`)
     const actual = JSON.parse(readFileSync(join(folder, 'package.json'), 'utf8'))
     if (actual.name !== entry.name || actual.version !== entry.version) throw new Error(`Wrong test package: ${entry.name}`)
     for (const [path, expected] of Object.entries(entry.runtimeFiles)) {
