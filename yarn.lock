@@ -219,9 +219,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@awiki/dsh-model-proxy@https://anpclaw.com/downloads/singapore-release-20261012/packages/85df6941ccfce65d-awiki-dsh-model-proxy-0.1.11.tgz":
-  version: 0.1.11
-  resolution: "@awiki/dsh-model-proxy@https://anpclaw.com/downloads/singapore-release-20261012/packages/85df6941ccfce65d-awiki-dsh-model-proxy-0.1.11.tgz"
+"@awiki/dsh-model-proxy@https://anpclaw.com/downloads/singapore-release-20261012/packages/d7575033726d26a5-awiki-dsh-model-proxy-0.1.12.tgz":
+  version: 0.1.12
+  resolution: "@awiki/dsh-model-proxy@https://anpclaw.com/downloads/singapore-release-20261012/packages/d7575033726d26a5-awiki-dsh-model-proxy-0.1.12.tgz"
   dependencies:
     "@deepseek-ai/schemastery": "npm:^3.18.1"
   peerDependencies:
@@ -240,13 +240,13 @@ __metadata:
     "@deepseek-ai/dsh-llm-deepseek": 0.1.5-rc.2
     "@deepseek-ai/dsh-settings": 0.1.5-rc.2
     react: ^18.2.0
-  checksum: 10c0/fcba79295113c0d91d2cfd53e479ec38a1052e4ad303da6b05481fb617dd8e5709ad8b422eade3cbd9a1de12bd10e27ac7327c8fa065647d2771070331691ea6
+  checksum: 10c0/322e8722effc649f9f56e9f3061c2293a47dfd54140c620d19829392906a82de16f9d6b5a74585f29609e4eed35bdd055515f61c392feef146f1f3d522533cb5
   languageName: node
   linkType: hard
 
-"@awiki/dsh-plugin@https://anpclaw.com/downloads/singapore-release-20261012/packages/7477a4e9516d6cf0-awiki-dsh-plugin-0.3.17.tgz":
-  version: 0.3.17
-  resolution: "@awiki/dsh-plugin@https://anpclaw.com/downloads/singapore-release-20261012/packages/7477a4e9516d6cf0-awiki-dsh-plugin-0.3.17.tgz"
+"@awiki/dsh-plugin@https://anpclaw.com/downloads/singapore-release-20261012/packages/7fa41034dd0619f9-awiki-dsh-plugin-0.3.18.tgz":
+  version: 0.3.18
+  resolution: "@awiki/dsh-plugin@https://anpclaw.com/downloads/singapore-release-20261012/packages/7fa41034dd0619f9-awiki-dsh-plugin-0.3.18.tgz"
   dependencies:
     "@awiki/im-core-node": "npm:0.2.9"
     "@deepseek-ai/schemastery": "npm:^3.18.1"
@@ -280,7 +280,7 @@ __metadata:
   peerDependenciesMeta:
     "@deepseek-ai/dsh-workspace":
       optional: true
-  checksum: 10c0/3eb720d3c7c3da3179f9ddefa04f88bdeccb99d31da0d958c5072561d33103c8105c18abe14f22399f1b3767547e616ade1c6faeab17b9dc3ba84ea30cdf28a1
+  checksum: 10c0/dfdfed56f5740a30dea15ee9906a397848ce28933b940e56045cea133296e2834c2455da498c31016c0b569848eadb64964069bc173617f132b3aa4c8994bcc8
   languageName: node
   linkType: hard
 
@@ -9120,8 +9120,8 @@ __metadata:
   dependencies:
     "@agent-network-protocol/dsh-anp-identity": "npm:0.1.4"
     "@agents-anywhere/dsh-bridge-next": "file:../vendor/agents-anywhere/agents-anywhere-dsh-bridge-next-0.1.0-dev.0.desktop.c00df092c98b2.rcda81994.tgz"
-    "@awiki/dsh-model-proxy": "npm:0.1.11"
-    "@awiki/dsh-plugin": "npm:0.3.17"
+    "@awiki/dsh-model-proxy": "npm:0.1.12"
+    "@awiki/dsh-plugin": "npm:0.3.18"
     "@base-ui/react": "npm:^1.7.0"
     "@deepseek-ai/cordis": "npm:4.0.2"
     "@deepseek-ai/cordis-plugin-group": "npm:1.0.2"
@@ -9320,8 +9320,8 @@ __metadata:
   dependencies:
     "@agent-network-protocol/dsh-anp-identity": "npm:0.1.4"
     "@agents-anywhere/dsh-bridge-next": "file:../vendor/agents-anywhere/agents-anywhere-dsh-bridge-next-0.1.0-dev.0.desktop.c00df092c98b2.rcda81994.tgz"
-    "@awiki/dsh-model-proxy": "npm:0.1.11"
-    "@awiki/dsh-plugin": "npm:0.3.17"
+    "@awiki/dsh-model-proxy": "npm:0.1.12"
+    "@awiki/dsh-plugin": "npm:0.3.18"
     "@base-ui/react": "npm:^1.7.0"
     "@deepseek-ai/cordis": "npm:4.0.2"
     "@deepseek-ai/cordis-plugin-group": "npm:1.0.2"
