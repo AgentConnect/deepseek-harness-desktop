@@ -7,7 +7,7 @@ export type DesktopReleaseChannel = 'stable' | 'beta'
 export const DESKTOP_RELEASE_CHANNEL_HEADER = 'X-DSH-Desktop-Channel'
 
 /** Resolved only beneath the active tenant; artifact URLs may use a shared host. */
-export const DESKTOP_VERSION_PATH = '/user-service/v1/server-info?client_platform=dsh'
+export const DESKTOP_VERSION_PATH = '/downloads/singapore-release-20261012/dsh-policy.json'
 
 /** Maximum response body bytes accepted from the version service. */
 export const MAX_VERSION_RESPONSE_BYTES = 64 * 1024

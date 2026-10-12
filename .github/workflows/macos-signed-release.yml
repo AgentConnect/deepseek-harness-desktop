@@ -36,6 +36,9 @@ jobs:
           path: ${{ steps.yarn-cache.outputs.dir }}
           key: yarn-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('yarn.lock', '.yarnrc.yml') }}
       - run: yarn install --immutable
+      - name: Verify frozen test package runtime bytes
+        if: github.ref == 'refs/heads/test/singapore-release-20261012'
+        run: node scripts/verify-singapore-test-packages.mjs
       - name: Materialize App Store Connect API key
         shell: bash
         env:

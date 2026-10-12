@@ -10,7 +10,7 @@ import {
 } from '../src/update-checker.ts'
 
 import { china, globalTenant, desktopPolicy } from './fixtures/desktop-update-policy.ts'
-const DESKTOP_VERSION_ENDPOINT = 'https://china.example/user-service/v1/server-info?client_platform=dsh'
+const DESKTOP_VERSION_ENDPOINT = 'https://china.example/downloads/singapore-release-20261012/dsh-policy.json'
 const checkForDesktopUpdate = (options: UpdateCheckOptions) => checkTenantUpdate({ tenant: china, ...options })
 function versionResponse(version: string, init: ResponseInit = {}): Response {
   return Response.json(desktopPolicy(china.policyOrigin, [version]), init)

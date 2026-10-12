@@ -1,0 +1,1005 @@
+{
+  "batch": "singapore-release-20261012",
+  "packages": [
+    {
+      "name": "@agent-network-protocol/anp-identity",
+      "version": "0.2.3",
+      "family": "identity",
+      "file": "packages/a9471203ccfebbc1-agent-network-protocol-anp-identity-0.2.3.tgz",
+      "sha256": "a9471203ccfebbc1a97097380f940f82aaa826fb61311c8895332db52acc0064",
+      "provenance": {
+        "schemaVersion": 1,
+        "package": {
+          "name": "@agent-network-protocol/anp-identity",
+          "version": "0.2.3"
+        },
+        "target": "platform-independent-wrapper",
+        "source": {
+          "repository": "https://github.com/agent-network-protocol/anp-identity",
+          "commit": "a3e1517f081b573236e67044f1b7a9eaabd989f9",
+          "committedAt": "2026-10-12T11:58:43+08:00",
+          "dirty": false
+        },
+        "dependencyResolution": {
+          "mode": "local-candidate",
+          "anp": {
+            "version": "1.0.5",
+            "commit": "4998230c73ed5a1057f0dc9f25223edb72613efd",
+            "dirty": false
+          }
+        },
+        "localCandidate": true,
+        "cargoLockSha256": "26308fedb2453301508b203fa3a94fae3f8065abb454a610d31373e2f44dcad1",
+        "toolchain": {
+          "rustc": "rustc 1.88.0 (6b00bc388 2025-06-23)",
+          "node": "v22.19.0"
+        }
+      },
+      "url": "https://anpclaw.com/downloads/singapore-release-20261012/packages/a9471203ccfebbc1-agent-network-protocol-anp-identity-0.2.3.tgz",
+      "os": null,
+      "cpu": null,
+      "runtimeFiles": {
+        "native.cjs": "e1152f92a467ddce339ba410b59a2e504c8535f8b79279de033098715df1fe50",
+        "index.js": "52134f08f47be2a90cb86328f5a1ba58017ef3512155d4cd3d83c493231d4058",
+        "provider.js": "29b79d349c60b01d5b2a2df165457967feab4dd3f0160ac0694ad0c77e9ecb99",
+        "provenance.json": "51edd5f89d4166f9466e85260cdffa02c1652d0f0727560d880222744dca568e"
+      }
+    },
+    {
+      "name": "@agent-network-protocol/anp-identity-darwin-arm64",
+      "version": "0.2.3",
+      "family": "identity",
+      "file": "packages/93783781eba6310f-agent-network-protocol-anp-identity-darwin-arm64-0.2.3.tgz",
+      "sha256": "93783781eba6310f7dd546c889b5089b1c6a9405baf044551e684b5be6277c9a",
+      "provenance": {
+        "schemaVersion": 1,
+        "package": {
+          "name": "@agent-network-protocol/anp-identity-darwin-arm64",
+          "version": "0.2.3"
+        },
+        "target": "darwin-arm64",
+        "source": {
+          "repository": "https://github.com/agent-network-protocol/anp-identity",
+          "commit": "a3e1517f081b573236e67044f1b7a9eaabd989f9",
+          "committedAt": "2026-10-12T11:58:43+08:00",
+          "dirty": false
+        },
+        "dependencyResolution": {
+          "mode": "local-candidate",
+          "anp": {
+            "version": "1.0.5",
+            "commit": "4998230c73ed5a1057f0dc9f25223edb72613efd",
+            "dirty": false
+          }
+        },
+        "localCandidate": true,
+        "cargoLockSha256": "26308fedb2453301508b203fa3a94fae3f8065abb454a610d31373e2f44dcad1",
+        "toolchain": {
+          "rustc": "rustc 1.88.0 (6b00bc388 2025-06-23)",
+          "node": "v22.19.0"
+        },
+        "binarySha256": "8bec864b6bb6ac19ba9fc036c6aa8456c11eaa119e1af1699e8a2f8523e4e4dc"
+      },
+      "url": "https://anpclaw.com/downloads/singapore-release-20261012/packages/93783781eba6310f-agent-network-protocol-anp-identity-darwin-arm64-0.2.3.tgz",
+      "os": [
+        "darwin"
+      ],
+      "cpu": [
+        "arm64"
+      ],
+      "runtimeFiles": {
+        "provenance.json": "914340495324fe27e2993bac1c385c6a9c48d4919b415cd1d9bf9e38adf08bda",
+        "anp-identity.darwin-arm64.node": "8bec864b6bb6ac19ba9fc036c6aa8456c11eaa119e1af1699e8a2f8523e4e4dc"
+      }
+    },
+    {
+      "name": "@agent-network-protocol/anp-identity-darwin-x64",
+      "version": "0.2.3",
+      "family": "identity",
+      "file": "packages/7601f43486fcf936-agent-network-protocol-anp-identity-darwin-x64-0.2.3.tgz",
+      "sha256": "7601f43486fcf9361d1a34526ed9175d299833ab9b23d305db1b11e105bbe4c5",
+      "provenance": {
+        "schemaVersion": 1,
+        "package": {
+          "name": "@agent-network-protocol/anp-identity-darwin-x64",
+          "version": "0.2.3"
+        },
+        "target": "darwin-x64",
+        "source": {
+          "repository": "https://github.com/agent-network-protocol/anp-identity",
+          "commit": "a3e1517f081b573236e67044f1b7a9eaabd989f9",
+          "committedAt": "2026-10-12T11:58:43+08:00",
+          "dirty": false
+        },
+        "dependencyResolution": {
+          "mode": "local-candidate",
+          "anp": {
+            "version": "1.0.5",
+            "commit": "4998230c73ed5a1057f0dc9f25223edb72613efd",
+            "dirty": false
+          }
+        },
+        "localCandidate": true,
+        "cargoLockSha256": "26308fedb2453301508b203fa3a94fae3f8065abb454a610d31373e2f44dcad1",
+        "toolchain": {
+          "rustc": "rustc 1.88.0 (6b00bc388 2025-06-23)",
+          "node": "v22.19.0"
+        },
+        "binarySha256": "ef8379f14b44df77de3b797fc4d3b846607e4044cd97551ad8006dac46f131dd"
+      },
+      "url": "https://anpclaw.com/downloads/singapore-release-20261012/packages/7601f43486fcf936-agent-network-protocol-anp-identity-darwin-x64-0.2.3.tgz",
+      "os": [
+        "darwin"
+      ],
+      "cpu": [
+        "x64"
+      ],
+      "runtimeFiles": {
+        "provenance.json": "5b93a64426356dc1eaa038bac67c33416987082d0958d29efb1380fe7d336175",
+        "anp-identity.darwin-x64.node": "ef8379f14b44df77de3b797fc4d3b846607e4044cd97551ad8006dac46f131dd"
+      }
+    },
+    {
+      "name": "@agent-network-protocol/anp-identity-linux-arm64-gnu",
+      "version": "0.2.3",
+      "family": "identity",
+      "file": "packages/25ab0e35d159f882-agent-network-protocol-anp-identity-linux-arm64-gnu-0.2.3.tgz",
+      "sha256": "25ab0e35d159f882bcd539904228c7a98597d083e645a5fd33a2ba8be973b131",
+      "provenance": {
+        "schemaVersion": 1,
+        "package": {
+          "name": "@agent-network-protocol/anp-identity-linux-arm64-gnu",
+          "version": "0.2.3"
+        },
+        "target": "linux-arm64-gnu",
+        "source": {
+          "repository": "https://github.com/agent-network-protocol/anp-identity",
+          "commit": "a3e1517f081b573236e67044f1b7a9eaabd989f9",
+          "committedAt": "2026-10-12T11:58:43+08:00",
+          "dirty": false
+        },
+        "dependencyResolution": {
+          "mode": "local-candidate",
+          "anp": {
+            "version": "1.0.5",
+            "commit": "4998230c73ed5a1057f0dc9f25223edb72613efd",
+            "dirty": false
+          }
+        },
+        "localCandidate": true,
+        "cargoLockSha256": "26308fedb2453301508b203fa3a94fae3f8065abb454a610d31373e2f44dcad1",
+        "toolchain": {
+          "rustc": "rustc 1.88.0 (6b00bc388 2025-06-23)",
+          "node": "v22.19.0"
+        },
+        "binarySha256": "b98014ed440d94ba98f61a95bcfe4120695b8e1585e10b7d9c90e26cb3a0b5a0"
+      },
+      "url": "https://anpclaw.com/downloads/singapore-release-20261012/packages/25ab0e35d159f882-agent-network-protocol-anp-identity-linux-arm64-gnu-0.2.3.tgz",
+      "os": [
+        "linux"
+      ],
+      "cpu": [
+        "arm64"
+      ],
+      "runtimeFiles": {
+        "provenance.json": "f8e3dafba3af15102cabcdb52ae03e177cd3a3a63d7fd74099d430b26d5644cf",
+        "anp-identity.linux-arm64-gnu.node": "b98014ed440d94ba98f61a95bcfe4120695b8e1585e10b7d9c90e26cb3a0b5a0"
+      }
+    },
+    {
+      "name": "@agent-network-protocol/anp-identity-linux-x64-gnu",
+      "version": "0.2.3",
+      "family": "identity",
+      "file": "packages/37ffe939813e4691-agent-network-protocol-anp-identity-linux-x64-gnu-0.2.3.tgz",
+      "sha256": "37ffe939813e46917fa2ceb54338c7ad2d08886c7e527313dec727dad3c4dd20",
+      "provenance": {
+        "schemaVersion": 1,
+        "package": {
+          "name": "@agent-network-protocol/anp-identity-linux-x64-gnu",
+          "version": "0.2.3"
+        },
+        "target": "linux-x64-gnu",
+        "source": {
+          "repository": "https://github.com/agent-network-protocol/anp-identity",
+          "commit": "a3e1517f081b573236e67044f1b7a9eaabd989f9",
+          "committedAt": "2026-10-12T11:58:43+08:00",
+          "dirty": false
+        },
+        "dependencyResolution": {
+          "mode": "local-candidate",
+          "anp": {
+            "version": "1.0.5",
+            "commit": "4998230c73ed5a1057f0dc9f25223edb72613efd",
+            "dirty": false
+          }
+        },
+        "localCandidate": true,
+        "cargoLockSha256": "26308fedb2453301508b203fa3a94fae3f8065abb454a610d31373e2f44dcad1",
+        "toolchain": {
+          "rustc": "rustc 1.88.0 (6b00bc388 2025-06-23)",
+          "node": "v22.19.0"
+        },
+        "binarySha256": "6cd5d7087f189a41f542cb35b43702f74d159ce98d62268f55309830b4f21166"
+      },
+      "url": "https://anpclaw.com/downloads/singapore-release-20261012/packages/37ffe939813e4691-agent-network-protocol-anp-identity-linux-x64-gnu-0.2.3.tgz",
+      "os": [
+        "linux"
+      ],
+      "cpu": [
+        "x64"
+      ],
+      "runtimeFiles": {
+        "provenance.json": "f49daae8bb614b9c9b8972dfdb513b9a51352ed092c5a0f5e62dfd4e25d7b599",
+        "anp-identity.linux-x64-gnu.node": "6cd5d7087f189a41f542cb35b43702f74d159ce98d62268f55309830b4f21166"
+      }
+    },
+    {
+      "name": "@agent-network-protocol/anp-identity-win32-x64-msvc",
+      "version": "0.2.3",
+      "family": "identity",
+      "file": "packages/7df39b8df646e6d3-agent-network-protocol-anp-identity-win32-x64-msvc-0.2.3.tgz",
+      "sha256": "7df39b8df646e6d3ba5e8a346255c812b29c25eda5b49a1fcc2b6dd80d54d585",
+      "provenance": {
+        "schemaVersion": 1,
+        "package": {
+          "name": "@agent-network-protocol/anp-identity-win32-x64-msvc",
+          "version": "0.2.3"
+        },
+        "target": "win32-x64-msvc",
+        "source": {
+          "repository": "https://github.com/agent-network-protocol/anp-identity",
+          "commit": "a3e1517f081b573236e67044f1b7a9eaabd989f9",
+          "committedAt": "2026-10-12T11:58:43+08:00",
+          "dirty": false
+        },
+        "dependencyResolution": {
+          "mode": "local-candidate",
+          "anp": {
+            "version": "1.0.5",
+            "commit": "4998230c73ed5a1057f0dc9f25223edb72613efd",
+            "dirty": false
+          }
+        },
+        "localCandidate": true,
+        "cargoLockSha256": "bfe81f5a010c4115efabe3528a8fc2c11a791129630b307fb8531c8f5c13458d",
+        "toolchain": {
+          "rustc": "rustc 1.88.0 (6b00bc388 2025-06-23)",
+          "node": "v22.19.0"
+        },
+        "binarySha256": "a68f47d6477a81222eb90812454e6d79358a2f4b3a0d154134c028189f045cea"
+      },
+      "url": "https://anpclaw.com/downloads/singapore-release-20261012/packages/7df39b8df646e6d3-agent-network-protocol-anp-identity-win32-x64-msvc-0.2.3.tgz",
+      "os": [
+        "win32"
+      ],
+      "cpu": [
+        "x64"
+      ],
+      "runtimeFiles": {
+        "provenance.json": "330751c8efe83211a684021037a2ea6b6cb5f11d9153f52a47ba825505242da3",
+        "anp-identity.win32-x64-msvc.node": "a68f47d6477a81222eb90812454e6d79358a2f4b3a0d154134c028189f045cea"
+      }
+    },
+    {
+      "name": "@agent-network-protocol/dsh-anp-identity",
+      "version": "0.1.4",
+      "family": "plugins",
+      "file": "packages/d2b7ff39509d134d-agent-network-protocol-dsh-anp-identity-0.1.4.tgz",
+      "sha256": "d2b7ff39509d134d85c65454b8363eee9aabe7f63264d710907c6f46fd911b1e",
+      "provenance": null,
+      "url": "https://anpclaw.com/downloads/singapore-release-20261012/packages/d2b7ff39509d134d-agent-network-protocol-dsh-anp-identity-0.1.4.tgz",
+      "os": null,
+      "cpu": null,
+      "runtimeFiles": {
+        "lib/authorization-types.js": "900aada13d1e2503526aa794f27c95d5ec7fc48f3ca912210e49fa2a7dec0706",
+        "lib/authorization.js": "5d8baf529c830620207175946c930c25f41d1c5da1ec54f8c644c3dfc243b202",
+        "lib/catalog.js": "ec31ce9811b71837101fcc4ce26986a665cfd75c2f54850ae0ccbb5803576a8e",
+        "lib/client.js": "9beb2e538c84fe59ea909a9a4cd4d5bf4d393f2289b7e9f80f028bda558e00d9",
+        "lib/client/controller.js": "cda29917e47d7162c90d686e49a205fd89cb80d22e8cf593079861965413cfa2",
+        "lib/errors.js": "1e30b1012fb114e132bdb1b5588c98e07970c3bf2ffec857f6cb3d8fb3496282",
+        "lib/http-auth.js": "41b4e4a3018ba54725bf720d34990a137c8283dc50b9a009cdc7db94c31dc758",
+        "lib/client/identity-icon.js": "3f73cd8aa00f034086743a7b9f98796a20000899975056f406fdbadec6ef4a3e",
+        "lib/client/index.js": "dae7784a06ee1670b9ad1315615e68aa5c1cac811ca57c7d676618c494612e65",
+        "lib/index.js": "832efe8d0cfac672b0f78a0299a7e92f2d7a4763071b399302b0d1e363a42443",
+        "lib/management-remote.js": "ee063a726586d0272d8ad2ebc54f674f74b02db3fa15e5e668b141a1fb142279",
+        "lib/management-types.js": "213124e61b32f962631d23140e5854b90b9c752ec6da227905009bb9e837962a",
+        "lib/provider-api.js": "0be6b59c4887f04d8b0a0ebb28a14fa2fa8cf428bd143eb2bf34ff2214d69fe4",
+        "lib/provider.js": "0e363c170ef8b91431d310b307704c26228bd9d8f036b425123c084fc3fcea9b",
+        "lib/remote.js": "e88b094b28d68d2973e353da2af89c9cf67fb006ec90df0893ac0a38ae8257a3",
+        "lib/client/settings-icon-slot.js": "b04041ba7f1d91ddaff785687dfede8933810c45bdb4a778846c6aba3106db68",
+        "lib/client/styles.js": "5fa2b211cc758329415c22b477d131e6dce916920d525bc94b54d55b6792e62e",
+        "lib/sync-directory.js": "d0cf5f499f96f8c3bd99d7a3976babfaf8f9ac797cf3b1e8eee929b30bb1e96f",
+        "lib/types.js": "01ae2a5b120382f9a648ced7ee8507493a134f216d100fc61600c6c9738235d2",
+        "lib/user-client.js": "3296d567ad92ccdfccb70a9ae24c599e085494b3e45898dbf26633169e1e7cc3",
+        "lib/user-operation.js": "7161eeaa89d650247616e725fa152c8bc442566918447d6223149af71b241f4e",
+        "lib/user-service.js": "bae93393b5c975b12e0811ed88f768506ad3e37048d98c826dff52dcc41a53a8",
+        "lib/client/views.js": "bf7dbb7ae8f7859d86912cbf85e2cbfd9cc4d6dd6a65fde0387ec5889fa4d008"
+      }
+    },
+    {
+      "name": "@awiki/dsh-model-proxy",
+      "version": "0.1.11",
+      "family": "plugins",
+      "file": "packages/85df6941ccfce65d-awiki-dsh-model-proxy-0.1.11.tgz",
+      "sha256": "85df6941ccfce65ded1c1703322880891523d5553aafc09aa226c7a68eee38f6",
+      "provenance": null,
+      "url": "https://anpclaw.com/downloads/singapore-release-20261012/packages/85df6941ccfce65d-awiki-dsh-model-proxy-0.1.11.tgz",
+      "os": null,
+      "cpu": null,
+      "runtimeFiles": {
+        "lib/types/client/AwikiOnboarding.js": "32f8ac96af4478a88b60869a424ee40c2b2c53894a785ec8bc8b2e597252e684",
+        "lib/client.js": "c638f758920cffc07c5df5f1439401f95b378808f5a9d65a99676c23bf79e343",
+        "lib/types/dependency-error.js": "d724b87bf651156b34bf468e3f879043f848cab2f6cbef31dc64dced2be5fcb1",
+        "lib/index.js": "839342d80dde19157552426022be13b16f086479626d8e26334b34198ec6a15c",
+        "lib/types/client/index.js": "2d3c32449de9df9599ca69845dbb1b1a8b9bd9988662aecaaf19c148052bc2ce",
+        "lib/types/index.js": "df6169147259e83d750fc67da362b06e42d1f7688423dd119ae34b87dca0c03b",
+        "lib/types/client/model-availability-controller.js": "4fb26a069617d7c82b47f76408ca15531d37d45cdd4829c8ec5653146e517de2",
+        "lib/types/client/model-proxy-controller.js": "21b552e0ea068dd8b4821a63a4c573dab28a104e432a688d1fc9332c6fdc7f91",
+        "lib/types/client/ModelProxySettingsSection.js": "82d0f3e8e7bb952ced6e7f185390699e632f2c8e260364403cf6e070e1a74130",
+        "lib/types/package-version.generated.js": "57a910272cf129cd10a22d0a0a11bfc7ef339ecd701a5ddd1f4e838865d7d819",
+        "lib/types/client/recharge-availability.js": "f21cb6cae53a37d7b7b0887bbcc1eb21ab48ce085d9bfd93086169f1545afe41",
+        "lib/types/client/RechargeComingSoonDialog.js": "deaa2a42a0a3ac6925f9532d8d6f5a4753325d362a8ed0ed2d04ac6c1f63d902",
+        "lib/types/client/settings-locales.js": "3573fb59f0f5384fcddf4483f29a0ac9a99d766beb7cae1cee77f2de2ccd8a5b"
+      }
+    },
+    {
+      "name": "@awiki/dsh-plugin",
+      "version": "0.3.17",
+      "family": "plugins",
+      "file": "packages/35029c30aa6c540e-awiki-dsh-plugin-0.3.17.tgz",
+      "sha256": "35029c30aa6c540e4baf622cb72f626a3c52c2716d0b6e7d26dd30837cd2b97c",
+      "provenance": null,
+      "url": "https://anpclaw.com/downloads/singapore-release-20261012/packages/35029c30aa6c540e-awiki-dsh-plugin-0.3.17.tgz",
+      "os": null,
+      "cpu": null,
+      "runtimeFiles": {
+        "lib/types/client/assets.js": "0aca9f38b1ae717f666933e2623a7d93cd44409c5cab64053fc837f78e0e5245",
+        "lib/types/attachment-cache.js": "4957d3ece42af470e10aeb63afc97c67113f6270967f5f0b48cb19ecac8b1e84",
+        "lib/types/client/avatar-cache.js": "df2247e6730848d17138d9bcbd33f307035f2cc0936a22826e442a63cfa026cc",
+        "lib/types/client/avatar-dialog.js": "69264eff963b259b1abfb9ba531e8e8bc1d4dd872a1be51158af84716a7bab13",
+        "lib/types/client/avatar-image.js": "57acbc6091362229df291efb7b51dc149a1de730130c44db9f8ffacc6fc02c36",
+        "lib/types/client/awiki-client-bridge.js": "7cf29d4b692ba2bf066a144698ccc7f59106c78bb7c74df1d50bf34c2957811a",
+        "lib/types/client/AwikiAvatar.js": "67850d828a887ae3eeb3f611b672204d23b6b4606f4adba5bce59b6af30ff417",
+        "lib/types/client/AwikiAvatarEditor.js": "84b64dc6f97a178c03e5c5018ce26694f8e0c422431f98c402c85313d9fd6967",
+        "lib/types/client/AwikiAvatarPreview.js": "b6cabdae722fb9db969b77d40e3ee5de130083716652b38ce441ea873a57a110",
+        "lib/types/client/AwikiDeviceJoinReminder.js": "e39f7549a75f5e9f1a520de7ead0e1beae27f241445affbb782b4bc1c6882008",
+        "lib/types/client/AwikiDevices.js": "b9c907610a412fe93e189cf7c964fc4f58a4354f983643d59d224e8c176f42e7",
+        "lib/types/client/AwikiGroupAccessNotice.js": "65e586a1eb809a3aa59490e3cd730fb34479b9df4ba1bca2deba12829c52278c",
+        "lib/types/client/AwikiGroupDetails.js": "b5696b52685956f152f9ced1cc29324084008ab83ee989e71b53c69b99d9419e",
+        "lib/types/client/AwikiIdentityAccess.js": "58c69f3ed2e987477ed57387949e939b8b3f341a89475b14b2188541e0c622f7",
+        "lib/types/client/AwikiIdentityPage.js": "1643330fe8619d43609bc883f5cebf9df2f22b64e12cce33d21e1490ff6cc7aa",
+        "lib/types/client/AwikiIdentityServices.js": "f14e15d012b1c9d31b308d30b88899058482160cc894c2a4d730906f1289a0e7",
+        "lib/types/client/AwikiIntegrationSettings.js": "f452562a153629d1bf6e4691d2b6522c1a9605ec0a29e74146a1faf2d8127601",
+        "lib/types/client/AwikiMail.js": "48509f6b1458e0d97ef2585dfcb729b73231d12c36e7359646a9ec509e70d058",
+        "lib/types/client/AwikiOverlay.js": "91ec94e6b50e12d80fe9ecd7df17eec68441c9e648472dbf572847090a9803dd",
+        "lib/types/client/AwikiProfileCard.js": "010466e5b8ac90dc69f4900df27b27216a0c09cb258b44ee2324b357bb4bce8b",
+        "lib/types/client/AwikiRecoveryForm.js": "15b6919960a20c590542c4622abe9e49586b17b5f989822b891f11bfbcae4842",
+        "lib/types/client/AwikiSettingsSection.js": "ed08f15f7b1ed08f9f65029efa9509b1da46b0ddc616e7e6e9bc1fc31d1d4f55",
+        "lib/types/client/AwikiUpdates.js": "db5877ffb44686c29ed5bdbcdbd6745e9674b8d15b008b6e7d4a56f70eb7e297",
+        "lib/types/base64.js": "683264efcb046bd2ea8718525956514dd164c35b876e5bede0f2fe732c87ee74",
+        "lib/types/builtin-tenant-config.js": "0daf576ea316507085f54d7baf3b17380d1d16fa7a0e2ed12c83dff87ec273d6",
+        "lib/client.js": "c5cc4e4291c38291effad3da868637e8cdb71ed788d9ede4d8791d83f368cee1",
+        "lib/types/client.js": "964471f4a08fbfaea61fb5fade2609cdc46ae8853f90f59565d9903fdc3a477e",
+        "lib/types/client/controller.js": "90c806a82c33cb2ea07596b35f7b6059f7b83f75bb7bba63af804bb3b1d61b79",
+        "lib/types/conversation-preferences.js": "8a4666a42071806cbb49b01177a951ecc3cb9fc081a5b573f5be0e2c91a6579a",
+        "lib/types/desktop-distribution.js": "0277e1df3ee4eb41a3ee95141e43e32b10e555c626b6030e6549b3a8a9ac81f6",
+        "lib/types/domain.js": "deb018dcae9df0934c4ee81876c875685f8154f21e1e9820e392be3b7a614c9b",
+        "lib/types/client/drafts.js": "ea4ade0334a17a4152df2ea60bdde4266dbabad3f9016fa0fdb11e32941bec47",
+        "lib/types/external-http-auth.js": "2e44f35894430c1f330c0bd25fa32cb99fbf733ce54268ceb91f820e35ebaca2",
+        "lib/types/client/file.js": "50a20ec87ba9e02fef3964866241c058d44913e4a840ae081a07326b82ff1d84",
+        "lib/types/identity-handle.js": "1f8e5076382129bb30a31e831ec213a5460338c641b4c7ff27bd30091e74deba",
+        "lib/types/client/image-cache.js": "17f997d6ce1476e2e8c298850f39be5e5795d1e18240625bb15894eccb069911",
+        "lib/index.js": "1934e9ae35bc29fabf279d2c631434a36a0cc2d8b111bf189937b7725e79be3b",
+        "lib/types/client/index.js": "d08e92ae0214b9b9d4f1f809de5661405f2134a30b47853967b8161e47854dd9",
+        "lib/types/index.js": "1c6ac123fa872d7c4ff2ee44ab182960428886c211c1ed7b85deeb06405dc6f6",
+        "lib/types/integration-client.js": "aa99d62d6fa4f043dc1b7df8b1657bfc8a7c2a6d4938ba98e70c5a85094b21fc",
+        "lib/types/client/integration-operation.js": "579a1d246c31df46a50b8b3a78ae619790f2098d28431087f20224b698f84632",
+        "lib/invariant.js": "5e4de2a0ef069c383dbe4be04e829217a8fffd7da1cf8fe70d7d93aef8ad06c1",
+        "lib/types/invariant.js": "1958db40d043ef8f27c86e5003f6ce08a745498ba222b6268c1adad83456937f",
+        "lib/types/legacy-sent-mail-cache.js": "3e26df990c9fca3990db8f5083fd48f9363f0e1c5947ddfe2eb13aa769a7fca4",
+        "lib/types/listener-state.js": "ecb415e3cde33d332275cb8881ffc7b80e69d53b3f04d71544a955ccfdb1d1fd",
+        "lib/types/listener.js": "d24d371e912d0838b005113234d1d432b8fdfcd7fd128e7c4d05a50718ad26d0",
+        "lib/types/mail-attachment-client.js": "cf4bbf465388f6873e83ec7a7650c58e65327d838ebda857c8728122a99704ad",
+        "lib/types/client/mail-attachment.js": "123176a0f159246e122c2b8eea06c8233fc4ab1ae780e2aa8cc862316e13e7b9",
+        "lib/types/client/mail-list-cache.js": "a079d40fd57cd33bd5b516b32489a7d840a1ed0038e7b747648523e12b372480",
+        "lib/types/mail-list-client.js": "422ed23135dddcceeec82eab1926c2bed29c172e04d8ac7da19ce450c0eac3ff",
+        "lib/types/mail-recovery-observability.js": "5402fb73e010b61cda347c1ac17339b7344354240f704c5d14516f5c3f11e155",
+        "lib/types/mail.js": "d9956957495462dc67d49d95b241541e4bbd969fe44a00da6f0c248ad0ae1c74",
+        "lib/types/client/mentions.js": "d0162ae35d6595d14d4b5872e9e6cf15128ff5c12ed2e660f893b3138e067742",
+        "lib/types/client/MentionText.js": "7b6fbb4e2b72130a786dd977f3093b4196d1413cf0bee91e5529f2baf827fa87",
+        "lib/types/message-target.js": "0e8b1dc976f4e3af08b1229b15660379e3374d150609a2f2edc9a2764bbcb623",
+        "lib/model-proxy-contract.js": "8e6fdd80977881e36f2b82bc78f6595dc8984cb5e5f865528915bfdb31b4a1c6",
+        "lib/types/model-proxy-contract.js": "df4f1aa5be8bc5a5d114a1da07c4fcbf3bb26292219918dbf168e1158701364b",
+        "lib/types/client/otp-cooldown.js": "6c4b57fb9ec966e7c3e2b5f29b887860dbb1ec035ec27c0c21e352e6577942dd",
+        "lib/types/package-version.generated.js": "efeceb270a97b54740488af4dc8cce24a676d89249a43c3fc921c66f8f606e1e",
+        "lib/types/profile-state.js": "1703c8f5a3503c3b90c93480f52ee5e75d155c0b998c225f7bc862e49ef66ed9",
+        "lib/types/provider-api.js": "64a8a3bd5861f1b92851ce70c3a15e86f81db3f78f687c979b777453a8f411ee",
+        "lib/provider.js": "6a27e971ee5e90b54396d533040165e7f26bccb2a7c0f4961e228b363e1861e5",
+        "lib/types/provider.js": "d95353b026bcea7ce3e587bb1b20401c06d420e0d346395843a24b3d7fc348a4",
+        "lib/types/realtime-supervisor.js": "8eb88a0453aae34914569432f9534091f1b35a1921fb34fa5b454cceaa137d30",
+        "lib/types/registration-policy.js": "5882c4c084e15d1990372205ae7b2fdd09ac53612236b40e5cc8aecb39d8c963",
+        "lib/types/sdk-adapter.js": "3db0cb2b4652fda278db91766b585b77c795df7ea5c295f9a0a386ea26405ab8",
+        "lib/types/session.js": "f2b1faa35951a8da20bfa5188c1182106034f389d59622a91dd5ed2534459092",
+        "lib/types/client/settings-controller.js": "a70f8d56f83077ee0b1fa62202a3cc8ffc963189220ab1b1f96bdd4c4428b4fc",
+        "lib/types/client/settings-locales.js": "e6878d70c7ecd3996a0387753c95c73c9889702bae821a09b9b0bdb581fef0fe",
+        "lib/types/settings-rpc-contract.js": "4c93ad48a0fb3ef96e03bb3816dfd0027671dbb017e69da36aeff72bfabe54e3",
+        "lib/types/settings-rpc.js": "3ae75d53c0835d9b572a08dcd5d29261442f4d28c20271a4972538438a21bcd0",
+        "lib/types/settings-transport.js": "d22a8eaa8c8d58174c845db1fa43dc1bf5355a5e12c8ea555af4bd30287769d3",
+        "lib/types/settings.js": "e5e5a9fa92e8fd10d6e471be7b0426d399b22a1e3457f4f0e6f908d86c2d4a72",
+        "lib/types/client/slots.js": "8e17593bc2565eef2ac8420a29a49f57046b137f8adc8d483f5e2a8251292750",
+        "lib/types/client/store.js": "da64e996840b430e20259f5f771f1cd8c7c8fc598c6213e1f39558f8fbf54374",
+        "lib/types/summary-provider-api.js": "796ca51421bff111c69e4c261456e3a660d7a6d4423186351a5210ba8c4e96f5",
+        "lib/summary-provider.js": "3f241190bb82570db084ba87210c95099a340a2bd1f5594f411a007ac7a405c6",
+        "lib/types/summary-provider.js": "7f89372d6fc91a31cba99b84f19f05a0e79b9fadee0cfd71ad5a744078b7ce32",
+        "lib/types/tenant-registry.js": "6260feefa8594178167661be73996194fc741817457265e0f5d5e1f9319f1051",
+        "lib/types/tools.js": "9275bed63fc4f762bf78e6bf9934e44eb49945465381a7720d2bfcdbda741526",
+        "lib/typert.host.js": "1d8f7787a27b685a371ce81b95064c94b65c9f55c399b9b4ca4de7ad39902d3a",
+        "lib/typert.remote-client.js": "ae2dadf2bfb7332e28c4b45256ecf9520a26ee60e0e9dee2dee61d257000c415",
+        "lib/types/types.js": "ec5d78758dcdf6c8d0329f9d3a893c8e4e7a0adebb44ddca7497cbd3c9b8d1db",
+        "lib/types/update-installation.js": "5865d4af1ce73c67c62450858fd6863499c5b3497647e5102fb821880646fa3e",
+        "lib/types/update-policy.js": "45242ff099f39744040c267cbbca8bf3cc4023ab83f36000fb9f3e97c96bbe11",
+        "lib/types/version.js": "9540c3fdeba06acbf857bf88a2b8803193d824f0f31a09f40dd8b3c3fb7596e7",
+        "lib/builtin-tenants.json": "0ede416c4fa3ebe903d978f83576569d6bc114ddb3af96fc90612a0e980f03a8",
+        "lib/sdk-adapter-aVZk9F2x.mjs": "11836bc68d070f7ddc8d378fdc262473dd262ab62794f987b048b323fb38880c"
+      }
+    },
+    {
+      "name": "@awiki/im-core-node",
+      "version": "0.2.9",
+      "family": "core",
+      "file": "packages/a2263afe348282e8-awiki-im-core-node-0.2.9.tgz",
+      "sha256": "a2263afe348282e8e3ce8a84dd896813dcd7f55603ccadfbe8250e57cd6cb9b5",
+      "provenance": {
+        "schemaVersion": 1,
+        "package": {
+          "name": "@awiki/im-core-node",
+          "version": "0.2.9"
+        },
+        "target": "platform-independent-wrapper",
+        "nativeApiVersion": 20,
+        "source": {
+          "repository": "https://github.com/AgentConnect/awiki-cli-rs2",
+          "commit": "2c359d3520c0218caeabdcaf1c4f3385f7cb2fa8",
+          "committedAt": "2026-10-12T11:57:48+08:00",
+          "dirty": false
+        },
+        "sdk": {
+          "imCoreVersion": "0.1.6",
+          "nativeBridgeVersion": "0.2.6",
+          "anpRustVersion": "1.0.5",
+          "anpCommit": "4998230c73ed5a1057f0dc9f25223edb72613efd"
+        },
+        "toolchain": {
+          "rustc": "rustc 1.88.0 (6b00bc388 2025-06-23)",
+          "node": "v22.19.0",
+          "pnpm": "10.27.0"
+        },
+        "distributionPolicy": "apache-2.0",
+        "dependencyMode": "source-development",
+        "dependencyEvidence": {
+          "mode": "source",
+          "profile": "debug",
+          "consumer": {
+            "tree_sha256": "796755895f31b983eca38928657d051a9de00829f83c7528a853db6218ae85f7",
+            "commit": "2c359d3520c0218caeabdcaf1c4f3385f7cb2fa8",
+            "dirty": false
+          },
+          "dependencies": {
+            "awiki-im-core": {
+              "commit": "eeb5fd9656a9921e7a870891e15614f461178c14",
+              "dirty": false,
+              "repository": "https://github.com/AgentConnect/awiki-cli-rs2.git"
+            },
+            "anp": {
+              "commit": "4998230c73ed5a1057f0dc9f25223edb72613efd",
+              "dirty": false,
+              "repository": "https://github.com/agent-network-protocol/anp.git"
+            },
+            "anp-identity": {
+              "commit": "794f914fd651a66f9f517411e00f0bdb99962201",
+              "dirty": false,
+              "repository": "https://github.com/agent-network-protocol/anp-identity.git"
+            }
+          },
+          "resolved": [
+            {
+              "name": "anp",
+              "version": "1.0.5",
+              "source": null
+            },
+            {
+              "name": "anp-identity",
+              "version": "0.2.4",
+              "source": null
+            },
+            {
+              "name": "awiki-im-core",
+              "version": "0.1.6",
+              "source": null
+            }
+          ],
+          "source_manifest_sha256": "3c1f817b2a86b84ee9273d0de6a4d9fc800972aa67fb62c38ef7eafbba13da6c",
+          "source_lock_sha256": "8b31b34686b1a750956bb87cded9a2332268394fbd6e0e9d9b4880a167894d3c",
+          "metadata_sha256": "36914d7c570db0d83b5be809ea257275ef8fa3de62a87783f6d7ef53e40e22d6"
+        }
+      },
+      "os": null,
+      "cpu": null,
+      "runtimeFiles": {
+        "dist/index.js": "ca39b025bde049e6d7d496b76899525f0936e57a47a79b3514d3d3694eb11c8e",
+        "dist/loader.js": "83d71a34c477c1cb488e3b19552cfb37847166ff30282bebc6af3b65d655116f",
+        "dist/native.js": "c7f589984eb75369f0ccf54c3d777c508f712ad75fc15df941bb9c7b48d15111",
+        "dist/provider-bridge.js": "7003b956a2fa2fbd64b095359f50bcbd5e2ecf9792f9b18661224b633d5f8a03",
+        "dist/targets.js": "cee382eeb0d0955dfccaf26754441f75d61f02a1e1ac895edac583c84ca89630",
+        "dist/types.js": "5de98f8dc7c93b143abce75e6ffd672502bf46658727291273a16acd66ea3305",
+        "provenance.json": "8c6fdc06802b8b62a1c8cd9dee34be49f24e1bdf70b2f99b6a84d8c70181d87e"
+      },
+      "url": "https://anpclaw.com/downloads/singapore-release-20261012/packages/a2263afe348282e8-awiki-im-core-node-0.2.9.tgz"
+    },
+    {
+      "name": "@awiki/im-core-node-darwin-arm64",
+      "version": "0.2.9",
+      "family": "core",
+      "file": "packages/0e01207568c2cb00-awiki-im-core-node-darwin-arm64-0.2.9.tgz",
+      "sha256": "0e01207568c2cb00c0a939ff349ea33ce646f2f448f53339dd2f32950d2255d8",
+      "provenance": {
+        "schemaVersion": 1,
+        "package": {
+          "name": "@awiki/im-core-node-darwin-arm64",
+          "version": "0.2.9"
+        },
+        "target": "darwin-arm64",
+        "nativeApiVersion": 20,
+        "source": {
+          "repository": "https://github.com/AgentConnect/awiki-cli-rs2",
+          "commit": "2c359d3520c0218caeabdcaf1c4f3385f7cb2fa8",
+          "committedAt": "2026-10-12T11:57:48+08:00",
+          "dirty": false
+        },
+        "sdk": {
+          "imCoreVersion": "0.1.6",
+          "nativeBridgeVersion": "0.2.6",
+          "anpRustVersion": "1.0.5",
+          "anpCommit": "4998230c73ed5a1057f0dc9f25223edb72613efd"
+        },
+        "toolchain": {
+          "rustc": "rustc 1.88.0 (6b00bc388 2025-06-23)",
+          "node": "v22.19.0",
+          "pnpm": "10.27.0"
+        },
+        "binarySha256": "4e72fccafec3067ffb0c17cd78422db71f3219d73a7e87950f7d3c0fea3910b2",
+        "distributionPolicy": "apache-2.0",
+        "dependencyMode": "source-development",
+        "dependencyEvidence": {
+          "mode": "source",
+          "profile": "debug",
+          "consumer": {
+            "tree_sha256": "796755895f31b983eca38928657d051a9de00829f83c7528a853db6218ae85f7",
+            "commit": "2c359d3520c0218caeabdcaf1c4f3385f7cb2fa8",
+            "dirty": false
+          },
+          "dependencies": {
+            "awiki-im-core": {
+              "commit": "eeb5fd9656a9921e7a870891e15614f461178c14",
+              "dirty": false,
+              "repository": "https://github.com/AgentConnect/awiki-cli-rs2.git"
+            },
+            "anp": {
+              "commit": "4998230c73ed5a1057f0dc9f25223edb72613efd",
+              "dirty": false,
+              "repository": "https://github.com/agent-network-protocol/anp.git"
+            },
+            "anp-identity": {
+              "commit": "794f914fd651a66f9f517411e00f0bdb99962201",
+              "dirty": false,
+              "repository": "https://github.com/agent-network-protocol/anp-identity.git"
+            }
+          },
+          "resolved": [
+            {
+              "name": "anp",
+              "version": "1.0.5",
+              "source": null
+            },
+            {
+              "name": "anp-identity",
+              "version": "0.2.4",
+              "source": null
+            },
+            {
+              "name": "awiki-im-core",
+              "version": "0.1.6",
+              "source": null
+            }
+          ],
+          "source_manifest_sha256": "3c1f817b2a86b84ee9273d0de6a4d9fc800972aa67fb62c38ef7eafbba13da6c",
+          "source_lock_sha256": "8b31b34686b1a750956bb87cded9a2332268394fbd6e0e9d9b4880a167894d3c",
+          "metadata_sha256": "7d07b85352eb9b7cd06091d4e0ad1457fbb0d9c3f8d226bbe497605b7bfc6510"
+        }
+      },
+      "os": [
+        "darwin"
+      ],
+      "cpu": [
+        "arm64"
+      ],
+      "runtimeFiles": {
+        "provenance.json": "1a590694f99dcdc26e6321fb84093b36dbd6343b68457e8effde645d7a900cdf",
+        "awiki-im-core-node.darwin-arm64.node": "4e72fccafec3067ffb0c17cd78422db71f3219d73a7e87950f7d3c0fea3910b2"
+      },
+      "url": "https://anpclaw.com/downloads/singapore-release-20261012/packages/0e01207568c2cb00-awiki-im-core-node-darwin-arm64-0.2.9.tgz"
+    },
+    {
+      "name": "@awiki/im-core-node-darwin-x64",
+      "version": "0.2.9",
+      "family": "core",
+      "file": "packages/4f3fd10742a74725-awiki-im-core-node-darwin-x64-0.2.9.tgz",
+      "sha256": "4f3fd10742a747256d0d3cdf3374f5786ba61c0a69601134063ecd92e4eaee59",
+      "provenance": {
+        "schemaVersion": 1,
+        "package": {
+          "name": "@awiki/im-core-node-darwin-x64",
+          "version": "0.2.9"
+        },
+        "target": "darwin-x64",
+        "nativeApiVersion": 20,
+        "source": {
+          "repository": "https://github.com/AgentConnect/awiki-cli-rs2",
+          "commit": "2c359d3520c0218caeabdcaf1c4f3385f7cb2fa8",
+          "committedAt": "2026-10-12T11:57:48+08:00",
+          "dirty": false
+        },
+        "sdk": {
+          "imCoreVersion": "0.1.6",
+          "nativeBridgeVersion": "0.2.6",
+          "anpRustVersion": "1.0.5",
+          "anpCommit": "4998230c73ed5a1057f0dc9f25223edb72613efd"
+        },
+        "toolchain": {
+          "rustc": "rustc 1.88.0 (6b00bc388 2025-06-23)",
+          "node": "v22.19.0",
+          "pnpm": "10.27.0"
+        },
+        "binarySha256": "9f2fb08c35fa7051aa391915cc6aac1de284e774f49ecd444a6dc138a627e339",
+        "distributionPolicy": "apache-2.0",
+        "dependencyMode": "source-development",
+        "dependencyEvidence": {
+          "mode": "source",
+          "profile": "debug",
+          "consumer": {
+            "tree_sha256": "796755895f31b983eca38928657d051a9de00829f83c7528a853db6218ae85f7",
+            "commit": "2c359d3520c0218caeabdcaf1c4f3385f7cb2fa8",
+            "dirty": false
+          },
+          "dependencies": {
+            "awiki-im-core": {
+              "commit": "eeb5fd9656a9921e7a870891e15614f461178c14",
+              "dirty": false,
+              "repository": "https://github.com/AgentConnect/awiki-cli-rs2.git"
+            },
+            "anp": {
+              "commit": "4998230c73ed5a1057f0dc9f25223edb72613efd",
+              "dirty": false,
+              "repository": "https://github.com/agent-network-protocol/anp.git"
+            },
+            "anp-identity": {
+              "commit": "794f914fd651a66f9f517411e00f0bdb99962201",
+              "dirty": false,
+              "repository": "https://github.com/agent-network-protocol/anp-identity.git"
+            }
+          },
+          "resolved": [
+            {
+              "name": "anp",
+              "version": "1.0.5",
+              "source": null
+            },
+            {
+              "name": "anp-identity",
+              "version": "0.2.4",
+              "source": null
+            },
+            {
+              "name": "awiki-im-core",
+              "version": "0.1.6",
+              "source": null
+            }
+          ],
+          "source_manifest_sha256": "3c1f817b2a86b84ee9273d0de6a4d9fc800972aa67fb62c38ef7eafbba13da6c",
+          "source_lock_sha256": "8b31b34686b1a750956bb87cded9a2332268394fbd6e0e9d9b4880a167894d3c",
+          "metadata_sha256": "65557f3d0e17f12679c6ca4e6a17736d6fdb512e5cbbab3e36fec67438de945f"
+        }
+      },
+      "os": [
+        "darwin"
+      ],
+      "cpu": [
+        "x64"
+      ],
+      "runtimeFiles": {
+        "provenance.json": "43adadbdd9e7ba063003e03d8f4f23247d06ac58e660a3b216c68fc721321624",
+        "awiki-im-core-node.darwin-x64.node": "9f2fb08c35fa7051aa391915cc6aac1de284e774f49ecd444a6dc138a627e339"
+      },
+      "url": "https://anpclaw.com/downloads/singapore-release-20261012/packages/4f3fd10742a74725-awiki-im-core-node-darwin-x64-0.2.9.tgz"
+    },
+    {
+      "name": "@awiki/im-core-node-linux-arm64-gnu",
+      "version": "0.2.9",
+      "family": "core",
+      "file": "packages/1747c8cb6820a66c-awiki-im-core-node-linux-arm64-gnu-0.2.9.tgz",
+      "sha256": "1747c8cb6820a66c5828778897ff7f48cfea0bcd8bcdb62ac77acc26a9d54ffd",
+      "provenance": {
+        "schemaVersion": 1,
+        "package": {
+          "name": "@awiki/im-core-node-linux-arm64-gnu",
+          "version": "0.2.9"
+        },
+        "target": "linux-arm64-gnu",
+        "nativeApiVersion": 20,
+        "source": {
+          "repository": "https://github.com/AgentConnect/awiki-cli-rs2",
+          "commit": "2c359d3520c0218caeabdcaf1c4f3385f7cb2fa8",
+          "committedAt": "2026-10-12T11:57:48+08:00",
+          "dirty": false
+        },
+        "sdk": {
+          "imCoreVersion": "0.1.6",
+          "nativeBridgeVersion": "0.2.6",
+          "anpRustVersion": "1.0.5",
+          "anpCommit": "4998230c73ed5a1057f0dc9f25223edb72613efd"
+        },
+        "toolchain": {
+          "rustc": "rustc 1.88.0 (6b00bc388 2025-06-23)",
+          "node": "v22.19.0",
+          "pnpm": "10.27.0"
+        },
+        "binarySha256": "f956ccfc8c5861815f3cc214feeb1f0c403d4854c9e435468e224ffaca51a0d1",
+        "distributionPolicy": "apache-2.0",
+        "dependencyMode": "source-development",
+        "dependencyEvidence": {
+          "mode": "source",
+          "profile": "debug",
+          "consumer": {
+            "tree_sha256": "796755895f31b983eca38928657d051a9de00829f83c7528a853db6218ae85f7",
+            "commit": "2c359d3520c0218caeabdcaf1c4f3385f7cb2fa8",
+            "dirty": false
+          },
+          "dependencies": {
+            "awiki-im-core": {
+              "commit": "eeb5fd9656a9921e7a870891e15614f461178c14",
+              "dirty": false,
+              "repository": "https://github.com/AgentConnect/awiki-cli-rs2.git"
+            },
+            "anp": {
+              "commit": "4998230c73ed5a1057f0dc9f25223edb72613efd",
+              "dirty": false,
+              "repository": "https://github.com/agent-network-protocol/anp.git"
+            },
+            "anp-identity": {
+              "commit": "794f914fd651a66f9f517411e00f0bdb99962201",
+              "dirty": false,
+              "repository": "https://github.com/agent-network-protocol/anp-identity.git"
+            }
+          },
+          "resolved": [
+            {
+              "name": "anp",
+              "version": "1.0.5",
+              "source": null
+            },
+            {
+              "name": "anp-identity",
+              "version": "0.2.4",
+              "source": null
+            },
+            {
+              "name": "awiki-im-core",
+              "version": "0.1.6",
+              "source": null
+            }
+          ],
+          "source_manifest_sha256": "3c1f817b2a86b84ee9273d0de6a4d9fc800972aa67fb62c38ef7eafbba13da6c",
+          "source_lock_sha256": "8b31b34686b1a750956bb87cded9a2332268394fbd6e0e9d9b4880a167894d3c",
+          "metadata_sha256": "e2b894c1a0fb677b2305510b3799d366c24d39e029a8f36acbb02e9c2d4886ba"
+        }
+      },
+      "os": [
+        "linux"
+      ],
+      "cpu": [
+        "arm64"
+      ],
+      "runtimeFiles": {
+        "provenance.json": "2365f056db9012b47b323b28c777821fb025f48825d77071b4eb8b106387a498",
+        "awiki-im-core-node.linux-arm64-gnu.node": "f956ccfc8c5861815f3cc214feeb1f0c403d4854c9e435468e224ffaca51a0d1"
+      },
+      "url": "https://anpclaw.com/downloads/singapore-release-20261012/packages/1747c8cb6820a66c-awiki-im-core-node-linux-arm64-gnu-0.2.9.tgz"
+    },
+    {
+      "name": "@awiki/im-core-node-linux-x64-gnu",
+      "version": "0.2.9",
+      "family": "core",
+      "file": "packages/6914e3e5219b5141-awiki-im-core-node-linux-x64-gnu-0.2.9.tgz",
+      "sha256": "6914e3e5219b514153c5defeac861fd1536ae5495f8fa1f41b9e6c6c600526d3",
+      "provenance": {
+        "schemaVersion": 1,
+        "package": {
+          "name": "@awiki/im-core-node-linux-x64-gnu",
+          "version": "0.2.9"
+        },
+        "target": "linux-x64-gnu",
+        "nativeApiVersion": 20,
+        "source": {
+          "repository": "https://github.com/AgentConnect/awiki-cli-rs2",
+          "commit": "2c359d3520c0218caeabdcaf1c4f3385f7cb2fa8",
+          "committedAt": "2026-10-12T11:57:48+08:00",
+          "dirty": false
+        },
+        "sdk": {
+          "imCoreVersion": "0.1.6",
+          "nativeBridgeVersion": "0.2.6",
+          "anpRustVersion": "1.0.5",
+          "anpCommit": "4998230c73ed5a1057f0dc9f25223edb72613efd"
+        },
+        "toolchain": {
+          "rustc": "rustc 1.88.0 (6b00bc388 2025-06-23)",
+          "node": "v22.19.0",
+          "pnpm": "10.27.0"
+        },
+        "binarySha256": "35f58cd140ef71977be84268e9c3ae1a981f96acdeddb252efbe81e6953f413a",
+        "distributionPolicy": "apache-2.0",
+        "dependencyMode": "source-development",
+        "dependencyEvidence": {
+          "mode": "source",
+          "profile": "debug",
+          "consumer": {
+            "tree_sha256": "796755895f31b983eca38928657d051a9de00829f83c7528a853db6218ae85f7",
+            "commit": "2c359d3520c0218caeabdcaf1c4f3385f7cb2fa8",
+            "dirty": false
+          },
+          "dependencies": {
+            "awiki-im-core": {
+              "commit": "eeb5fd9656a9921e7a870891e15614f461178c14",
+              "dirty": false,
+              "repository": "https://github.com/AgentConnect/awiki-cli-rs2.git"
+            },
+            "anp": {
+              "commit": "4998230c73ed5a1057f0dc9f25223edb72613efd",
+              "dirty": false,
+              "repository": "https://github.com/agent-network-protocol/anp.git"
+            },
+            "anp-identity": {
+              "commit": "794f914fd651a66f9f517411e00f0bdb99962201",
+              "dirty": false,
+              "repository": "https://github.com/agent-network-protocol/anp-identity.git"
+            }
+          },
+          "resolved": [
+            {
+              "name": "anp",
+              "version": "1.0.5",
+              "source": null
+            },
+            {
+              "name": "anp-identity",
+              "version": "0.2.4",
+              "source": null
+            },
+            {
+              "name": "awiki-im-core",
+              "version": "0.1.6",
+              "source": null
+            }
+          ],
+          "source_manifest_sha256": "3c1f817b2a86b84ee9273d0de6a4d9fc800972aa67fb62c38ef7eafbba13da6c",
+          "source_lock_sha256": "8b31b34686b1a750956bb87cded9a2332268394fbd6e0e9d9b4880a167894d3c",
+          "metadata_sha256": "27b17b15f3e41b816d4c8d8f8f0513ac5086523f77e2bfc6e69bef649fd22678"
+        }
+      },
+      "os": [
+        "linux"
+      ],
+      "cpu": [
+        "x64"
+      ],
+      "runtimeFiles": {
+        "provenance.json": "0e87672812db6bdc1b8b53def61dbe3126930a8fdcfb1225a14a54ec6eef5ded",
+        "awiki-im-core-node.linux-x64-gnu.node": "35f58cd140ef71977be84268e9c3ae1a981f96acdeddb252efbe81e6953f413a"
+      },
+      "url": "https://anpclaw.com/downloads/singapore-release-20261012/packages/6914e3e5219b5141-awiki-im-core-node-linux-x64-gnu-0.2.9.tgz"
+    },
+    {
+      "name": "@awiki/im-core-node-win32-x64-msvc",
+      "version": "0.2.9",
+      "family": "core",
+      "file": "packages/226b354bf8209e43-awiki-im-core-node-win32-x64-msvc-0.2.9.tgz",
+      "sha256": "226b354bf8209e43546a8db4fa6918e7888076ac4f5a1302bc95780dce6903cd",
+      "provenance": {
+        "schemaVersion": 1,
+        "package": {
+          "name": "@awiki/im-core-node-win32-x64-msvc",
+          "version": "0.2.9"
+        },
+        "target": "win32-x64-msvc",
+        "nativeApiVersion": 20,
+        "source": {
+          "repository": "https://github.com/AgentConnect/awiki-cli-rs2",
+          "commit": "2c359d3520c0218caeabdcaf1c4f3385f7cb2fa8",
+          "committedAt": "2026-10-12T11:57:48+08:00",
+          "dirty": false
+        },
+        "sdk": {
+          "imCoreVersion": "0.1.6",
+          "nativeBridgeVersion": "0.2.6",
+          "anpRustVersion": "1.0.5",
+          "anpCommit": "4998230c73ed5a1057f0dc9f25223edb72613efd"
+        },
+        "toolchain": {
+          "rustc": "rustc 1.88.0 (6b00bc388 2025-06-23)",
+          "node": "v22.19.0",
+          "pnpm": "10.27.0"
+        },
+        "binarySha256": "d1c29bdf4bcc8da7e3b0d945bea47ea673484e8d5dee0e572484dbe8fdacf7d1",
+        "distributionPolicy": "apache-2.0",
+        "dependencyMode": "source-development",
+        "dependencyEvidence": {
+          "mode": "source",
+          "profile": "debug",
+          "consumer": {
+            "tree_sha256": "834765624250ee7d897b46b28125f5cdf1b6ef1b21f2051344f68c5e0428c9e6",
+            "commit": "2c359d3520c0218caeabdcaf1c4f3385f7cb2fa8",
+            "dirty": false
+          },
+          "dependencies": {
+            "awiki-im-core": {
+              "commit": "eeb5fd9656a9921e7a870891e15614f461178c14",
+              "dirty": false,
+              "repository": "https://github.com/AgentConnect/awiki-cli-rs2.git"
+            },
+            "anp": {
+              "commit": "4998230c73ed5a1057f0dc9f25223edb72613efd",
+              "dirty": false,
+              "repository": "https://github.com/agent-network-protocol/anp.git"
+            },
+            "anp-identity": {
+              "commit": "794f914fd651a66f9f517411e00f0bdb99962201",
+              "dirty": false,
+              "repository": "https://github.com/agent-network-protocol/anp-identity.git"
+            }
+          },
+          "resolved": [
+            {
+              "name": "anp",
+              "version": "1.0.5",
+              "source": null
+            },
+            {
+              "name": "anp-identity",
+              "version": "0.2.4",
+              "source": null
+            },
+            {
+              "name": "awiki-im-core",
+              "version": "0.1.6",
+              "source": null
+            }
+          ],
+          "source_manifest_sha256": "9ba52108e56741fa06f42dd8af21aaccb07a155ce293825a021ab1717b678dff",
+          "source_lock_sha256": "ce029a0b391b226987059eb37a9d82ccfa03780dbaf632b5c3d9e37339af7ae3",
+          "metadata_sha256": "43c55a327e81c7990fa9b2bebe7b26290b9e55e1d1bdadde511f2246a8159140"
+        }
+      },
+      "os": [
+        "win32"
+      ],
+      "cpu": [
+        "x64"
+      ],
+      "runtimeFiles": {
+        "provenance.json": "aeb666dd93e8645fa810eb97ad51c3999bb0b747f0155ca15243f1f006b36415",
+        "awiki-im-core-node.win32-x64-msvc.node": "d1c29bdf4bcc8da7e3b0d945bea47ea673484e8d5dee0e572484dbe8fdacf7d1"
+      },
+      "url": "https://anpclaw.com/downloads/singapore-release-20261012/packages/226b354bf8209e43-awiki-im-core-node-win32-x64-msvc-0.2.9.tgz"
+    }
+  ]
+}
