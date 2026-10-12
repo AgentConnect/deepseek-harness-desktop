@@ -244,9 +244,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@awiki/dsh-plugin@https://anpclaw.com/downloads/singapore-release-20261012/packages/35029c30aa6c540e-awiki-dsh-plugin-0.3.17.tgz":
+"@awiki/dsh-plugin@https://anpclaw.com/downloads/singapore-release-20261012/packages/7477a4e9516d6cf0-awiki-dsh-plugin-0.3.17.tgz":
   version: 0.3.17
-  resolution: "@awiki/dsh-plugin@https://anpclaw.com/downloads/singapore-release-20261012/packages/35029c30aa6c540e-awiki-dsh-plugin-0.3.17.tgz"
+  resolution: "@awiki/dsh-plugin@https://anpclaw.com/downloads/singapore-release-20261012/packages/7477a4e9516d6cf0-awiki-dsh-plugin-0.3.17.tgz"
   dependencies:
     "@awiki/im-core-node": "npm:0.2.9"
     "@deepseek-ai/schemastery": "npm:^3.18.1"
@@ -280,7 +280,7 @@ __metadata:
   peerDependenciesMeta:
     "@deepseek-ai/dsh-workspace":
       optional: true
-  checksum: 10c0/d9f4f35f810cb426a6bdbb19db84eb4c01e3f2ccaa7441632046a1474322f3394e8fca633f4b641f439f516b6f9f60649347b46c11373dc3d31e4b2ed32f2b74
+  checksum: 10c0/3eb720d3c7c3da3179f9ddefa04f88bdeccb99d31da0d958c5072561d33103c8105c18abe14f22399f1b3767547e616ade1c6faeab17b9dc3ba84ea30cdf28a1
   languageName: node
   linkType: hard
 
