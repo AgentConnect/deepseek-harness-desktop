@@ -318,25 +318,67 @@
     },
     {
       "name": "@awiki/dsh-model-proxy",
-      "version": "0.1.11",
+      "version": "0.1.12",
       "family": "plugins",
-      "file": "packages/85df6941ccfce65d-awiki-dsh-model-proxy-0.1.11.tgz",
-      "sha256": "85df6941ccfce65ded1c1703322880891523d5553aafc09aa226c7a68eee38f6",
-      "provenance": null,
-      "url": "https://anpclaw.com/downloads/singapore-release-20261012/packages/85df6941ccfce65d-awiki-dsh-model-proxy-0.1.11.tgz",
+      "file": "packages/d7575033726d26a5-awiki-dsh-model-proxy-0.1.12.tgz",
+      "sha256": "d7575033726d26a5736d7f1c3080772846ba81cada46e4d9f19ec05823d8a80f",
+      "provenance": {
+        "mode": "source",
+        "profile": "debug",
+        "consumer": {
+          "tree_sha256": "772a410a4a739414f66e6ec0198fa5298fc512d9c56919b132732fac601f04c9",
+          "commit": "afe967b5595480b7201ca041f7da72f5533f3df9",
+          "tree": "f207b57d3ae343841e566160011c05d0a75d031c",
+          "dirty": false
+        },
+        "dependencies": {
+          "awiki-im-core": {
+            "commit": "eeb5fd9656a9921e7a870891e15614f461178c14",
+            "dirty": false,
+            "repository": "https://github.com/AgentConnect/awiki-cli-rs2.git"
+          },
+          "anp": {
+            "commit": "4998230c73ed5a1057f0dc9f25223edb72613efd",
+            "dirty": false,
+            "repository": "https://github.com/agent-network-protocol/anp.git"
+          },
+          "anp-identity": {
+            "commit": "794f914fd651a66f9f517411e00f0bdb99962201",
+            "dirty": false,
+            "repository": "https://github.com/agent-network-protocol/anp-identity.git"
+          }
+        },
+        "resolved": {
+          "mode": "source",
+          "packages": [
+            {
+              "name": "@awiki/im-core-node",
+              "version": "0.2.9",
+              "source": "source"
+            },
+            {
+              "name": "@agent-network-protocol/dsh-anp-identity",
+              "version": "0.1.4",
+              "source": "source"
+            }
+          ]
+        },
+        "lock_sha256": "8589ad6540e14854359df10e39aa526f31dc72f015536774d8faf7c8ce32b5f6"
+      },
+      "url": "https://anpclaw.com/downloads/singapore-release-20261012/packages/d7575033726d26a5-awiki-dsh-model-proxy-0.1.12.tgz",
       "os": null,
       "cpu": null,
       "runtimeFiles": {
         "lib/types/client/AwikiOnboarding.js": "32f8ac96af4478a88b60869a424ee40c2b2c53894a785ec8bc8b2e597252e684",
         "lib/client.js": "c638f758920cffc07c5df5f1439401f95b378808f5a9d65a99676c23bf79e343",
         "lib/types/dependency-error.js": "d724b87bf651156b34bf468e3f879043f848cab2f6cbef31dc64dced2be5fcb1",
-        "lib/index.js": "839342d80dde19157552426022be13b16f086479626d8e26334b34198ec6a15c",
+        "lib/index.js": "b7f9d282b680fa421f1685f05877b99c1558ac1abe65f416260fc39e88e3dd54",
         "lib/types/client/index.js": "2d3c32449de9df9599ca69845dbb1b1a8b9bd9988662aecaaf19c148052bc2ce",
-        "lib/types/index.js": "df6169147259e83d750fc67da362b06e42d1f7688423dd119ae34b87dca0c03b",
+        "lib/types/index.js": "2c9be26ad1bd3fe59d79f9f495c09eaa0307b30011c60027245bf4445ea89d80",
         "lib/types/client/model-availability-controller.js": "4fb26a069617d7c82b47f76408ca15531d37d45cdd4829c8ec5653146e517de2",
         "lib/types/client/model-proxy-controller.js": "21b552e0ea068dd8b4821a63a4c573dab28a104e432a688d1fc9332c6fdc7f91",
         "lib/types/client/ModelProxySettingsSection.js": "82d0f3e8e7bb952ced6e7f185390699e632f2c8e260364403cf6e070e1a74130",
-        "lib/types/package-version.generated.js": "57a910272cf129cd10a22d0a0a11bfc7ef339ecd701a5ddd1f4e838865d7d819",
+        "lib/types/package-version.generated.js": "0f4c680e46f15a572d2e0622a91b7e02448c697d6695917edb6910ddb21c4652",
         "lib/types/client/recharge-availability.js": "f21cb6cae53a37d7b7b0887bbcc1eb21ab48ce085d9bfd93086169f1545afe41",
         "lib/types/client/RechargeComingSoonDialog.js": "deaa2a42a0a3ac6925f9532d8d6f5a4753325d362a8ed0ed2d04ac6c1f63d902",
         "lib/types/client/settings-locales.js": "3573fb59f0f5384fcddf4483f29a0ac9a99d766beb7cae1cee77f2de2ccd8a5b"
@@ -344,12 +386,54 @@
     },
     {
       "name": "@awiki/dsh-plugin",
-      "version": "0.3.17",
+      "version": "0.3.18",
       "family": "plugins",
-      "file": "packages/7477a4e9516d6cf0-awiki-dsh-plugin-0.3.17.tgz",
-      "sha256": "7477a4e9516d6cf0641c7c10e6e7326c16461217cb5d9ae72be64c5b539b79e7",
-      "provenance": null,
-      "url": "https://anpclaw.com/downloads/singapore-release-20261012/packages/7477a4e9516d6cf0-awiki-dsh-plugin-0.3.17.tgz",
+      "file": "packages/7fa41034dd0619f9-awiki-dsh-plugin-0.3.18.tgz",
+      "sha256": "7fa41034dd0619f9701d1879fde7b5232d848fa926a78236ef285b6bac132413",
+      "provenance": {
+        "mode": "source",
+        "profile": "debug",
+        "consumer": {
+          "tree_sha256": "772a410a4a739414f66e6ec0198fa5298fc512d9c56919b132732fac601f04c9",
+          "commit": "afe967b5595480b7201ca041f7da72f5533f3df9",
+          "tree": "f207b57d3ae343841e566160011c05d0a75d031c",
+          "dirty": false
+        },
+        "dependencies": {
+          "awiki-im-core": {
+            "commit": "eeb5fd9656a9921e7a870891e15614f461178c14",
+            "dirty": false,
+            "repository": "https://github.com/AgentConnect/awiki-cli-rs2.git"
+          },
+          "anp": {
+            "commit": "4998230c73ed5a1057f0dc9f25223edb72613efd",
+            "dirty": false,
+            "repository": "https://github.com/agent-network-protocol/anp.git"
+          },
+          "anp-identity": {
+            "commit": "794f914fd651a66f9f517411e00f0bdb99962201",
+            "dirty": false,
+            "repository": "https://github.com/agent-network-protocol/anp-identity.git"
+          }
+        },
+        "resolved": {
+          "mode": "source",
+          "packages": [
+            {
+              "name": "@awiki/im-core-node",
+              "version": "0.2.9",
+              "source": "source"
+            },
+            {
+              "name": "@agent-network-protocol/dsh-anp-identity",
+              "version": "0.1.4",
+              "source": "source"
+            }
+          ]
+        },
+        "lock_sha256": "8589ad6540e14854359df10e39aa526f31dc72f015536774d8faf7c8ce32b5f6"
+      },
+      "url": "https://anpclaw.com/downloads/singapore-release-20261012/packages/7fa41034dd0619f9-awiki-dsh-plugin-0.3.18.tgz",
       "os": null,
       "cpu": null,
       "runtimeFiles": {
@@ -366,7 +450,7 @@
         "lib/types/client/AwikiDevices.js": "b9c907610a412fe93e189cf7c964fc4f58a4354f983643d59d224e8c176f42e7",
         "lib/types/client/AwikiGroupAccessNotice.js": "65e586a1eb809a3aa59490e3cd730fb34479b9df4ba1bca2deba12829c52278c",
         "lib/types/client/AwikiGroupDetails.js": "b5696b52685956f152f9ced1cc29324084008ab83ee989e71b53c69b99d9419e",
-        "lib/types/client/AwikiIdentityAccess.js": "58c69f3ed2e987477ed57387949e939b8b3f341a89475b14b2188541e0c622f7",
+        "lib/types/client/AwikiIdentityAccess.js": "f4363d82c664779129a96cf45735f01fe519d3f24346ecc32fe7532e90dbbf31",
         "lib/types/client/AwikiIdentityPage.js": "1643330fe8619d43609bc883f5cebf9df2f22b64e12cce33d21e1490ff6cc7aa",
         "lib/types/client/AwikiIdentityServices.js": "f14e15d012b1c9d31b308d30b88899058482160cc894c2a4d730906f1289a0e7",
         "lib/types/client/AwikiIntegrationSettings.js": "f452562a153629d1bf6e4691d2b6522c1a9605ec0a29e74146a1faf2d8127601",
@@ -378,9 +462,9 @@
         "lib/types/client/AwikiUpdates.js": "db5877ffb44686c29ed5bdbcdbd6745e9674b8d15b008b6e7d4a56f70eb7e297",
         "lib/types/base64.js": "683264efcb046bd2ea8718525956514dd164c35b876e5bede0f2fe732c87ee74",
         "lib/types/builtin-tenant-config.js": "0daf576ea316507085f54d7baf3b17380d1d16fa7a0e2ed12c83dff87ec273d6",
-        "lib/client.js": "c5cc4e4291c38291effad3da868637e8cdb71ed788d9ede4d8791d83f368cee1",
+        "lib/client.js": "2f01bf99274cbc251c7a126f92afc8942db368334225173824a534fb3c894bbb",
         "lib/types/client.js": "964471f4a08fbfaea61fb5fade2609cdc46ae8853f90f59565d9903fdc3a477e",
-        "lib/types/client/controller.js": "90c806a82c33cb2ea07596b35f7b6059f7b83f75bb7bba63af804bb3b1d61b79",
+        "lib/types/client/controller.js": "45e4029b5fb4e6143ad34311d5db76618a5a88416f2e2446720b4590162c7b3e",
         "lib/types/conversation-preferences.js": "8a4666a42071806cbb49b01177a951ecc3cb9fc081a5b573f5be0e2c91a6579a",
         "lib/types/desktop-distribution.js": "0277e1df3ee4eb41a3ee95141e43e32b10e555c626b6030e6549b3a8a9ac81f6",
         "lib/types/domain.js": "deb018dcae9df0934c4ee81876c875685f8154f21e1e9820e392be3b7a614c9b",
@@ -389,9 +473,9 @@
         "lib/types/client/file.js": "50a20ec87ba9e02fef3964866241c058d44913e4a840ae081a07326b82ff1d84",
         "lib/types/identity-handle.js": "1f8e5076382129bb30a31e831ec213a5460338c641b4c7ff27bd30091e74deba",
         "lib/types/client/image-cache.js": "17f997d6ce1476e2e8c298850f39be5e5795d1e18240625bb15894eccb069911",
-        "lib/index.js": "ba7e82d257bea66683e04ecea51d30ce41f6ab10f7fe9ced63e851527aceca90",
+        "lib/index.js": "7fdc45af7c59634a85c50a213926fa1d3eefeea4db4f9581fae4f6ed17dd1011",
         "lib/types/client/index.js": "d08e92ae0214b9b9d4f1f809de5661405f2134a30b47853967b8161e47854dd9",
-        "lib/types/index.js": "1c6ac123fa872d7c4ff2ee44ab182960428886c211c1ed7b85deeb06405dc6f6",
+        "lib/types/index.js": "b0d8b319eb22bebf91c959f97fbe8cb647bc93e14f48c1e1d20810d71628a8ce",
         "lib/types/integration-client.js": "aa99d62d6fa4f043dc1b7df8b1657bfc8a7c2a6d4938ba98e70c5a85094b21fc",
         "lib/types/client/integration-operation.js": "579a1d246c31df46a50b8b3a78ae619790f2098d28431087f20224b698f84632",
         "lib/invariant.js": "5e4de2a0ef069c383dbe4be04e829217a8fffd7da1cf8fe70d7d93aef8ad06c1",
@@ -411,7 +495,7 @@
         "lib/model-proxy-contract.js": "8e6fdd80977881e36f2b82bc78f6595dc8984cb5e5f865528915bfdb31b4a1c6",
         "lib/types/model-proxy-contract.js": "df4f1aa5be8bc5a5d114a1da07c4fcbf3bb26292219918dbf168e1158701364b",
         "lib/types/client/otp-cooldown.js": "6c4b57fb9ec966e7c3e2b5f29b887860dbb1ec035ec27c0c21e352e6577942dd",
-        "lib/types/package-version.generated.js": "efeceb270a97b54740488af4dc8cce24a676d89249a43c3fc921c66f8f606e1e",
+        "lib/types/package-version.generated.js": "fd38c16c08a5665006fb100046dedda421a732df6ef3e8b330087f24da9f9c63",
         "lib/types/profile-state.js": "1703c8f5a3503c3b90c93480f52ee5e75d155c0b998c225f7bc862e49ef66ed9",
         "lib/types/provider-api.js": "64a8a3bd5861f1b92851ce70c3a15e86f81db3f78f687c979b777453a8f411ee",
         "lib/provider.js": "6a27e971ee5e90b54396d533040165e7f26bccb2a7c0f4961e228b363e1861e5",
@@ -431,10 +515,10 @@
         "lib/types/summary-provider-api.js": "796ca51421bff111c69e4c261456e3a660d7a6d4423186351a5210ba8c4e96f5",
         "lib/summary-provider.js": "3f241190bb82570db084ba87210c95099a340a2bd1f5594f411a007ac7a405c6",
         "lib/types/summary-provider.js": "7f89372d6fc91a31cba99b84f19f05a0e79b9fadee0cfd71ad5a744078b7ce32",
-        "lib/types/tenant-registry.js": "6260feefa8594178167661be73996194fc741817457265e0f5d5e1f9319f1051",
+        "lib/types/tenant-registry.js": "b7c9689da5e65df8be0dbf9c66f030cb39bdd0ad886cb9e97a3070c9ea225dff",
         "lib/types/tools.js": "9275bed63fc4f762bf78e6bf9934e44eb49945465381a7720d2bfcdbda741526",
-        "lib/typert.host.js": "1d8f7787a27b685a371ce81b95064c94b65c9f55c399b9b4ca4de7ad39902d3a",
-        "lib/typert.remote-client.js": "ae2dadf2bfb7332e28c4b45256ecf9520a26ee60e0e9dee2dee61d257000c415",
+        "lib/typert.host.js": "b5172a5c57de4ac1caea8714f02bf6c648989a3d0a43ed02b2619c00824337ee",
+        "lib/typert.remote-client.js": "7d3b4d9c84cfb71ce593c85eae9d383f087dadd95e1601a17cf77770600372ff",
         "lib/types/types.js": "ec5d78758dcdf6c8d0329f9d3a893c8e4e7a0adebb44ddca7497cbd3c9b8d1db",
         "lib/types/update-installation.js": "5865d4af1ce73c67c62450858fd6863499c5b3497647e5102fb821880646fa3e",
         "lib/types/update-policy.js": "2f46165f1b021335bba4626a849a28ebde0bf8630c032bc15af3d061041485c0",
