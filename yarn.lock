@@ -5,44 +5,44 @@ __metadata:
   version: 10
   cacheKey: 10c0
 
-"@agent-network-protocol/anp-identity-darwin-arm64@https://anpclaw.com/downloads/singapore-release-20261012/packages/93783781eba6310f-agent-network-protocol-anp-identity-darwin-arm64-0.2.3.tgz":
+"@agent-network-protocol/anp-identity-darwin-arm64@npm:0.2.3":
   version: 0.2.3
-  resolution: "@agent-network-protocol/anp-identity-darwin-arm64@https://anpclaw.com/downloads/singapore-release-20261012/packages/93783781eba6310f-agent-network-protocol-anp-identity-darwin-arm64-0.2.3.tgz"
+  resolution: "@agent-network-protocol/anp-identity-darwin-arm64@npm:0.2.3"
   conditions: os=darwin & cpu=arm64
   languageName: node
   linkType: hard
 
-"@agent-network-protocol/anp-identity-darwin-x64@https://anpclaw.com/downloads/singapore-release-20261012/packages/7601f43486fcf936-agent-network-protocol-anp-identity-darwin-x64-0.2.3.tgz":
+"@agent-network-protocol/anp-identity-darwin-x64@npm:0.2.3":
   version: 0.2.3
-  resolution: "@agent-network-protocol/anp-identity-darwin-x64@https://anpclaw.com/downloads/singapore-release-20261012/packages/7601f43486fcf936-agent-network-protocol-anp-identity-darwin-x64-0.2.3.tgz"
+  resolution: "@agent-network-protocol/anp-identity-darwin-x64@npm:0.2.3"
   conditions: os=darwin & cpu=x64
   languageName: node
   linkType: hard
 
-"@agent-network-protocol/anp-identity-linux-arm64-gnu@https://anpclaw.com/downloads/singapore-release-20261012/packages/25ab0e35d159f882-agent-network-protocol-anp-identity-linux-arm64-gnu-0.2.3.tgz":
+"@agent-network-protocol/anp-identity-linux-arm64-gnu@npm:0.2.3":
   version: 0.2.3
-  resolution: "@agent-network-protocol/anp-identity-linux-arm64-gnu@https://anpclaw.com/downloads/singapore-release-20261012/packages/25ab0e35d159f882-agent-network-protocol-anp-identity-linux-arm64-gnu-0.2.3.tgz"
+  resolution: "@agent-network-protocol/anp-identity-linux-arm64-gnu@npm:0.2.3"
   conditions: os=linux & cpu=arm64 & libc=glibc
   languageName: node
   linkType: hard
 
-"@agent-network-protocol/anp-identity-linux-x64-gnu@https://anpclaw.com/downloads/singapore-release-20261012/packages/37ffe939813e4691-agent-network-protocol-anp-identity-linux-x64-gnu-0.2.3.tgz":
+"@agent-network-protocol/anp-identity-linux-x64-gnu@npm:0.2.3":
   version: 0.2.3
-  resolution: "@agent-network-protocol/anp-identity-linux-x64-gnu@https://anpclaw.com/downloads/singapore-release-20261012/packages/37ffe939813e4691-agent-network-protocol-anp-identity-linux-x64-gnu-0.2.3.tgz"
+  resolution: "@agent-network-protocol/anp-identity-linux-x64-gnu@npm:0.2.3"
   conditions: os=linux & cpu=x64 & libc=glibc
   languageName: node
   linkType: hard
 
-"@agent-network-protocol/anp-identity-win32-x64-msvc@https://anpclaw.com/downloads/singapore-release-20261012/packages/7df39b8df646e6d3-agent-network-protocol-anp-identity-win32-x64-msvc-0.2.3.tgz":
+"@agent-network-protocol/anp-identity-win32-x64-msvc@npm:0.2.3":
   version: 0.2.3
-  resolution: "@agent-network-protocol/anp-identity-win32-x64-msvc@https://anpclaw.com/downloads/singapore-release-20261012/packages/7df39b8df646e6d3-agent-network-protocol-anp-identity-win32-x64-msvc-0.2.3.tgz"
+  resolution: "@agent-network-protocol/anp-identity-win32-x64-msvc@npm:0.2.3"
   conditions: os=win32 & cpu=x64
   languageName: node
   linkType: hard
 
-"@agent-network-protocol/anp-identity@https://anpclaw.com/downloads/singapore-release-20261012/packages/a9471203ccfebbc1-agent-network-protocol-anp-identity-0.2.3.tgz":
+"@agent-network-protocol/anp-identity@npm:0.2.3":
   version: 0.2.3
-  resolution: "@agent-network-protocol/anp-identity@https://anpclaw.com/downloads/singapore-release-20261012/packages/a9471203ccfebbc1-agent-network-protocol-anp-identity-0.2.3.tgz"
+  resolution: "@agent-network-protocol/anp-identity@npm:0.2.3"
   dependencies:
     "@agent-network-protocol/anp-identity-darwin-arm64": "npm:0.2.3"
     "@agent-network-protocol/anp-identity-darwin-x64": "npm:0.2.3"
@@ -60,13 +60,13 @@ __metadata:
       optional: true
     "@agent-network-protocol/anp-identity-win32-x64-msvc":
       optional: true
-  checksum: 10c0/f2439d884eb2e231b3ad5c2c95f3df7a5963377756e71523bfd229cb82fc41616024150cdf495aa2385663c78d6dd499da666885712cbc81147464469a1bba8d
+  checksum: 10c0/19d0be372932612a5f4e036d90ca8ae453edf0be50451ce0cfa6c20d0dfe6aef06638addeaf9518f9d4a926efb313a39ed7fa3ee515ec1dd738298a0b028101f
   languageName: node
   linkType: hard
 
-"@agent-network-protocol/dsh-anp-identity@https://anpclaw.com/downloads/singapore-release-20261012/packages/d2b7ff39509d134d-agent-network-protocol-dsh-anp-identity-0.1.4.tgz":
+"@agent-network-protocol/dsh-anp-identity@npm:0.1.4":
   version: 0.1.4
-  resolution: "@agent-network-protocol/dsh-anp-identity@https://anpclaw.com/downloads/singapore-release-20261012/packages/d2b7ff39509d134d-agent-network-protocol-dsh-anp-identity-0.1.4.tgz"
+  resolution: "@agent-network-protocol/dsh-anp-identity@npm:0.1.4"
   dependencies:
     "@agent-network-protocol/anp-identity": "npm:0.2.3"
     "@deepseek-ai/schemastery": "npm:^3.18.1"
@@ -102,7 +102,7 @@ __metadata:
       optional: true
     react:
       optional: true
-  checksum: 10c0/5f7c3be7c4fae045a7dba9897054833c409a0a2418478e2201c51acdcc057b895e2d51c449e163c9b2e29cb01ec44b97312b5b495933724abc2c099f2ea82023
+  checksum: 10c0/6e429dee9983605dfd624a680e023b6d18e03f30eb444e1d4743afe31bb3e68c325f0099399360679d40c43ca87f2031071de120f4d15da4b3ffee392749dea2
   languageName: node
   linkType: hard
 
@@ -219,9 +219,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@awiki/dsh-model-proxy@https://anpclaw.com/downloads/singapore-release-20261012/packages/d7575033726d26a5-awiki-dsh-model-proxy-0.1.12.tgz":
-  version: 0.1.12
-  resolution: "@awiki/dsh-model-proxy@https://anpclaw.com/downloads/singapore-release-20261012/packages/d7575033726d26a5-awiki-dsh-model-proxy-0.1.12.tgz"
+"@awiki/dsh-model-proxy@npm:0.1.11":
+  version: 0.1.11
+  resolution: "@awiki/dsh-model-proxy@npm:0.1.11"
   dependencies:
     "@deepseek-ai/schemastery": "npm:^3.18.1"
   peerDependencies:
@@ -240,17 +240,16 @@ __metadata:
     "@deepseek-ai/dsh-llm-deepseek": 0.1.5-rc.2
     "@deepseek-ai/dsh-settings": 0.1.5-rc.2
     react: ^18.2.0
-  checksum: 10c0/322e8722effc649f9f56e9f3061c2293a47dfd54140c620d19829392906a82de16f9d6b5a74585f29609e4eed35bdd055515f61c392feef146f1f3d522533cb5
+  checksum: 10c0/d6edb2ef5c5f45d65155da332f87f160d198fd7150d3902b08428b8256e67ac3a8e690151843374bf5e16896f9a8e3e8e0a2673692f1ab0dde2d005f927007c6
   languageName: node
   linkType: hard
 
-"@awiki/dsh-plugin@https://anpclaw.com/downloads/singapore-release-20261012/packages/7fa41034dd0619f9-awiki-dsh-plugin-0.3.18.tgz":
-  version: 0.3.18
-  resolution: "@awiki/dsh-plugin@https://anpclaw.com/downloads/singapore-release-20261012/packages/7fa41034dd0619f9-awiki-dsh-plugin-0.3.18.tgz"
+"@awiki/dsh-plugin@npm:0.3.17":
+  version: 0.3.17
+  resolution: "@awiki/dsh-plugin@npm:0.3.17"
   dependencies:
     "@awiki/im-core-node": "npm:0.2.9"
     "@deepseek-ai/schemastery": "npm:^3.18.1"
-    react-image-crop: "npm:11.1.2"
     semver: "npm:7.8.5"
     zod: "npm:^4.4.3"
   peerDependencies:
@@ -280,48 +279,48 @@ __metadata:
   peerDependenciesMeta:
     "@deepseek-ai/dsh-workspace":
       optional: true
-  checksum: 10c0/dfdfed56f5740a30dea15ee9906a397848ce28933b940e56045cea133296e2834c2455da498c31016c0b569848eadb64964069bc173617f132b3aa4c8994bcc8
+  checksum: 10c0/e32d4ddc0459692711acfc5d09cf50329dfb47aae498b9bdb2cc09a3787e021ec4bdc459850ba423441e882b601565d6d078fdd80528dfe9c57ae07f0f68f711
   languageName: node
   linkType: hard
 
-"@awiki/im-core-node-darwin-arm64@https://anpclaw.com/downloads/singapore-release-20261012/packages/0e01207568c2cb00-awiki-im-core-node-darwin-arm64-0.2.9.tgz":
+"@awiki/im-core-node-darwin-arm64@npm:0.2.9":
   version: 0.2.9
-  resolution: "@awiki/im-core-node-darwin-arm64@https://anpclaw.com/downloads/singapore-release-20261012/packages/0e01207568c2cb00-awiki-im-core-node-darwin-arm64-0.2.9.tgz"
+  resolution: "@awiki/im-core-node-darwin-arm64@npm:0.2.9"
   conditions: os=darwin & cpu=arm64
   languageName: node
   linkType: hard
 
-"@awiki/im-core-node-darwin-x64@https://anpclaw.com/downloads/singapore-release-20261012/packages/4f3fd10742a74725-awiki-im-core-node-darwin-x64-0.2.9.tgz":
+"@awiki/im-core-node-darwin-x64@npm:0.2.9":
   version: 0.2.9
-  resolution: "@awiki/im-core-node-darwin-x64@https://anpclaw.com/downloads/singapore-release-20261012/packages/4f3fd10742a74725-awiki-im-core-node-darwin-x64-0.2.9.tgz"
+  resolution: "@awiki/im-core-node-darwin-x64@npm:0.2.9"
   conditions: os=darwin & cpu=x64
   languageName: node
   linkType: hard
 
-"@awiki/im-core-node-linux-arm64-gnu@https://anpclaw.com/downloads/singapore-release-20261012/packages/1747c8cb6820a66c-awiki-im-core-node-linux-arm64-gnu-0.2.9.tgz":
+"@awiki/im-core-node-linux-arm64-gnu@npm:0.2.9":
   version: 0.2.9
-  resolution: "@awiki/im-core-node-linux-arm64-gnu@https://anpclaw.com/downloads/singapore-release-20261012/packages/1747c8cb6820a66c-awiki-im-core-node-linux-arm64-gnu-0.2.9.tgz"
+  resolution: "@awiki/im-core-node-linux-arm64-gnu@npm:0.2.9"
   conditions: os=linux & cpu=arm64 & libc=glibc
   languageName: node
   linkType: hard
 
-"@awiki/im-core-node-linux-x64-gnu@https://anpclaw.com/downloads/singapore-release-20261012/packages/6914e3e5219b5141-awiki-im-core-node-linux-x64-gnu-0.2.9.tgz":
+"@awiki/im-core-node-linux-x64-gnu@npm:0.2.9":
   version: 0.2.9
-  resolution: "@awiki/im-core-node-linux-x64-gnu@https://anpclaw.com/downloads/singapore-release-20261012/packages/6914e3e5219b5141-awiki-im-core-node-linux-x64-gnu-0.2.9.tgz"
+  resolution: "@awiki/im-core-node-linux-x64-gnu@npm:0.2.9"
   conditions: os=linux & cpu=x64 & libc=glibc
   languageName: node
   linkType: hard
 
-"@awiki/im-core-node-win32-x64-msvc@https://anpclaw.com/downloads/singapore-release-20261012/packages/226b354bf8209e43-awiki-im-core-node-win32-x64-msvc-0.2.9.tgz":
+"@awiki/im-core-node-win32-x64-msvc@npm:0.2.9":
   version: 0.2.9
-  resolution: "@awiki/im-core-node-win32-x64-msvc@https://anpclaw.com/downloads/singapore-release-20261012/packages/226b354bf8209e43-awiki-im-core-node-win32-x64-msvc-0.2.9.tgz"
+  resolution: "@awiki/im-core-node-win32-x64-msvc@npm:0.2.9"
   conditions: os=win32 & cpu=x64
   languageName: node
   linkType: hard
 
-"@awiki/im-core-node@https://anpclaw.com/downloads/singapore-release-20261012/packages/a2263afe348282e8-awiki-im-core-node-0.2.9.tgz":
+"@awiki/im-core-node@npm:0.2.9":
   version: 0.2.9
-  resolution: "@awiki/im-core-node@https://anpclaw.com/downloads/singapore-release-20261012/packages/a2263afe348282e8-awiki-im-core-node-0.2.9.tgz"
+  resolution: "@awiki/im-core-node@npm:0.2.9"
   dependencies:
     "@awiki/im-core-node-darwin-arm64": "npm:0.2.9"
     "@awiki/im-core-node-darwin-x64": "npm:0.2.9"
@@ -339,7 +338,7 @@ __metadata:
       optional: true
     "@awiki/im-core-node-win32-x64-msvc":
       optional: true
-  checksum: 10c0/45fb404e39f3985eabb97cdd6e438362cfa0112c009f1952fa2220171c1a15d847505c131b46ff7fdbdbf96830382fc4df842ab197a707f529764e467aa26d90
+  checksum: 10c0/427c34ac9a0564dd604b44387bff77bfd7328d3f0c557a705797b90991b401513e732deec4730dc134f325595cf71c25cc4fd5366b26f349ee8c7ce5f1044c02
   languageName: node
   linkType: hard
 
@@ -9120,8 +9119,8 @@ __metadata:
   dependencies:
     "@agent-network-protocol/dsh-anp-identity": "npm:0.1.4"
     "@agents-anywhere/dsh-bridge-next": "file:../vendor/agents-anywhere/agents-anywhere-dsh-bridge-next-0.1.0-dev.0.desktop.c00df092c98b2.rcda81994.tgz"
-    "@awiki/dsh-model-proxy": "npm:0.1.12"
-    "@awiki/dsh-plugin": "npm:0.3.18"
+    "@awiki/dsh-model-proxy": "npm:0.1.11"
+    "@awiki/dsh-plugin": "npm:0.3.17"
     "@base-ui/react": "npm:^1.7.0"
     "@deepseek-ai/cordis": "npm:4.0.2"
     "@deepseek-ai/cordis-plugin-group": "npm:1.0.2"
@@ -9320,8 +9319,8 @@ __metadata:
   dependencies:
     "@agent-network-protocol/dsh-anp-identity": "npm:0.1.4"
     "@agents-anywhere/dsh-bridge-next": "file:../vendor/agents-anywhere/agents-anywhere-dsh-bridge-next-0.1.0-dev.0.desktop.c00df092c98b2.rcda81994.tgz"
-    "@awiki/dsh-model-proxy": "npm:0.1.12"
-    "@awiki/dsh-plugin": "npm:0.3.18"
+    "@awiki/dsh-model-proxy": "npm:0.1.11"
+    "@awiki/dsh-plugin": "npm:0.3.17"
     "@base-ui/react": "npm:^1.7.0"
     "@deepseek-ai/cordis": "npm:4.0.2"
     "@deepseek-ai/cordis-plugin-group": "npm:1.0.2"
@@ -12795,15 +12794,6 @@ __metadata:
   peerDependencies:
     react: ^18.3.1
   checksum: 10c0/a752496c1941f958f2e8ac56239172296fcddce1365ce45222d04a1947e0cc5547df3e8447f855a81d6d39f008d7c32eab43db3712077f09e3f67c4874973e85
-  languageName: node
-  linkType: hard
-
-"react-image-crop@npm:11.1.2":
-  version: 11.1.2
-  resolution: "react-image-crop@npm:11.1.2"
-  peerDependencies:
-    react: ">=16.13.1"
-  checksum: 10c0/7325afda6ec3f0b7c5bc3d376f3caf29cc57a3518271623a3e3e4edf49178d63ac10749a6ec5bc4271aa34ea2aaa3d80e2248cb05ba7a9b06fca260ff2472028
   languageName: node
   linkType: hard
 

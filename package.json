@@ -552,22 +552,7 @@
     "@deepseek-ai/dsh-web-search-exa@npm:0.1.5-rc.2": "file:vendor/dsh-runtime/0.1.5-rc.2/deepseek-ai-dsh-web-search-exa-0.1.5-rc.2.tgz",
     "@deepseek-ai/dsh-web-search-exa@npm:^0.1.5-rc.2": "file:vendor/dsh-runtime/0.1.5-rc.2/deepseek-ai-dsh-web-search-exa-0.1.5-rc.2.tgz",
     "@deepseek-ai/dsh-web-search-perplexity@npm:0.1.5-rc.2": "file:vendor/dsh-runtime/0.1.5-rc.2/deepseek-ai-dsh-web-search-perplexity-0.1.5-rc.2.tgz",
-    "@deepseek-ai/dsh-web-search-perplexity@npm:^0.1.5-rc.2": "file:vendor/dsh-runtime/0.1.5-rc.2/deepseek-ai-dsh-web-search-perplexity-0.1.5-rc.2.tgz",
-    "@agent-network-protocol/anp-identity": "https://anpclaw.com/downloads/singapore-release-20261012/packages/a9471203ccfebbc1-agent-network-protocol-anp-identity-0.2.3.tgz",
-    "@agent-network-protocol/anp-identity-darwin-arm64": "https://anpclaw.com/downloads/singapore-release-20261012/packages/93783781eba6310f-agent-network-protocol-anp-identity-darwin-arm64-0.2.3.tgz",
-    "@agent-network-protocol/anp-identity-darwin-x64": "https://anpclaw.com/downloads/singapore-release-20261012/packages/7601f43486fcf936-agent-network-protocol-anp-identity-darwin-x64-0.2.3.tgz",
-    "@agent-network-protocol/anp-identity-linux-arm64-gnu": "https://anpclaw.com/downloads/singapore-release-20261012/packages/25ab0e35d159f882-agent-network-protocol-anp-identity-linux-arm64-gnu-0.2.3.tgz",
-    "@agent-network-protocol/anp-identity-linux-x64-gnu": "https://anpclaw.com/downloads/singapore-release-20261012/packages/37ffe939813e4691-agent-network-protocol-anp-identity-linux-x64-gnu-0.2.3.tgz",
-    "@agent-network-protocol/anp-identity-win32-x64-msvc": "https://anpclaw.com/downloads/singapore-release-20261012/packages/7df39b8df646e6d3-agent-network-protocol-anp-identity-win32-x64-msvc-0.2.3.tgz",
-    "@agent-network-protocol/dsh-anp-identity": "https://anpclaw.com/downloads/singapore-release-20261012/packages/d2b7ff39509d134d-agent-network-protocol-dsh-anp-identity-0.1.4.tgz",
-    "@awiki/dsh-model-proxy": "https://anpclaw.com/downloads/singapore-release-20261012/packages/d7575033726d26a5-awiki-dsh-model-proxy-0.1.12.tgz",
-    "@awiki/dsh-plugin": "https://anpclaw.com/downloads/singapore-release-20261012/packages/7fa41034dd0619f9-awiki-dsh-plugin-0.3.18.tgz",
-    "@awiki/im-core-node": "https://anpclaw.com/downloads/singapore-release-20261012/packages/a2263afe348282e8-awiki-im-core-node-0.2.9.tgz",
-    "@awiki/im-core-node-darwin-arm64": "https://anpclaw.com/downloads/singapore-release-20261012/packages/0e01207568c2cb00-awiki-im-core-node-darwin-arm64-0.2.9.tgz",
-    "@awiki/im-core-node-darwin-x64": "https://anpclaw.com/downloads/singapore-release-20261012/packages/4f3fd10742a74725-awiki-im-core-node-darwin-x64-0.2.9.tgz",
-    "@awiki/im-core-node-linux-arm64-gnu": "https://anpclaw.com/downloads/singapore-release-20261012/packages/1747c8cb6820a66c-awiki-im-core-node-linux-arm64-gnu-0.2.9.tgz",
-    "@awiki/im-core-node-linux-x64-gnu": "https://anpclaw.com/downloads/singapore-release-20261012/packages/6914e3e5219b5141-awiki-im-core-node-linux-x64-gnu-0.2.9.tgz",
-    "@awiki/im-core-node-win32-x64-msvc": "https://anpclaw.com/downloads/singapore-release-20261012/packages/226b354bf8209e43-awiki-im-core-node-win32-x64-msvc-0.2.9.tgz"
+    "@deepseek-ai/dsh-web-search-perplexity@npm:^0.1.5-rc.2": "file:vendor/dsh-runtime/0.1.5-rc.2/deepseek-ai-dsh-web-search-perplexity-0.1.5-rc.2.tgz"
   },
   "dependenciesMeta": {
     "@deepseek-ai/dsh-subprocess-local": {

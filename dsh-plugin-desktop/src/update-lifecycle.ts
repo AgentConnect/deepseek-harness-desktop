@@ -164,7 +164,7 @@ class UpdateLifecycle implements DesktopUpdateLifecycle {
     if (this.tenant === undefined) return undefined
     const key = createHash('sha256').update(JSON.stringify([this.tenant.tenantId, this.tenant.policyOrigin,
       DESKTOP_DISTRIBUTION_ID, this.snapshot.channel])).digest('hex')
-    return `${this.options.adapter.statePath}.singapore-release-20261012.${key}`
+    return `${this.options.adapter.statePath}.${key}`
   }
   private async loadCache(epoch: number): Promise<void> {
     const path = this.cachePath()
