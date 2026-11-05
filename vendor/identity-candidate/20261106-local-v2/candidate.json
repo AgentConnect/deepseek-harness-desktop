@@ -1,0 +1,39 @@
+{
+  "kind": "private-local-candidate",
+  "registryPublished": false,
+  "platformScope": [
+    "linux-x64-gnu"
+  ],
+  "nativeApiVersion": 2,
+  "nativeSha256": "e2c4b86a0b3622aaefa70b44d3dc31cdab579b1237a4418d349bd294c52663ef",
+  "identitySourceCommit": "4f7500d32a7e5e47fb7f4092b457aac29e5e6927",
+  "artifacts": [
+    {
+      "package": "@agent-network-protocol/anp-identity",
+      "path": "vendor/identity-candidate/20261106-local-v2/agent-network-protocol-anp-identity-0.2.5.tgz",
+      "sha256": "0bd09eb798b267ca4ca6709c6702f9560db58cbce78c2947ea365c60d98d8abb",
+      "bytes": 21850
+    },
+    {
+      "package": "@agent-network-protocol/anp-identity-linux-x64-gnu",
+      "path": "vendor/identity-candidate/20261106-local-v2/agent-network-protocol-anp-identity-linux-x64-gnu-0.2.5.tgz",
+      "sha256": "2c7b20f973c7808db868615159e71d45d0376e08d1962da50a5c5329f28d57b7",
+      "bytes": 49207122
+    },
+    {
+      "package": "@agent-network-protocol/dsh-anp-identity",
+      "path": "vendor/identity-candidate/20261106-local-v2/agent-network-protocol-dsh-anp-identity-0.1.6.tgz",
+      "sha256": "1dff9d7433bd7b5f38dcb21378345630ae0ce598433078cf17e8a614fa68c0c5",
+      "bytes": 525872
+    },
+    {
+      "package": "@awiki/dsh-plugin",
+      "path": "vendor/identity-candidate/20261106-local-v2/awiki-dsh-plugin-0.3.21.tgz",
+      "bytes": 1116780,
+      "sha256": "76d74bdb8fdc5539ff9ae338a2616b1e1e0c4b4cbc6129e74b6b807e51936ff9"
+    }
+  ],
+  "awikiSourceCommit": "2c0437311b9a06f8527a798fc14e1820c7881b55",
+  "imCoreRegistryVersion": "0.2.15",
+  "previousImCoreRegistryVersion": "0.2.9"
+}

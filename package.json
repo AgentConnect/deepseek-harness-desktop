@@ -552,7 +552,11 @@
     "@deepseek-ai/dsh-web-search-exa@npm:0.1.5-rc.2": "file:vendor/dsh-runtime/0.1.5-rc.2/deepseek-ai-dsh-web-search-exa-0.1.5-rc.2.tgz",
     "@deepseek-ai/dsh-web-search-exa@npm:^0.1.5-rc.2": "file:vendor/dsh-runtime/0.1.5-rc.2/deepseek-ai-dsh-web-search-exa-0.1.5-rc.2.tgz",
     "@deepseek-ai/dsh-web-search-perplexity@npm:0.1.5-rc.2": "file:vendor/dsh-runtime/0.1.5-rc.2/deepseek-ai-dsh-web-search-perplexity-0.1.5-rc.2.tgz",
-    "@deepseek-ai/dsh-web-search-perplexity@npm:^0.1.5-rc.2": "file:vendor/dsh-runtime/0.1.5-rc.2/deepseek-ai-dsh-web-search-perplexity-0.1.5-rc.2.tgz"
+    "@deepseek-ai/dsh-web-search-perplexity@npm:^0.1.5-rc.2": "file:vendor/dsh-runtime/0.1.5-rc.2/deepseek-ai-dsh-web-search-perplexity-0.1.5-rc.2.tgz",
+    "@agent-network-protocol/anp-identity": "file:vendor/identity-candidate/20261106-local-v2/agent-network-protocol-anp-identity-0.2.5.tgz",
+    "@agent-network-protocol/anp-identity-linux-x64-gnu": "file:vendor/identity-candidate/20261106-local-v2/agent-network-protocol-anp-identity-linux-x64-gnu-0.2.5.tgz",
+    "@agent-network-protocol/dsh-anp-identity": "file:vendor/identity-candidate/20261106-local-v2/agent-network-protocol-dsh-anp-identity-0.1.6.tgz",
+    "@awiki/dsh-plugin": "file:vendor/identity-candidate/20261106-local-v2/awiki-dsh-plugin-0.3.21.tgz"
   },
   "dependenciesMeta": {
     "@deepseek-ai/dsh-subprocess-local": {

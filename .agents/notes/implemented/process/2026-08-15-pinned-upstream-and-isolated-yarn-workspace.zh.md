@@ -41,3 +41,14 @@ DSH Desktop 需要保留可供审查的 DeepSeek Harness 官方精确源码，�
 桌面改动有三个边界明确的自有 package tree，官方 checkout 可以与其远端提交直接比较。外层落地页展示 DSH Desktop，Desktop README 负责应用初始化与发行说明，Fabric README 负责规划中的社区 contract 边界，Market README 负责规划中的市场边界。产品安装与检查可由外层 Yarn lockfile 复现，上游验证则继续使用自己的 pnpm lockfile。
 
 克隆时必须初始化子模块，贡献者也需要维护两套有意隔离的包管理器缓存。GitHub 公开修订与 npm 发布 family 可能不对应，因此源码 pin 更新和运行时 family 更新需要分别提供验证证据。
+
+
+## DSH 身份私有候选（2026-11-06）
+
+身份候选使用 `AgentConnect/dsh-harness-identity` 私有固定源码镜像，并在 `upstream.json.sourceCandidate` 保留官方仓库及原始 `fb2c4b9` 基线。身份改动在独立 Harness worktree 开发后移植到真正的 Desktop `0.1.5-rc.2` 基线；本仓库子模块仍是原样固定的 checkout。该候选不是官方上游或 npm 发布，不改变现有仓库许可证和公开发布历史。
+
+匹配 runtime 通过完整 official-profile build 和既有 family pack/sync 入口生成，统一记录源码、265 个包摘要和私有仓库来源。复用版本字符串不表示 registry 包已包含改动。两个 Desktop 变体保持同一 runtime family，先 beta 后 stable 分别验证。headless 候选构建不代表图形启动、公开上传或签名授权。
+
+干净授权 checkout 必须具备私有源码仓库读取权限，不能默认 public 仓库的 CI token 可访问它。凭据只属于执行环境，不写入 Git URL、manifest 或源码。私有镜像禁用 Actions，并在控制分支单独禁用自动依赖更新；原 Desktop 发布和变体 gate 继续有效。
+
+本地Linux身份候选还包含匹配的Identity wrapper、native API2构建及共享Host插件。`vendor/identity-candidate/20261106-local-v2/candidate.json`记录原始tarball摘要与来源，明确的Yarn resolution将其标为私有候选输入。机器凭据worker仅在Host确为Electron时显式选择Node模式。这些检查不证明新账户注册、宿主keyring配置或图形验收。

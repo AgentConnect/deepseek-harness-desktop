@@ -41,3 +41,14 @@ Acceptance requires `yarn check:layout`, `yarn upstream:version`, `yarn install 
 Desktop changes have three explicitly owned package trees, and the official checkout remains directly comparable with its remote commit. The outer landing page presents DSH Desktop, the desktop README owns application setup and release usage, the Fabric README owns the proposed community contract boundary, and the Market README owns the proposed market boundary. Product installs and checks are reproducible from the outer Yarn lockfile, while upstream verification continues to use its own pnpm lockfile.
 
 Clones must initialize the submodule, and contributors maintain two intentionally separate package-manager caches. Source-pin updates and runtime-family updates require separate evidence because a public GitHub revision and a published npm family may not correspond.
+
+
+## Private DSH identity candidate (2026-11-06)
+
+The identity candidate uses `AgentConnect/dsh-harness-identity`, a private fixed-source mirror, while retaining the official repository and the original `fb2c4b9` baseline in `upstream.json.sourceCandidate`. The identity changes were developed in the independent Harness worktree and ported onto the actual Desktop `0.1.5-rc.2` baseline; the source under this repository remains an unmodified pinned checkout. This candidate is not an official upstream or npm release, and it does not change the existing repository's license or public-release history.
+
+The matching runtime is produced by the complete official-profile build and the existing family pack/sync entrypoints. Source, 265 package digests and the private repository are recorded together. A reused version string does not claim that registry packages contain these changes. Both Desktop variants keep the same runtime family and are verified separately, beta first. No graphics launch, public upload or signing is implied by a headless candidate build.
+
+A fresh authorized checkout needs read access to the private source repository. A public repository's default CI token must not be assumed to provide that access. Credentials belong in the execution environment, never in Git URLs, manifests or source. The private mirror has Actions disabled; dependency-update automation is separately disabled on its control branch. Existing Desktop release and variant gates still apply.
+
+The local Linux identity candidate also vendors the matched Identity wrapper, native API2 build and shared Host plugin. `vendor/identity-candidate/20261106-local-v2/candidate.json` records the original tarball digests and source; explicit Yarn resolutions identify these as private candidate inputs. The machine credential worker explicitly selects Node mode only when its Host is Electron. These checks do not establish fresh account registration, a configured host keyring, or graphical acceptance.
