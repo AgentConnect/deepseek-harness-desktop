@@ -3,14 +3,14 @@
   "activeChannel": "beta",
   "channels": {
     "stable": {
-      "commit": "af6f299a8a6361e028711789480faaab52f80f0a",
+      "commit": "3d8440154285810f9ae11fcc1735050a1dd4c312",
       "sourceVersion": "0.1.5-rc.2",
       "runtimePackageVersion": "0.1.5-rc.2",
       "runtimeSource": "vendor/dsh-runtime/0.1.5-rc.2/manifest.json",
       "package": "dsh-plugin-desktop"
     },
     "beta": {
-      "commit": "af6f299a8a6361e028711789480faaab52f80f0a",
+      "commit": "3d8440154285810f9ae11fcc1735050a1dd4c312",
       "sourceVersion": "0.1.5-rc.2",
       "runtimePackageVersion": "0.1.5-rc.2",
       "runtimeSource": "vendor/dsh-runtime/0.1.5-rc.2/manifest.json",
@@ -24,7 +24,7 @@
     "officialBaselineCommit": "fb2c4b9e698e30edb738bca4cf0618587db7d203",
     "repository": "https://github.com/AgentConnect/dsh-harness-identity.git",
     "branch": "desktop-runtime-identity",
-    "commit": "af6f299a8a6361e028711789480faaab52f80f0a",
+    "commit": "3d8440154285810f9ae11fcc1735050a1dd4c312",
     "registryPublished": false
   }
 }
