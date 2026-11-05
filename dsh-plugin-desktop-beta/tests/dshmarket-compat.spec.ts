@@ -290,6 +290,9 @@ describe('dsh-market Desktop install compatibility', () => {
   })
 
   it('does not reject a host-provided market update for a pre-existing missing bundle', async () => {
+    for (const name of ['HTTP_PROXY', 'HTTPS_PROXY', 'ALL_PROXY', 'http_proxy', 'https_proxy', 'all_proxy']) {
+      vi.stubEnv(name, '')
+    }
     globalThis.fetch = vi.fn(async () => new Response(
       JSON.stringify({ version: '1.39.0' }),
       { status: 200, headers: { 'content-type': 'application/json' } },
@@ -335,6 +338,9 @@ describe('dsh-market Desktop install compatibility', () => {
   })
 
   it('restores dependencies and the bundle stack when an update introduces a trial failure', async () => {
+    for (const name of ['HTTP_PROXY', 'HTTPS_PROXY', 'ALL_PROXY', 'http_proxy', 'https_proxy', 'all_proxy']) {
+      vi.stubEnv(name, '')
+    }
     globalThis.fetch = vi.fn(async () => new Response(
       JSON.stringify({ version: '1.39.0' }),
       { status: 200, headers: { 'content-type': 'application/json' } },

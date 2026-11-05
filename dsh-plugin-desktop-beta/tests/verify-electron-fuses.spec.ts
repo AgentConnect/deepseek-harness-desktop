@@ -1,6 +1,7 @@
 import { FuseV1Options, FuseVersion, type FuseConfig } from '@electron/fuses'
 import { FuseState } from '@electron/fuses/dist/constants.js'
 import { Arch } from 'builder-util'
+import { createRequire } from 'node:module'
 import { join } from 'node:path'
 import { describe, expect, it, vi } from 'vitest'
 import {
@@ -13,6 +14,11 @@ import {
 import type {
   PackagedElectronSmoke,
 } from '../scripts/verify-packaged-runtime.ts'
+
+const require = createRequire(import.meta.url)
+// The installed CommonJS entry initializes the builder before its private target factory.
+const { LinuxPackager } = require('app-builder-lib')
+const { createTargets } = require('app-builder-lib/out/targets/targetFactory.js')
 
 function result(
   platforms: readonly {
@@ -46,6 +52,78 @@ function fuseWire(overrides: Partial<Record<FuseV1Options, FuseState>> = {}): Fu
 }
 
 describe('final Electron fuse verification', () => {
+  it('recovers an explicit cross-architecture dir request from the actual Linux empty target map without checking stale siblings', () => {
+    // LinuxPackager omits dir entirely, rather than retaining a NoOpTarget in this map.
+    const targets = new Map<string, unknown>()
+    expect(createTargets(targets, ['dir'], '/build', Object.create(LinuxPackager.prototype))).toEqual([])
+    expect(targets.size).toBe(0)
+    const arch = process.arch === 'arm64' ? Arch.x64 : Arch.arm64
+    const name = Arch[arch]
+    const directory = arch === Arch.x64 ? 'linux-unpacked' : 'linux-arm64-unpacked'
+    const executable = join('/build', directory, 'dsh-plugin-desktop-beta')
+    const exists = vi.fn(() => true)
+    const built = {
+      outDir: '/build',
+      configuration: { asar: false, linux: { target: `dir:${name}` } },
+      platformToTargets: new Map([[{ buildConfigurationKey: 'linux' }, targets]]),
+    } satisfies ElectronArtifactBuildResult
+
+    expect(resolveFinalPackagedRuntimeContexts(built, exists)).toEqual([
+      expect.objectContaining({ appOutDir: join('/build', directory), arch }),
+    ])
+    expect(exists.mock.calls).toEqual([[executable]])
+  })
+
+  it.each([
+    undefined,
+    { defaultArch: 'arm64' },
+    { target: 'dir' },
+    { target: { target: 'dir', arch: [] } },
+    { target: [{ target: 'dir', arch: 'arm64' }, 'dir'] },
+    { target: ['dir:arm64', 'AppImage:x64'] },
+    { target: 'AppImage:arm64' },
+  ])('rejects an empty target map without a complete unambiguous directory architecture request: %j', linux => {
+    const exists = vi.fn(() => true)
+    const built = {
+      outDir: '/build',
+      configuration: linux === undefined ? {} : { linux },
+      platformToTargets: new Map([[{ buildConfigurationKey: 'linux' }, new Map()]]),
+    } satisfies ElectronArtifactBuildResult
+
+    expect(() => resolveFinalPackagedRuntimeContexts(built, exists))
+      .toThrow('cannot determine requested Electron architecture(s) for linux')
+    expect(exists).not.toHaveBeenCalled()
+  })
+
+  it('requires every explicitly requested directory architecture even when a stale sibling exists', () => {
+    const built = {
+      outDir: '/build',
+      configuration: { linux: { target: { target: 'dir', arch: ['x64', 'arm64'] } } },
+      platformToTargets: new Map([[{ buildConfigurationKey: 'linux' }, new Map()]]),
+    } satisfies ElectronArtifactBuildResult
+    const x64 = join('/build', 'linux-unpacked', 'dsh-plugin-desktop-beta')
+
+    expect(() => resolveFinalPackagedRuntimeContexts(built, filename => filename === x64))
+      .toThrow(`linux/arm64 at ${join('/build', 'linux-arm64-unpacked', 'dsh-plugin-desktop-beta')}`)
+  })
+
+  it('continues checking fuses and running the packaged smoke for an explicit empty-map directory result', async () => {
+    const built = {
+      outDir: '/build',
+      configuration: { asar: false, linux: { target: 'dir:x64' } },
+      platformToTargets: new Map([[{ buildConfigurationKey: 'linux' }, new Map()]]),
+    } satisfies ElectronArtifactBuildResult
+    const read = vi.fn<ElectronFuseReader>(async () => fuseWire({
+      [FuseV1Options.EnableEmbeddedAsarIntegrityValidation]: FuseState.DISABLE,
+      [FuseV1Options.OnlyLoadAppFromAsar]: FuseState.DISABLE,
+    }))
+    const smoke = vi.fn<PackagedElectronSmoke>()
+
+    await expect(afterAllArtifactBuild(built, read, () => true, smoke)).resolves.toEqual([])
+    expect(read).toHaveBeenCalledWith(join('/build', 'linux-unpacked', 'dsh-plugin-desktop-beta'))
+    expect(smoke).toHaveBeenCalledWith(expect.objectContaining({ arch: Arch.x64, electronPlatformName: 'linux' }))
+  })
+
   it('maps only requested platform and architecture keys to complete runtime contexts', () => {
     const expected = [
       join('/build', 'linux-unpacked', 'dsh-plugin-desktop-beta'),
@@ -171,7 +249,7 @@ describe('final Electron fuse verification', () => {
     expect(() => resolveFinalPackagedRuntimeContexts(
       result([{ key: 'win', archs: [Arch.x64, Arch.arm64] }]),
       filename => filename === x64Executable,
-    )).toThrow('win/arm64 at /build/win-arm64-unpacked/DSH Desktop Beta.exe')
+    )).toThrow(`win/arm64 at ${join('/build', 'win-arm64-unpacked', 'DSH Desktop Beta.exe')}`)
   })
 
   it('resolves a real target-name map through the target archs retained by NSIS', () => {

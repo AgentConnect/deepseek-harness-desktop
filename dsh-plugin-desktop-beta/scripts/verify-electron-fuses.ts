@@ -199,6 +199,27 @@ function configuredTargetArchitectures(
   return [...result]
 }
 
+function explicitDirectoryArchitectures(
+  configuration: ElectronPlatformOutputConfiguration | null | undefined,
+  description: string,
+): Arch[] {
+  const targets = configuration?.target === undefined || configuration.target === null
+    ? []
+    : Array.isArray(configuration.target) ? configuration.target : [configuration.target]
+  if (targets.length === 0) return []
+  for (const target of targets) {
+    const rawName = typeof target === 'string' ? target : target.target
+    const separator = rawName.lastIndexOf(':')
+    const name = separator > 0 ? rawName.slice(0, separator) : rawName
+    const arch = typeof target === 'string'
+      ? (separator > 0 ? rawName.slice(separator + 1) : undefined)
+      : target.arch
+    if (name !== DIR_TARGET || arch === undefined || arch === null
+      || arch === '' || Array.isArray(arch) && arch.length === 0) return []
+  }
+  return configuredTargetArchitectures(configuration, new Set([DIR_TARGET]), description)
+}
+
 function requestedArchitectures(
   result: ElectronArtifactBuildResult,
   platform: { readonly buildConfigurationKey: string },
@@ -216,6 +237,12 @@ function requestedArchitectures(
     throw new Error(
       `dsh-plugin-desktop: cannot determine requested Electron architecture(s) for ${key}`,
     )
+  }
+  // LinuxPackager omits dir from this map. Only an explicit all-dir request supplies the lost architecture.
+  if (targets.size === 0) {
+    const directoryArchitectures = explicitDirectoryArchitectures(result.configuration[key], description)
+    if (directoryArchitectures.length > 0) return directoryArchitectures
+    throw new Error(`dsh-plugin-desktop: cannot determine requested Electron architecture(s) for ${key}`)
   }
   const targetNames = new Set(
     [...targets.keys()].filter((name): name is string => typeof name === 'string'),

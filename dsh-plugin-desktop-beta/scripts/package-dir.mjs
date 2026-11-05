@@ -4,6 +4,7 @@ import { spawnSync } from 'node:child_process'
 import { createRequire } from 'node:module'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { Arch, archFromString } from 'builder-util'
 import { electronBuilderEnvironment } from './electron-builder-environment.ts'
 import { withoutWindowsSigningSecrets } from './package-win.ts'
 import { withoutMacReleaseSecrets } from './release-preflight.ts'
@@ -37,7 +38,8 @@ export function unsignedDirectoryBuildEnvironment(environment) {
 }
 
 /**
- * Build an unsigned, unpacked application for the current host platform.
+ * Build an unsigned, unpacked application for the current host platform and architecture.
+ * The target configuration retains the same architecture for final fuse and smoke verification.
  * @param {{
  *   env?: NodeJS.ProcessEnv,
  *   cwd?: string,
@@ -52,11 +54,17 @@ export function packageDirectory(options = {}) {
   const nodeExecutable = options.nodeExecutable ?? process.execPath
   const electronBuilderCli = options.electronBuilderCli ?? builderCli
   const configuredElectronDist = options.electronDistPath ?? electronDist
+  const platform = process.platform === 'darwin' ? 'mac'
+    : process.platform === 'win32' ? 'win' : process.platform === 'linux' ? 'linux' : undefined
+  if (platform === undefined) throw new Error(`Unsupported directory packaging platform: ${process.platform}`)
+  const architecture = Arch[archFromString(process.arch)]
   const result = run(
     nodeExecutable,
     [
       electronBuilderCli,
       ...UNSIGNED_DIRECTORY_BUILD_ARGS,
+      `--${architecture}`,
+      `--config.${platform}.target=dir:${architecture}`,
       `--config.electronDist=${configuredElectronDist}`,
     ],
     {
