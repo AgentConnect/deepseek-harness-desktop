@@ -218,7 +218,8 @@ describe('desktop profile composition', {
       '@deepseek-ai/dsh-base',
       '@deepseek-ai/dsh-web-app',
       '@agent-network-protocol/dsh-anp-identity',
-    '@awiki/dsh-plugin',
+      '@agentconnect/dsh-pap',
+      '@awiki/dsh-plugin',
       '@awiki/dsh-model-proxy',
       'third-party-one',
       'third-party-two',
@@ -247,7 +248,8 @@ describe('desktop profile composition', {
       '@deepseek-ai/dsh-base',
       '@deepseek-ai/dsh-web-app',
       '@agent-network-protocol/dsh-anp-identity',
-    '@awiki/dsh-plugin',
+      '@agentconnect/dsh-pap',
+      '@awiki/dsh-plugin',
       '@awiki/dsh-model-proxy',
       'third-party-plugin',
     ])
@@ -281,7 +283,8 @@ describe('desktop profile composition', {
       '@deepseek-ai/dsh-base',
       '@deepseek-ai/dsh-web-app',
       '@agent-network-protocol/dsh-anp-identity',
-    '@awiki/dsh-plugin',
+      '@agentconnect/dsh-pap',
+      '@awiki/dsh-plugin',
       '@awiki/dsh-model-proxy',
     ])
   })

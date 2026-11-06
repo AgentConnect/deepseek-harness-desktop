@@ -363,6 +363,7 @@ try {
   }
   for (const id of [
     'dsh-plugin-desktop',
+    '@agentconnect/dsh-pap',
     '@deepseek-ai/dsh-client-ui-conversation',
     '@deepseek-ai/dsh-client-ui-sidebar',
     '@deepseek-ai/dsh-client-ui-directory-picker-browse',

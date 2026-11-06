@@ -18,6 +18,13 @@
       name: dsh-plugin-desktop/profiles
     - id: desktop-updates
       name: dsh-plugin-desktop/updates
+    - id: mcp-connection-management
+      name: '@deepseek-ai/dsh-mcp-client/management'
+      config:
+        managerConsumers:
+          - '@deepseek-ai/dsh-mcp-client/management-remote'
+    - id: mcp-connection-management-remote
+      name: '@deepseek-ai/dsh-mcp-client/management-remote'
 
 # A desktop launch has no terminal operator waiting for the Web readiness line.
 - id: web-runtime

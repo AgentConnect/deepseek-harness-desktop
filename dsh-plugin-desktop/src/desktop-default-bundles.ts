@@ -1,6 +1,7 @@
-/** AWiki bundles owned by the Desktop distribution and enabled in its default profile. */
+/** Identity and application bundles included in the default Desktop profile. */
 export const DESKTOP_AWIKI_BUNDLES = Object.freeze([
   '@agent-network-protocol/dsh-anp-identity',
+  '@agentconnect/dsh-pap',
   '@awiki/dsh-plugin',
   '@awiki/dsh-model-proxy',
 ] as const)
