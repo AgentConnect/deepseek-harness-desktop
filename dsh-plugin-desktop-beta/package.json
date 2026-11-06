@@ -141,6 +141,7 @@
   },
   "dependencies": {
     "@agent-network-protocol/dsh-anp-identity": "0.1.6",
+    "@agentconnect/dsh-pap": "0.1.0",
     "@agents-anywhere/dsh-bridge-next": "file:../vendor/agents-anywhere/agents-anywhere-dsh-bridge-next-0.1.0-dev.0.desktop.c00df092c98b2.rcda81994.tgz",
     "@awiki/dsh-model-proxy": "0.1.11",
     "@awiki/dsh-plugin": "0.3.21",

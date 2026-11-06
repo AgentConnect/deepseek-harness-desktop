@@ -1,11 +1,12 @@
 /**
  * Verify every production dependency shipped inside the desktop installers
- * carries a permissive license that allows redistribution.
+ * carries an accepted redistribution license or is the checksum-bound private
+ * first-party candidate. The private exception grants no redistribution rights.
  *
  * Walks the production dependency graph (dependencies + optionalDependencies,
  * excluding dev/peer) starting from this package manifest. Fails when a
- * package has no license field and no LICENSE file, or when its license is
- * not on the redistribution allowlist.
+ * package has no license field and no LICENSE file, or has neither an accepted
+ * redistribution license nor the verified private first-party exception.
  *
  * @module scripts/verify-licenses
  */
@@ -14,6 +15,7 @@ import { createRequire } from 'node:module'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { privateCandidateLicense } from './private-candidate-license.mjs'
 
 const packageRoot = dirname(dirname(fileURLToPath(import.meta.url)))
 const rootManifest = JSON.parse(readFileSync(join(packageRoot, 'package.json'), 'utf8'))
@@ -92,6 +94,8 @@ for (let index = 0; index < queue.length; index += 1) {
 
   if (current.name !== rootManifest.name) {
     const license = licenseExpression(manifest)
+    const privateCandidate = license === 'UNLICENSED'
+      ? privateCandidateLicense(current.name, manifest, dirname(packageRoot)) : undefined
     const hasLicenseFile = existsSync(join(dirname(current.manifestPath), 'LICENSE'))
       || existsSync(join(dirname(current.manifestPath), 'LICENSE.md'))
       || existsSync(join(dirname(current.manifestPath), 'LICENSE.txt'))
@@ -101,10 +105,10 @@ for (let index = 0; index < queue.length; index += 1) {
       if (!hasLicenseFile) {
         failures.push(`${current.name}: license refers to ${JSON.stringify(license)} but no LICENSE file is shipped`)
       }
-    } else if (license !== undefined && !ALLOWED_LICENSES.has(license) && !NOTICE_LICENSES.has(license)) {
+    } else if (license !== undefined && !ALLOWED_LICENSES.has(license) && !NOTICE_LICENSES.has(license) && !privateCandidate) {
       failures.push(`${current.name}: license ${JSON.stringify(license)} is not on the redistribution allowlist`)
     }
-    manifests.push({ name: current.name, version: manifest.version, license: license ?? 'SEE LICENSE FILE' })
+    manifests.push({ name: current.name, version: manifest.version, license: license ?? 'SEE LICENSE FILE', privateCandidate })
   }
 
   const requireFrom = createRequire(current.manifestPath)
@@ -130,6 +134,7 @@ if (failures.length > 0) {
 }
 
 const noticeOnly = manifests.filter(entry => NOTICE_LICENSES.has(entry.license))
+const privateOnly = manifests.filter(entry => entry.privateCandidate)
 const noticesArg = process.argv.indexOf('--notices')
 if (noticesArg !== -1) {
   const target = process.argv[noticesArg + 1]
@@ -146,7 +151,7 @@ if (noticesArg !== -1) {
     '',
     '| Package | Version | License |',
     '| --- | --- | --- |',
-    ...manifests
+    ...manifests.filter(entry => !entry.privateCandidate)
       .sort((a, b) => a.name.localeCompare(b.name))
       .map(entry => `| ${entry.name} | ${entry.version ?? ''} | ${entry.license} |`),
     '',
@@ -154,12 +159,24 @@ if (noticesArg !== -1) {
       ? ''
       : `> Notice-required licenses in use: ${[...new Set(noticeOnly.map(entry => entry.license))].join(', ')}. Their license texts ship inside node_modules; see the package LICENSE files for the full terms.`,
     '',
+    ...(privateOnly.length === 0 ? [] : [
+      '## Private local candidates',
+      '',
+      'These first-party packages are private-only local candidates. UNLICENSED does not grant redistribution permission.',
+      '',
+      '| Package | Version | License | Archive SHA-256 |',
+      '| --- | --- | --- | --- |',
+      ...privateOnly.map(entry => `| ${entry.name} | ${entry.version ?? ''} | ${entry.license} | ${entry.privateCandidate.sha256} |`),
+      '',
+    ]),
   ].filter(line => line !== '')
   writeFileSync(join(packageRoot, target), lines.join('\n'))
 }
 
 const total = seen.size - 1
-const summary = noticeOnly.length === 0
+const summary = privateOnly.length > 0
+  ? `verify-licenses: ${total} production packages checked; ${privateOnly.length} private-only local candidate(s), not cleared for redistribution (${privateOnly.map(entry => entry.name).join(', ')}); ${noticeOnly.length} notice-required package(s)`
+  : noticeOnly.length === 0
   ? `verify-licenses: ${total} production packages carry redistribution-safe licenses`
   : `verify-licenses: ${total} production packages checked; ${noticeOnly.length} use notice-required licenses (${[...new Set(noticeOnly.map(entry => entry.license))].join(', ')})`
 process.stdout.write(`${summary}\n`)

@@ -556,7 +556,8 @@
     "@agent-network-protocol/anp-identity": "file:vendor/identity-candidate/20261106-local-v2/agent-network-protocol-anp-identity-0.2.5.tgz",
     "@agent-network-protocol/anp-identity-linux-x64-gnu": "file:vendor/identity-candidate/20261106-local-v2/agent-network-protocol-anp-identity-linux-x64-gnu-0.2.5.tgz",
     "@agent-network-protocol/dsh-anp-identity": "file:vendor/identity-candidate/20261106-local-v2/agent-network-protocol-dsh-anp-identity-0.1.6.tgz",
-    "@awiki/dsh-plugin": "file:vendor/identity-candidate/20261106-local-v2/awiki-dsh-plugin-0.3.21.tgz"
+    "@awiki/dsh-plugin": "file:vendor/identity-candidate/20261106-local-v2/awiki-dsh-plugin-0.3.21.tgz",
+    "@agentconnect/dsh-pap": "file:vendor/identity-candidate/20261106-local-v2/agentconnect-dsh-pap-0.1.0-e65dcee.tgz"
   },
   "dependenciesMeta": {
     "@deepseek-ai/dsh-subprocess-local": {

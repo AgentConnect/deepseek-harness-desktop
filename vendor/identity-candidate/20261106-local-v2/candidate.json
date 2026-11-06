@@ -5,35 +5,48 @@
     "linux-x64-gnu"
   ],
   "nativeApiVersion": 2,
-  "nativeSha256": "e2c4b86a0b3622aaefa70b44d3dc31cdab579b1237a4418d349bd294c52663ef",
-  "identitySourceCommit": "4f7500d32a7e5e47fb7f4092b457aac29e5e6927",
+  "nativeSha256": "ffb6c3a6ee7bcd5592184db57c865d0a90748a6379636ca203a5ad42012718b9",
+  "identitySourceCommit": "46bf276c3eb9b7d64966040654d82b97825c9310",
   "artifacts": [
     {
       "package": "@agent-network-protocol/anp-identity",
       "path": "vendor/identity-candidate/20261106-local-v2/agent-network-protocol-anp-identity-0.2.5.tgz",
-      "sha256": "0bd09eb798b267ca4ca6709c6702f9560db58cbce78c2947ea365c60d98d8abb",
-      "bytes": 21850
+      "sha256": "144658fae86602d3b9de8205839cc89b57a68ab8297c09e3c473e28b431c1e1c",
+      "bytes": 29770
     },
     {
       "package": "@agent-network-protocol/anp-identity-linux-x64-gnu",
       "path": "vendor/identity-candidate/20261106-local-v2/agent-network-protocol-anp-identity-linux-x64-gnu-0.2.5.tgz",
-      "sha256": "2c7b20f973c7808db868615159e71d45d0376e08d1962da50a5c5329f28d57b7",
-      "bytes": 49207122
+      "sha256": "ff7d5c94ef5b431e62f906880f39f917ca55c45b7730e7b93c2ab524200347f0",
+      "bytes": 47890997
     },
     {
       "package": "@agent-network-protocol/dsh-anp-identity",
       "path": "vendor/identity-candidate/20261106-local-v2/agent-network-protocol-dsh-anp-identity-0.1.6.tgz",
-      "sha256": "1dff9d7433bd7b5f38dcb21378345630ae0ce598433078cf17e8a614fa68c0c5",
-      "bytes": 525872
+      "sha256": "e22002710400c521734349ba8efc8a02401c55fd2c92982f778cc81aa3eefd1d",
+      "bytes": 554424
     },
     {
       "package": "@awiki/dsh-plugin",
       "path": "vendor/identity-candidate/20261106-local-v2/awiki-dsh-plugin-0.3.21.tgz",
       "bytes": 1116780,
       "sha256": "76d74bdb8fdc5539ff9ae338a2616b1e1e0c4b4cbc6129e74b6b807e51936ff9"
+    },
+    {
+      "package": "@agentconnect/dsh-pap",
+      "path": "vendor/identity-candidate/20261106-local-v2/agentconnect-dsh-pap-0.1.0-e65dcee.tgz",
+      "sha256": "49633aaabe5e935d67d316331d71bf6c3cdb3052d0dc1ee45873208dcb517514",
+      "bytes": 280246
     }
   ],
   "awikiSourceCommit": "2c0437311b9a06f8527a798fc14e1820c7881b55",
   "imCoreRegistryVersion": "0.2.15",
-  "previousImCoreRegistryVersion": "0.2.9"
+  "previousImCoreRegistryVersion": "0.2.9",
+  "papSourceCommit": "e65dcee1eb1350650a2aaa6014c613266135c8ed",
+  "papExecutionCommit": "43aac767fa1c73ecdb7a60e1f263c1ec06155d8f",
+  "papRuntimeUnchangedSinceExecution": true,
+  "identityProductionCommit": "7fc4d9219cad9578163c08a60fed8277e12dfb70",
+  "explicitLocalFileSupported": true,
+  "currentProviderDefault": "keyring",
+  "keyringFallbackToLocalFile": false
 }
