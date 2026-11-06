@@ -66,7 +66,7 @@ __metadata:
 
 "@agent-network-protocol/dsh-anp-identity@file:vendor/identity-candidate/20261106-local-v2/agent-network-protocol-dsh-anp-identity-0.1.6.tgz::locator=deepseek-harness-desktop%40workspace%3A.":
   version: 0.1.6
-  resolution: "@agent-network-protocol/dsh-anp-identity@file:vendor/identity-candidate/20261106-local-v2/agent-network-protocol-dsh-anp-identity-0.1.6.tgz#vendor/identity-candidate/20261106-local-v2/agent-network-protocol-dsh-anp-identity-0.1.6.tgz::hash=031cb4&locator=deepseek-harness-desktop%40workspace%3A."
+  resolution: "@agent-network-protocol/dsh-anp-identity@file:vendor/identity-candidate/20261106-local-v2/agent-network-protocol-dsh-anp-identity-0.1.6.tgz#vendor/identity-candidate/20261106-local-v2/agent-network-protocol-dsh-anp-identity-0.1.6.tgz::hash=91c603&locator=deepseek-harness-desktop%40workspace%3A."
   dependencies:
     "@agent-network-protocol/anp-identity": "npm:0.2.5"
     "@deepseek-ai/schemastery": "npm:^3.18.1"
@@ -105,7 +105,7 @@ __metadata:
       optional: true
     react:
       optional: true
-  checksum: 10c0/bd665cc1419d8de5f861676a4c74e88aa8fa8afac579cbeec8f9ff7b33e16277fe991fdb55d57b0ab0ece5eb654cfdabfa67a39352191abd8afde34d5e540ec6
+  checksum: 10c0/c79e7245e83b3c8472cc7b5de75ae7b16038a6ce502be58f123ae646617397355a8c421542fc367399164e7dc01079308fe21f93e5cae67ed9ce6cb6c343e735
   languageName: node
   linkType: hard
 

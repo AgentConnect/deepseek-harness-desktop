@@ -6,7 +6,7 @@
   ],
   "nativeApiVersion": 2,
   "nativeSha256": "ffb6c3a6ee7bcd5592184db57c865d0a90748a6379636ca203a5ad42012718b9",
-  "identitySourceCommit": "46bf276c3eb9b7d64966040654d82b97825c9310",
+  "identitySourceCommit": "12dbae8eb22a519ee7cf9600027d517e0012bca5",
   "artifacts": [
     {
       "package": "@agent-network-protocol/anp-identity",
@@ -23,8 +23,8 @@
     {
       "package": "@agent-network-protocol/dsh-anp-identity",
       "path": "vendor/identity-candidate/20261106-local-v2/agent-network-protocol-dsh-anp-identity-0.1.6.tgz",
-      "sha256": "e22002710400c521734349ba8efc8a02401c55fd2c92982f778cc81aa3eefd1d",
-      "bytes": 554424
+      "sha256": "fea710434c6fc7529bc268cf9cc37712204fd1414ef8cf67592e481856ace0b4",
+      "bytes": 556752
     },
     {
       "package": "@awiki/dsh-plugin",
@@ -48,5 +48,6 @@
   "identityProductionCommit": "7fc4d9219cad9578163c08a60fed8277e12dfb70",
   "explicitLocalFileSupported": true,
   "currentProviderDefault": "keyring",
-  "keyringFallbackToLocalFile": false
+  "keyringFallbackToLocalFile": false,
+  "initialRegistrationProofRefresh": true
 }
